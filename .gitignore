@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Environment variables (CRITICAL - contains secrets)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Build output
+dist/
+build/
+server/public/
+
+# Uploads (user content)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
