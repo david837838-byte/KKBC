@@ -217,6 +217,7 @@ const Hymns = () => {
                                     frameBorder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
+                                    referrerPolicy="strict-origin-when-cross-origin"
                                     style={{ borderRadius: 'var(--radius-md)' }}
                                   ></iframe>
                                 </div>
@@ -259,6 +260,7 @@ const Hymns = () => {
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
                       style={{ borderRadius: 'var(--radius-md)', display: 'block' }}
                     ></iframe>
                   </div>

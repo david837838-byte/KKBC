@@ -56,6 +56,7 @@ app.use((req, res, next) => {
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow serving uploaded files
   contentSecurityPolicy: false, // Disabled for SPA (React injects inline scripts)
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' } // Allows YouTube embeds to receive Referer header
 }));
 
 // ===== SECURITY: CORS - Restricted Origins =====
