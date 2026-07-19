@@ -44,10 +44,10 @@ const seedData = async () => {
     const adminUser = await User.create({
       username: 'admin',
       email: 'admin@churchqanafar.org',
-      password: 'admin', // Pre-save hook will hash this
+      password: 'admin123', // Pre-save hook will hash this (min length is 6)
       role: 'admin',
     });
-    console.log('Admin user created: admin / admin');
+    console.log('Admin user created: admin / admin123');
 
     // 2. Create Initial settings
     const initialSettings = await Settings.create({
