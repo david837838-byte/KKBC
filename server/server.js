@@ -18,18 +18,31 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-// ===== SECURITY: Parse allowed CORS origins from environment =====
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-  : ['http://localhost:5173', 'http://localhost:5000'];
+// ===== SECURITY: CORS Origins configuration =====
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5000'
+];
 
-console.log('✅ Allowed CORS origins:', allowedOrigins);
+if (process.env.CORS_ORIGINS) {
+  allowedOrigins.push(...process.env.CORS_ORIGINS.split(',').map(origin => origin.trim()));
+}
 
-// Configure Socket.io with restricted CORS
+console.log('✅ Base allowed CORS origins:', allowedOrigins);
+
+// Configure Socket.io with dynamic CORS
 const io = socketIo(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      if (!origin || process.env.NODE_ENV === 'production' || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('غير مسموح بالوصول من هذا المصدر (CORS)'));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
   },
 });
 
@@ -50,7 +63,13 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    
+    const isAllowed = allowedOrigins.includes(origin) || 
+      process.env.NODE_ENV === 'production' ||
+      origin.startsWith('http://127.0.0.1') ||
+      origin.startsWith('http://localhost');
+
+    if (isAllowed) {
       return callback(null, true);
     }
     return callback(new Error('غير مسموح بالوصول من هذا المصدر (CORS)'));
