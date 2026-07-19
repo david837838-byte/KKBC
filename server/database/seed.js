@@ -118,7 +118,7 @@ const seedData = async () => {
         preacher: 'القس الراعي',
         date: new Date(2026, 6, 5),
         type: 'video',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Dummy
+        url: 'https://www.youtube.com/watch?v=EngW7tLk6R8', // Dummy (fully embeddable nature video)
         category: 'النمو الروحي',
         description: 'رسالة تعزية وتشجيع من كلمة الله تتناول سبل الحفاظ على إيمان ثابت وقوي في وسط العواصف والتحديات الحياتية.',
       },
@@ -158,7 +158,7 @@ const seedData = async () => {
       title: 'يا مالك قلبي وحياتي',
       lyrics: 'يا مالك قلبي وحياتي، يا سيدي ومخلصي البار\nأرفع إليك صلواتي، وأشهد بفضلك ليل نهار\n\nالقرار:\nأنت ربي، أنت حصني وصخرتي\nفي ظل جناحيك أماني وسلامي وسلوتي\n\nفي وسط التجارب والضيق، أراك بقربي تسير\nتمهد لي كل طريق، وتهديني بنورك المنير\n\nأكرس نفسي لخدمتك، وأحيا لمجد اسمك العظيم\nفأخبر الجميع بمحبتك، وأشهد لعهدهم الكريم',
       audioUrl: '',
-      videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      videoUrl: 'https://www.youtube.com/watch?v=EngW7tLk6R8', // Dummy (fully embeddable nature video)
       category: 'تسبيح وعبادة',
     });
     console.log('Initial hymn seeded.');
