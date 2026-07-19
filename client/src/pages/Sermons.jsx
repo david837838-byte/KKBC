@@ -70,8 +70,8 @@ const Sermons = () => {
 
   const cleanYoutubeUrl = (url) => {
     if (!url) return '';
-    // Convert watch link to embed link
-    let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    // Convert watch/live link to embed link
+    let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|live\/)([^#\&\?]*).*/;
     let match = url.match(regExp);
     if (match && match[2].length === 11) {
       return `https://www.youtube.com/embed/${match[2]}`;
