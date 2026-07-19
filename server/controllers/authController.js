@@ -130,7 +130,7 @@ async function recordFailedAttempt(ip, userAgent) {
       const newAttempts = (attemptRecord.attempts || 0) + 1;
       let lockoutTime = null;
       
-      if (newAttempts >= 10) {
+      if (newAttempts >= 30) {
         lockoutTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour lockout
       }
       
