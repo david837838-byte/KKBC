@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Radio, Calendar, BookOpen, Music, Image, HeartHandshake, Settings, Users, 
   Trash2, Plus, Edit2, Check, Bell, Upload, LogOut, CheckCircle, Info, BarChart3,
-  ShieldAlert, Bot, AlertCircle, FileText
+  ShieldAlert, Bot, AlertCircle, FileText, Database, Download
 } from 'lucide-react';
 import io from 'socket.io-client';
 
@@ -2182,6 +2182,94 @@ const SettingsTab = ({ token }) => {
   
   const [logoFile, setLogoFile] = useState(null);
   const [heroFile, setHeroFile] = useState(null);
+  const [backupFile, setBackupFile] = useState(null);
+
+  const handleDownloadBackup = () => {
+    setLoading(true);
+    fetch('/api/settings/backup', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('فشل تنزيل النسخة الاحتياطية.');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `church_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setLoading(false);
+        setSuccess('تم تنزيل النسخة الاحتياطية بنجاح!');
+        setTimeout(() => setSuccess(''), 4000);
+      })
+      .catch(err => {
+        setLoading(false);
+        setError(err.message || 'حدث خطأ أثناء تنزيل النسخة الاحتياطية.');
+        setTimeout(() => setError(''), 4000);
+      });
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setBackupFile(e.target.files[0]);
+    }
+  };
+
+  const handleRestoreBackup = () => {
+    if (!backupFile) return;
+
+    const confirmRestore = window.confirm(
+      'تحذير هام جداً:\nعملية استعادة النسخة الاحتياطية ستقوم بحذف جميع البيانات والملفات الحالية في قاعدة البيانات واستبدالها بالكامل ببيانات الملف المرفوع.\n\nهل أنت متأكد تماماً من رغبتك في المتابعة واستبدال البيانات؟'
+    );
+
+    if (!confirmRestore) return;
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const jsonData = JSON.parse(e.target.result);
+        
+        fetch('/api/settings/restore', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(jsonData)
+        })
+          .then(res => res.json())
+          .then(data => {
+            setLoading(false);
+            if (data.success) {
+              setSuccess('تم استعادة البيانات والنسخة الاحتياطية بنجاح! سيتم تحديث الصفحة لتطبيق التغييرات.');
+              setBackupFile(null);
+              setTimeout(() => {
+                window.location.reload();
+              }, 3000);
+            } else {
+              throw new Error(data.message || 'فشلت استعادة النسخة الاحتياطية.');
+            }
+          })
+          .catch(err => {
+            setLoading(false);
+            setError(err.message || 'حدث خطأ أثناء الاتصال بالخادم لاستعادة البيانات.');
+            setTimeout(() => setError(''), 5000);
+          });
+      } catch (err) {
+        setLoading(false);
+        setError('الملف المختار غير صالح أو ليس بتنسيق JSON صحيح.');
+        setTimeout(() => setError(''), 5000);
+      }
+    };
+    reader.readAsText(backupFile);
+  };
 
   useEffect(() => {
     fetch('/api/settings')
@@ -2437,6 +2525,62 @@ const SettingsTab = ({ token }) => {
           {loading ? 'جاري الحفظ...' : 'حفظ الإعدادات بالكامل'}
         </button>
       </form>
+
+      {/* Backup and Restore Section */}
+      <div className="glass-card" style={{ marginTop: '2.5rem', borderTop: '4px solid var(--accent-color)', padding: '2rem' }}>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-color)', margin: '0 0 0.5rem 0' }}>
+          <Database size={20} />
+          <span>النسخ الاحتياطي واستعادة البيانات</span>
+        </h3>
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', margin: '0 0 1.5rem 0', lineHeight: '1.6' }}>
+          يمكنك تنزيل نسخة احتياطية كاملة بصيغة JSON تحتوي على جميع بيانات الموقع (الإعدادات، الترانيم، العظات، الأعضاء، الاجتماعات، والأخبار) والاحتفاظ بها بأمان، أو استخدامها لاستعادة بيانات الموقع بالكامل في حال حدوث أي خلل.
+        </p>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center' }}>
+          {/* Export Button */}
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={handleDownloadBackup}
+            disabled={loading}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}
+          >
+            <Download size={16} />
+            <span>تنزيل نسخة احتياطية (.json)</span>
+          </button>
+
+          {/* Import File Input & Button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <input 
+              type="file" 
+              accept=".json" 
+              id="backup-file-input"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            <label 
+              htmlFor="backup-file-input" 
+              className="btn btn-outline"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', margin: 0 }}
+            >
+              <Upload size={16} />
+              <span>{backupFile ? backupFile.name : 'اختر ملف نسخة احتياطية لاستعادتها'}</span>
+            </label>
+
+            {backupFile && (
+              <button 
+                type="button" 
+                className="btn btn-accent" 
+                onClick={handleRestoreBackup}
+                disabled={loading}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}
+              >
+                <span>استعادة البيانات الآن 📤</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

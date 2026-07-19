@@ -1,4 +1,17 @@
 const Settings = require('../models/Settings');
+const User = require('../models/User');
+const LiveStream = require('../models/LiveStream');
+const Meeting = require('../models/Meeting');
+const Sermon = require('../models/Sermon');
+const News = require('../models/News');
+const Hymn = require('../models/Hymn');
+const Gallery = require('../models/Gallery');
+const Prayer = require('../models/Prayer');
+const DailyVerse = require('../models/DailyVerse');
+const Expense = require('../models/Expense');
+const Counseling = require('../models/Counseling');
+const Article = require('../models/Article');
+const Analytics = require('../models/Analytics');
 const fs = require('fs');
 const path = require('path');
 
@@ -94,6 +107,105 @@ exports.updateSettings = async (req, res) => {
       if (req.files.logo && req.files.logo[0]) deleteLocalFile(`/uploads/settings/${req.files.logo[0].filename}`);
       if (req.files.heroImage && req.files.heroImage[0]) deleteLocalFile(`/uploads/settings/${req.files.heroImage[0].filename}`);
     }
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Export website database backup (JSON file)
+// @route   GET /api/settings/backup
+// @access  Private (Admin)
+exports.exportBackup = async (req, res) => {
+  try {
+    const backupData = {
+      User: await User.find({}),
+      Settings: await Settings.find({}),
+      LiveStream: await LiveStream.find({}),
+      Meeting: await Meeting.find({}),
+      Sermon: await Sermon.find({}),
+      News: await News.find({}),
+      Hymn: await Hymn.find({}),
+      Gallery: await Gallery.find({}),
+      Prayer: await Prayer.find({}),
+      DailyVerse: await DailyVerse.find({}),
+      Expense: await Expense.find({}),
+      Counseling: await Counseling.find({}),
+      Article: await Article.find({}),
+      Analytics: await Analytics.find({})
+    };
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=church_backup_${new Date().toISOString().split('T')[0]}.json`);
+    res.status(200).send(JSON.stringify(backupData, null, 2));
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Restore website database backup
+// @route   POST /api/settings/restore
+// @access  Private (Admin)
+exports.importBackup = async (req, res) => {
+  try {
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({ success: false, message: 'ملف النسخة الاحتياطية غير صالح أو فارغ.' });
+    }
+
+    const backupData = req.body;
+    
+    // Safety check: verify it contains Settings and User collections
+    if (!backupData.Settings || !backupData.User) {
+      return res.status(400).json({ success: false, message: 'الملف المرفوع لا يحتوي على بنية البيانات الصحيحة للموقع.' });
+    }
+
+    // List of models to restore
+    const modelsMap = {
+      User,
+      Settings,
+      LiveStream,
+      Meeting,
+      Sermon,
+      News,
+      Hymn,
+      Gallery,
+      Prayer,
+      DailyVerse,
+      Expense,
+      Counseling,
+      Article,
+      Analytics
+    };
+
+    if (global.useMockDb === true) {
+      const dbFile = path.join(__dirname, '..', 'uploads', 'local_db.json');
+      const formattedDb = {};
+      for (const key in modelsMap) {
+        formattedDb[key] = Array.isArray(backupData[key]) ? backupData[key] : [];
+      }
+      // Preserve LoginAttempt or keep empty
+      const existingDb = fs.existsSync(dbFile) ? JSON.parse(fs.readFileSync(dbFile, 'utf8')) : {};
+      formattedDb.LoginAttempt = existingDb.LoginAttempt || [];
+      
+      fs.writeFileSync(dbFile, JSON.stringify(formattedDb, null, 2), 'utf8');
+    } else {
+      // MongoDB Mode: Delete and insert
+      for (const key in modelsMap) {
+        const Model = modelsMap[key];
+        const dataArray = Array.isArray(backupData[key]) ? backupData[key] : [];
+        
+        await Model.deleteMany({});
+        if (dataArray.length > 0) {
+          const cleanedData = dataArray.map(doc => {
+            const clean = { ...doc };
+            delete clean.__v;
+            return clean;
+          });
+          await Model.create(cleanedData);
+        }
+      }
+    }
+
+    res.status(200).json({ success: true, message: 'تم استعادة البيانات والنسخة الاحتياطية بنجاح!' });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
