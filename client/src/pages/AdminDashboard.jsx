@@ -370,7 +370,7 @@ const LiveStreamTab = ({ token }) => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   useEffect(() => {
@@ -501,7 +501,7 @@ const MeetingsTab = ({ token }) => {
   const [editingId, setEditingId] = useState(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
   
   // Form State
@@ -769,6 +769,8 @@ const SermonsTab = ({ token }) => {
   const [editingId, setEditingId] = useState(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language, translateText } = useLanguage();
+  const isAr = language === 'ar';
   
   // Form State
   const [title, setTitle] = useState('');
@@ -1066,7 +1068,7 @@ const NewsTab = ({ token }) => {
   const [editingId, setEditingId] = useState(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
   
   // Form State
@@ -1751,7 +1753,7 @@ const GalleryTab = ({ token }) => {
   const [showForm, setShowForm] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
   
   // Form State
@@ -2014,6 +2016,8 @@ const PrayersTab = ({ token }) => {
   const [prayers, setPrayers] = useState([]);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language, translateText } = useLanguage();
+  const isAr = language === 'ar';
 
   const fetchPrayers = () => {
     fetch('/api/prayers', {
@@ -2175,7 +2179,7 @@ const SettingsTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
   
   // Settings Form State
@@ -2616,7 +2620,7 @@ const UsersTab = ({ token }) => {
   const [canManageExpenses, setCanManageExpenses] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   // Editing states
@@ -3101,7 +3105,7 @@ const UsersTab = ({ token }) => {
 const AnalyticsTab = ({ token }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   useEffect(() => {
@@ -3277,7 +3281,7 @@ const LockoutsTab = ({ token }) => {
   const [lockouts, setLockouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   const fetchLockouts = () => {
@@ -3418,7 +3422,7 @@ const ChatbotTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   const [isChatbotEnabled, setIsChatbotEnabled] = useState(true);
@@ -3600,6 +3604,8 @@ const ArticlesTab = ({ token }) => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { language, translateText } = useLanguage();
+  const isAr = language === 'ar';
 
   // Form State
   const [title, setTitle] = useState('');
@@ -3866,7 +3872,7 @@ const CounselingTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   const showAlert = (message, type = 'success') => {
@@ -4098,7 +4104,7 @@ const ExpensesTab = ({ token }) => {
   const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
   const [description, setDescription] = useState('');
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   const showAlert = (message, type = 'success') => {
@@ -4355,7 +4361,7 @@ const DailyVersesTab = ({ token }) => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { language } = useLanguage();
+  const { language, translateText } = useLanguage();
   const isAr = language === 'ar';
 
   // Form State
