@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 const Meetings = () => {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { t, language } = useLanguage();
+  const { t, language, translateText } = useLanguage();
 
   useEffect(() => {
     fetch('/api/meetings')
@@ -41,9 +41,9 @@ const Meetings = () => {
         <div className="grid-3 meetings-grid">
           {meetings.map((meeting) => (
             <div className="meeting-card glass-card" key={meeting._id}>
-              <div className="day-badge">{meeting.day}</div>
+              <div className="day-badge">{translateText(meeting.day, meeting.dayEn)}</div>
               
-              <h3>{meeting.title}</h3>
+              <h3>{translateText(meeting.title, meeting.titleEn)}</h3>
               
               <div className="meeting-meta">
                 <div className="meta-item">
@@ -52,12 +52,12 @@ const Meetings = () => {
                 </div>
                 <div className="meta-item">
                   <MapPin size={16} className="meta-icon" />
-                  <span>{t('meetings.location')}: {meeting.location || (language === 'ar' ? 'مبنى الكنيسة' : 'Church Building')}</span>
+                  <span>{t('meetings.location')}: {translateText(meeting.location || (language === 'ar' ? 'مبنى الكنيسة' : 'Church Building'))}</span>
                 </div>
               </div>
 
               {meeting.description && (
-                <p className="meeting-desc">{meeting.description}</p>
+                <p className="meeting-desc">{translateText(meeting.description, meeting.descriptionEn)}</p>
               )}
             </div>
           ))}

@@ -78,15 +78,28 @@ const en = {
     viewSchedule: 'Detailed Meeting Schedule',
   },
 
-  // About Page
+  // About Page - COMPLETE ENGLISH PARAGRAPHS
   about: {
     title: 'About Evangelical Baptist Church',
     subtitle: 'Our history, vision, and holy biblical beliefs',
+    welcomeText: 'Welcome to the Evangelical Baptist Church in Khirbet Qanafar. We are here to be a living beacon of the love and grace of our Lord Jesus Christ, proclaiming the gospel of salvation and building up hearts in divine truth.',
     ourHistory: 'Church History',
+    historyText: 'The Evangelical Baptist Church in Khirbet Qanafar was established to serve as a center for spiritual fellowship, proclaiming the gospel of salvation, and offering biblical instruction and support for all age groups across West Bekaa. Over the decades, the church has witnessed God\'s faithfulness and transforming work, continuing its witness and ministry steadfastly in Christ.',
     ourVision: 'Our Vision',
+    visionText: 'Our vision is to be a vibrant beacon of Christ\'s love in the West Bekaa region, preaching the gospel of salvation and building a spiritually growing church that makes disciples to glorify the Lord\'s name.',
     ourMission: 'Our Mission',
-    ourBeliefs: 'What We Believe',
+    missionText: 'Our mission is to glorify God through holy worship in spirit and truth, effective evangelism, biblical teaching for spiritual growth and maturity, and serving the needs of our local community in Christ\'s love.',
+    ourBeliefs: 'What We Believe & Core Values',
+    beliefsText: `We believe in the following fundamental biblical truths:
+
+1. The Holy Bible: The inspired, infallible, and inerrant Word of God, serving as the supreme authority for faith and daily life.
+2. The One God: Revealed in three co-equal persons of one essence, power, and glory: Father, Son, and Holy Spirit.
+3. The Lord Jesus Christ: We believe in His full deity, virgin birth, substitutionary atoning death on the cross, bodily resurrection, ascension to the right hand of the Father, and glorious second coming.
+4. Salvation by Grace: We believe salvation is a free gift of God by grace, received through personal faith and genuine repentance through the work of the Holy Spirit.
+5. Believer's Baptism by Immersion: As an outward declaration of inward repentance and union with Christ in His death, burial, and resurrection.
+6. The Local Church: A community of believers united together for worship, fellowship, discipleship, and fulfilling the Great Commission.`,
     pastorsSection: 'Pastoral Leadership & Ministers',
+    pastorsText: 'The church is served by God\'s grace by our pastor alongside a team of dedicated brothers and sisters leading worship, preaching biblical sermons, directing Sunday school for children, and mentoring youth for fruitful Christian service.',
   },
 
   // Meetings Page

@@ -9,7 +9,7 @@ const Sermons = () => {
   const [selectedPreacher, setSelectedPreacher] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedType, setSelectedType] = useState('');
-  const { t, language } = useLanguage();
+  const { t, language, translateText } = useLanguage();
 
   // Dropdown lists
   const [preachers, setPreachers] = useState([]);
@@ -167,16 +167,16 @@ const Sermons = () => {
           {sermons.map((sermon) => (
             <div className="sermon-card-detailed glass-card" key={sermon._id}>
               <div className="card-top">
-                <span className="sermon-category">{sermon.category}</span>
+                <span className="sermon-category">{translateText(sermon.category, sermon.categoryEn)}</span>
                 {getMediaIcon(sermon.type)}
               </div>
 
-              <h3>{sermon.title}</h3>
+              <h3>{translateText(sermon.title, sermon.titleEn)}</h3>
 
               <div className="sermon-meta">
                 <div className="meta-item">
                   <User size={16} />
-                  <span>{t('sermons.preacher')}: {sermon.preacher}</span>
+                  <span>{t('sermons.preacher')}: {translateText(sermon.preacher, sermon.preacherEn)}</span>
                 </div>
                 <div className="meta-item">
                   <Calendar size={16} />
@@ -185,7 +185,7 @@ const Sermons = () => {
               </div>
 
               {sermon.description && (
-                <p className="sermon-desc">{sermon.description}</p>
+                <p className="sermon-desc">{translateText(sermon.description, sermon.descriptionEn)}</p>
               )}
 
               {/* Media rendering logic */}

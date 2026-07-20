@@ -6,7 +6,7 @@ const News = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const { t, language } = useLanguage();
+  const { t, language, translateText } = useLanguage();
 
   const fetchNews = () => {
     setLoading(true);
@@ -102,10 +102,10 @@ const News = () => {
                   </div>
                 </div>
 
-                <h3>{item.title}</h3>
+                <h3>{translateText(item.title, item.titleEn)}</h3>
                 
                 <p className="news-excerpt">
-                  {item.content}
+                  {translateText(item.content, item.contentEn)}
                 </p>
               </div>
             </article>

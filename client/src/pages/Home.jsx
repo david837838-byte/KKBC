@@ -12,7 +12,7 @@ const Home = () => {
   const [meetings, setMeetings] = useState([]);
   const [countdownText, setCountdownText] = useState('');
   const [dailyVerse, setDailyVerse] = useState(null);
-  const { t, language } = useLanguage();
+  const { t, language, translateText } = useLanguage();
 
   useEffect(() => {
     // 1. Fetch website settings
@@ -193,15 +193,15 @@ const Home = () => {
                   <div className="item-card glass-card" key={sermon._id}>
                     <div className="card-media-type">
                       {getMediaIcon(sermon.type)}
-                      <span className="category-badge">{sermon.category}</span>
+                      <span className="category-badge">{translateText(sermon.category, sermon.categoryEn)}</span>
                     </div>
-                    <h3>{sermon.title}</h3>
+                    <h3>{translateText(sermon.title, sermon.titleEn)}</h3>
                     <div className="card-meta">
-                      <span>{t('common.preacher')}: {sermon.preacher}</span>
+                      <span>{t('common.preacher')}: {translateText(sermon.preacher, sermon.preacherEn)}</span>
                       <span>•</span>
                       <span>{formatDate(sermon.date)}</span>
                     </div>
-                    {sermon.description && <p className="card-desc">{sermon.description.substring(0, 100)}...</p>}
+                    {sermon.description && <p className="card-desc">{translateText(sermon.description.substring(0, 100), sermon.descriptionEn)}...</p>}
                     <Link to="/sermons" className="card-action-btn">{t('common.listenWatch')}</Link>
                   </div>
                 ))
@@ -228,8 +228,8 @@ const Home = () => {
                     <span className={`news-tag ${newsItem.category}`}>
                       {newsItem.category === 'event' ? t('common.event') : newsItem.category === 'announcement' ? t('common.announcement') : t('common.newsItem')}
                     </span>
-                    <h3>{newsItem.title}</h3>
-                    {newsItem.content && <p className="card-desc">{newsItem.content.substring(0, 110)}...</p>}
+                    <h3>{translateText(newsItem.title, newsItem.titleEn)}</h3>
+                    {newsItem.content && <p className="card-desc">{translateText(newsItem.content.substring(0, 110), newsItem.contentEn)}...</p>}
                     <div className="card-meta">
                       <span>{formatDate(newsItem.date)}</span>
                     </div>
@@ -256,9 +256,9 @@ const Home = () => {
           <div className="preview-grid">
             {meetings.slice(0, 2).map((meeting) => (
               <div className="preview-card" key={meeting._id}>
-                <h4>{meeting.title}</h4>
-                <div className="time-badge">{meeting.day} • {meeting.time}</div>
-                <p>{meeting.description}</p>
+                <h4>{translateText(meeting.title, meeting.titleEn)}</h4>
+                <div className="time-badge">{translateText(meeting.day, meeting.dayEn)} • {meeting.time}</div>
+                <p>{translateText(meeting.description, meeting.descriptionEn)}</p>
               </div>
             ))}
           </div>
