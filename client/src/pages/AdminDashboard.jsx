@@ -501,6 +501,8 @@ const MeetingsTab = ({ token }) => {
   const [editingId, setEditingId] = useState(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
   
   // Form State
   const [title, setTitle] = useState('');
@@ -566,20 +568,20 @@ const MeetingsTab = ({ token }) => {
     })
       .then(res => {
         if (!res.ok) {
-          return res.json().then(err => { throw new Error(err.message || 'فشلت عملية حفظ الاجتماع.'); });
+          return res.json().then(err => { throw new Error(err.message || (isAr ? 'فشلت عملية حفظ الاجتماع.' : 'Failed to save meeting.')); });
         }
         return res.json();
       })
       .then(data => {
         if (data.success) {
-          setSuccess(editingId ? 'تم تعديل الاجتماع بنجاح!' : 'تم إضافة الاجتماع بنجاح!');
+          setSuccess(editingId ? (isAr ? 'تم تعديل الاجتماع بنجاح!' : 'Meeting updated successfully!') : (isAr ? 'تم إضافة الاجتماع بنجاح!' : 'Meeting added successfully!'));
           setTimeout(() => setSuccess(''), 4000);
           fetchMeetings();
           handleCancel();
         }
       })
       .catch(err => {
-        setError(err.message || 'حدث خطأ أثناء حفظ الاجتماع.');
+        setError(err.message || (isAr ? 'حدث خطأ أثناء حفظ الاجتماع.' : 'Error saving meeting.'));
         setTimeout(() => setError(''), 4000);
       });
   };
@@ -587,26 +589,26 @@ const MeetingsTab = ({ token }) => {
   const handleDelete = (id) => {
     setSuccess('');
     setError('');
-    if (window.confirm('هل أنت متأكد من حذف هذا الاجتماع الأسبوعي؟')) {
+    if (window.confirm(isAr ? 'هل أنت متأكد من حذف هذا الاجتماع الأسبوعي؟' : 'Are you sure you want to delete this meeting?')) {
       fetch(`/api/meetings/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => {
           if (!res.ok) {
-            return res.json().then(err => { throw new Error(err.message || 'فشلت عملية الحذف.'); });
+            return res.json().then(err => { throw new Error(err.message || (isAr ? 'فشلت عملية الحذف.' : 'Delete failed.')); });
           }
           return res.json();
         })
         .then(data => {
           if (data.success) {
-            setSuccess('تم حذف الاجتماع بنجاح!');
+            setSuccess(isAr ? 'تم حذف الاجتماع بنجاح!' : 'Meeting deleted successfully!');
             setTimeout(() => setSuccess(''), 4000);
             fetchMeetings();
           }
         })
         .catch(err => {
-          setError(err.message || 'حدث خطأ أثناء الحذف.');
+          setError(err.message || (isAr ? 'حدث خطأ أثناء الحذف.' : 'Error deleting.'));
           setTimeout(() => setError(''), 4000);
         });
     }
@@ -615,11 +617,11 @@ const MeetingsTab = ({ token }) => {
   return (
     <div>
       <div className="tab-header">
-        <h2>إدارة الاجتماعات الأسبوعية</h2>
+        <h2>{isAr ? 'إدارة الاجتماعات الأسبوعية' : 'Weekly Meetings Management'}</h2>
         {!showForm && (
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             <Plus size={16} />
-            <span>إضافة اجتماع جديد</span>
+            <span>{isAr ? 'إضافة اجتماع جديد' : 'Add New Meeting'}</span>
           </button>
         )}
       </div>
@@ -664,59 +666,59 @@ const MeetingsTab = ({ token }) => {
 
       {showForm ? (
         <form onSubmit={handleSubmit} className="glass-card" style={{ marginBottom: '2rem' }}>
-          <h3>{editingId ? 'تعديل اجتماع' : 'إضافة اجتماع جديد'}</h3>
+          <h3>{editingId ? (isAr ? 'تعديل اجتماع' : 'Edit Meeting') : (isAr ? 'إضافة اجتماع جديد' : 'Add New Meeting')}</h3>
           <hr style={{ margin: '1rem 0', borderColor: 'var(--border-color)' }} />
           
           <div className="grid-2">
             <div className="form-group">
-              <label>عنوان الاجتماع</label>
+              <label>{isAr ? 'عنوان الاجتماع' : 'Meeting Title'}</label>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="form-control" placeholder="مثال: اجتماع العبادة" />
             </div>
             
             <div className="form-group">
-              <label>اليوم</label>
+              <label>{isAr ? 'اليوم' : 'Day'}</label>
               <select value={day} onChange={(e) => setDay(e.target.value)} className="form-control">
-                <option value="الأحد">الأحد</option>
-                <option value="الإثنين">الإثنين</option>
-                <option value="الثلاثاء">الثلاثاء</option>
-                <option value="الأربعاء">الأربعاء</option>
-                <option value="الخميس">الخميس</option>
-                <option value="الجمعة">الجمعة</option>
-                <option value="السبت">السبت</option>
+                <option value="الأحد">{isAr ? 'الأحد' : 'Sunday'}</option>
+                <option value="الإثنين">{isAr ? 'الإثنين' : 'Monday'}</option>
+                <option value="الثلاثاء">{isAr ? 'الثلاثاء' : 'Tuesday'}</option>
+                <option value="الأربعاء">{isAr ? 'الأربعاء' : 'Wednesday'}</option>
+                <option value="الخميس">{isAr ? 'الخميس' : 'Thursday'}</option>
+                <option value="الجمعة">{isAr ? 'الجمعة' : 'Friday'}</option>
+                <option value="السبت">{isAr ? 'السبت' : 'Saturday'}</option>
               </select>
             </div>
           </div>
 
           <div className="grid-3">
             <div className="form-group">
-              <label>الوقت</label>
+              <label>{isAr ? 'الوقت' : 'Time'}</label>
               <input type="text" value={time} onChange={(e) => setTime(e.target.value)} required className="form-control" placeholder="مثال: 10:00 صباحاً" />
             </div>
 
             <div className="form-group">
-              <label>الموقع / القاعة</label>
+              <label>{isAr ? 'الموقع / القاعة' : 'Location'}</label>
               <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className="form-control" />
             </div>
 
             <div className="form-group">
-              <label>الترتيب التنازلي للتنظيم</label>
+              <label>{isAr ? 'الترتيب' : 'Order'}</label>
               <input type="number" value={order} onChange={(e) => setOrder(e.target.value)} className="form-control" />
             </div>
           </div>
 
           <div className="form-group">
-            <label>وصف مختصر للاجتماع</label>
+            <label>{isAr ? 'وصف مختصر للاجتماع' : 'Short Description'}</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows="3" className="form-control"></textarea>
           </div>
 
           <div className="form-group" style={{ flexDirection: 'row', gap: '0.5rem', alignItems: 'center' }}>
             <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} style={{ width: '18px', height: '18px' }} />
-            <label>نشط ويظهر في الموقع</label>
+            <label>{isAr ? 'نشط ويظهر في الموقع' : 'Active and visible on site'}</label>
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-            <button type="submit" className="btn btn-primary">حفظ</button>
-            <button type="button" className="btn btn-outline" onClick={handleCancel}>إلغاء</button>
+            <button type="submit" className="btn btn-primary">{isAr ? 'حفظ' : 'Save'}</button>
+            <button type="button" className="btn btn-outline" onClick={handleCancel}>{isAr ? 'إلغاء' : 'Cancel'}</button>
           </div>
         </form>
       ) : (
@@ -1064,6 +1066,8 @@ const NewsTab = ({ token }) => {
   const [editingId, setEditingId] = useState(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
   
   // Form State
   const [title, setTitle] = useState('');
@@ -1074,7 +1078,9 @@ const NewsTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchNews = () => {
-    fetch('/api/news')
+    fetch('/api/news/admin', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success) setNews(data.data);
@@ -1085,13 +1091,12 @@ const NewsTab = ({ token }) => {
     fetchNews();
   }, []);
 
-  const handleEdit = (n) => {
-    setEditingId(n._id);
-    setTitle(n.title);
-    setContent(n.content);
-    setCategory(n.category);
-    const nDate = n.date ? new Date(n.date).toISOString().split('T')[0] : '';
-    setDate(nDate);
+  const handleEdit = (item) => {
+    setEditingId(item._id);
+    setTitle(item.title);
+    setContent(item.content);
+    setCategory(item.category || 'news');
+    setDate(item.date ? item.date.substring(0, 10) : '');
     setFile(null);
     setShowForm(true);
   };
@@ -1133,15 +1138,13 @@ const NewsTab = ({ token }) => {
       body: formData
     })
       .then(res => {
-        if (!res.ok) {
-          return res.json().then(err => { throw new Error(err.message || 'فشلت عملية حفظ الخبر.'); });
-        }
+        setLoading(false);
+        if (!res.ok) throw new Error(isAr ? 'فشلت عملية حفظ الخبر.' : 'Failed to save news.');
         return res.json();
       })
       .then(data => {
-        setLoading(false);
         if (data.success) {
-          setSuccess(editingId ? 'تم تعديل الخبر بنجاح!' : 'تم إضافة الخبر بنجاح!');
+          setSuccess(editingId ? (isAr ? 'تم تعديل الخبر بنجاح!' : 'News item updated successfully!') : (isAr ? 'تم إضافة الخبر بنجاح!' : 'News item added successfully!'));
           setTimeout(() => setSuccess(''), 4000);
           fetchNews();
           handleCancel();
@@ -1323,6 +1326,8 @@ const HymnsTab = ({ token }) => {
   const [editingId, setEditingId] = useState(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   // Form State
   const [title, setTitle] = useState('');
@@ -1400,8 +1405,7 @@ const HymnsTab = ({ token }) => {
     setError('');
 
     if (!lyrics && !file && !imageUrl) {
-      setError('يرجى كتابة كلمات الترنيمة أو رفع صورة لها.');
-      setTimeout(() => setError(''), 4000);
+      setError(isAr ? 'يرجى إدخال كلمات الترنيمة أو إرفاق صورة/ملف للكلمات.' : 'Please enter hymn lyrics or upload an image/file.');
       return;
     }
 
@@ -1411,12 +1415,16 @@ const HymnsTab = ({ token }) => {
     formData.append('audioUrl', audioUrl);
     formData.append('videoUrl', videoUrl);
     formData.append('category', category);
+    formData.append('imageUrl', imageUrl);
     if (file) {
-      formData.append('hymnImage', file);
+      formData.append('lyricsImage', file);
     }
 
-    fetch(editingId ? `/api/hymns/${editingId}` : '/api/hymns', {
-      method: editingId ? 'PUT' : 'POST',
+    const endpoint = editingId ? `/api/hymns/${editingId}` : '/api/hymns';
+    const method = editingId ? 'PUT' : 'POST';
+
+    fetch(endpoint, {
+      method,
       headers: {
         'Authorization': `Bearer ${token}`
       },
@@ -1424,13 +1432,13 @@ const HymnsTab = ({ token }) => {
     })
       .then(res => {
         if (!res.ok) {
-          return res.json().then(err => { throw new Error(err.message || 'فشلت عملية حفظ التعديلات.'); });
+          return res.json().then(err => { throw new Error(err.message || (isAr ? 'فشلت عملية حفظ الترنيمة.' : 'Failed to save hymn.')); });
         }
         return res.json();
       })
       .then(data => {
         if (data.success) {
-          setSuccess(editingId ? 'تم تعديل الترنيمة بنجاح!' : 'تم إضافة الترنيمة الجديدة بنجاح!');
+          setSuccess(editingId ? (isAr ? 'تم تعديل الترنيمة بنجاح!' : 'Hymn updated successfully!') : (isAr ? 'تم إضافة الترنيمة الجديدة بنجاح!' : 'New hymn added successfully!'));
           setTimeout(() => setSuccess(''), 4000);
           fetchHymns();
           fetchActivePresenterHymn();
@@ -1438,7 +1446,7 @@ const HymnsTab = ({ token }) => {
         }
       })
       .catch(err => {
-        setError(err.message || 'حدث خطأ غير متوقع.');
+        setError(err.message || (isAr ? 'حدث خطأ غير متوقع.' : 'Unexpected error.'));
         setTimeout(() => setError(''), 4000);
       });
   };
@@ -1446,20 +1454,20 @@ const HymnsTab = ({ token }) => {
   const handleDelete = (id) => {
     setSuccess('');
     setError('');
-    if (window.confirm('هل أنت متأكد من حذف هذه الترنيمة؟')) {
+    if (window.confirm(isAr ? 'هل أنت متأكد من حذف هذه الترنيمة؟' : 'Are you sure you want to delete this hymn?')) {
       fetch(`/api/hymns/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => {
           if (!res.ok) {
-            return res.json().then(err => { throw new Error(err.message || 'فشلت عملية الحذف.'); });
+            return res.json().then(err => { throw new Error(err.message || (isAr ? 'فشلت عملية الحذف.' : 'Delete failed.')); });
           }
           return res.json();
         })
         .then(data => {
           if (data.success) {
-            setSuccess('تم حذف الترنيمة بنجاح!');
+            setSuccess(isAr ? 'تم حذف الترنيمة بنجاح!' : 'Hymn deleted successfully!');
             setTimeout(() => setSuccess(''), 4000);
             fetchHymns();
             fetchActivePresenterHymn();
@@ -1671,7 +1679,7 @@ const HymnsTab = ({ token }) => {
             <div style={{ width: '100%', maxWidth: '400px' }}>
               <input 
                 type="text" 
-                placeholder="🔍 ابحث عن ترنيمة بالاسم، الكلمات، أو التصنيف..." 
+                placeholder={isAr ? "🔍 ابحث عن ترنيمة بالاسم، الكلمات، أو التصنيف..." : "🔍 Search hymns by title, lyrics, or category..."} 
                 value={searchTerm} 
                 onChange={(e) => setSearchTerm(e.target.value)} 
                 className="form-control"
@@ -1684,13 +1692,13 @@ const HymnsTab = ({ token }) => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>عنوان الترنيمة</th>
-                  <th>التصنيف</th>
-                  <th>صورة</th>
-                  <th>فيديو</th>
-                  <th>صوت</th>
-                  <th>العرض الحي</th>
-                  <th>الإجراءات</th>
+                  <th>{isAr ? 'عنوان الترنيمة' : 'Hymn Title'}</th>
+                  <th>{isAr ? 'التصنيف' : 'Category'}</th>
+                  <th>{isAr ? 'صورة' : 'Image'}</th>
+                  <th>{isAr ? 'فيديو' : 'Video'}</th>
+                  <th>{isAr ? 'صوت' : 'Audio'}</th>
+                  <th>{isAr ? 'العرض الحي' : 'Live Presentation'}</th>
+                  <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1698,9 +1706,9 @@ const HymnsTab = ({ token }) => {
                   <tr key={h._id} style={{ backgroundColor: activePresenterHymn?._id === h._id ? 'rgba(197, 168, 128, 0.08)' : 'transparent' }}>
                     <td><strong>{h.title}</strong></td>
                     <td>{h.category}</td>
-                    <td>{h.imageUrl ? <span style={{ color: 'var(--success-color)' }}>نعم 🖼️</span> : <span style={{ color: 'var(--text-light)' }}>لا</span>}</td>
-                    <td>{h.videoUrl ? <span style={{ color: 'var(--success-color)' }}>نعم</span> : <span style={{ color: 'var(--text-light)' }}>لا</span>}</td>
-                    <td>{h.audioUrl ? <span style={{ color: 'var(--success-color)' }}>نعم</span> : <span style={{ color: 'var(--text-light)' }}>لا</span>}</td>
+                    <td>{h.imageUrl ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نعم 🖼️' : 'Yes 🖼️'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
+                    <td>{h.videoUrl ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نعم' : 'Yes'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
+                    <td>{h.audioUrl ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نعم' : 'Yes'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
                     <td>
                       <button 
                         className="btn" 
@@ -1715,7 +1723,7 @@ const HymnsTab = ({ token }) => {
                         }} 
                         onClick={() => handlePresent(h)}
                       >
-                        {activePresenterHymn?._id === h._id ? 'معروض 📺' : 'عرض 📺'}
+                        {activePresenterHymn?._id === h._id ? (isAr ? 'معروض 📺' : 'Active 📺') : (isAr ? 'عرض 📺' : 'Present 📺')}
                       </button>
                     </td>
                     <td>
@@ -1743,6 +1751,8 @@ const GalleryTab = ({ token }) => {
   const [showForm, setShowForm] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
   
   // Form State
   const [title, setTitle] = useState('');
@@ -1800,8 +1810,9 @@ const GalleryTab = ({ token }) => {
       body: formData
     })
       .then(res => {
+        setLoading(false);
         if (!res.ok) {
-          return res.json().then(err => { throw new Error(err.message || 'فشلت عملية رفع الملف.'); });
+          return res.json().then(err => { throw new Error(err.message || (isAr ? 'فشلت عملية إضافة الوسيط.' : 'Failed to add media.')); });
         }
         return res.json();
       })
@@ -2164,6 +2175,8 @@ const SettingsTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
   
   // Settings Form State
   const [churchName, setChurchName] = useState('');
@@ -2370,7 +2383,7 @@ const SettingsTab = ({ token }) => {
   return (
     <div>
       <div className="tab-header">
-        <h2>إعدادات الموقع العام والهوية البصرية</h2>
+        <h2>{isAr ? 'إعدادات الموقع العام والهوية البصرية' : 'General Site & Visual Identity Settings'}</h2>
       </div>
 
       {success && (
@@ -2603,6 +2616,8 @@ const UsersTab = ({ token }) => {
   const [canManageExpenses, setCanManageExpenses] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   // Editing states
   const [editingUser, setEditingUser] = useState(null);
@@ -2780,11 +2795,11 @@ const UsersTab = ({ token }) => {
   return (
     <div>
       <div className="tab-header">
-        <h2>إدارة حسابات المدراء والمحررين</h2>
+        <h2>{isAr ? 'إدارة حسابات المدراء والمحررين' : 'Admin & Editor Account Management'}</h2>
         {!showForm && (
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             <Plus size={16} />
-            <span>إضافة مدير جديد</span>
+            <span>{isAr ? 'إضافة مدير جديد' : 'Add New Admin / Editor'}</span>
           </button>
         )}
       </div>
@@ -3086,6 +3101,8 @@ const UsersTab = ({ token }) => {
 const AnalyticsTab = ({ token }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   useEffect(() => {
     fetch('/api/analytics', {
@@ -3153,8 +3170,8 @@ const AnalyticsTab = ({ token }) => {
   return (
     <div className="admin-tab-content">
       <div className="admin-tab-header">
-        <h2>لوحة إحصائيات وتحليلات الزوار</h2>
-        <p>تقارير دورية حول حركة زيارات الموقع، ومعدلات الدخول لمشاهدة البث المباشر.</p>
+        <h2>{isAr ? 'لوحة إحصائيات وتحليلات الزوار' : 'Visitor Analytics & Statistics'}</h2>
+        <p>{isAr ? 'تقارير دورية حول حركة زيارات الموقع، ومعدلات الدخول لمشاهدة البث المباشر.' : 'Periodic reports on site visit traffic and live stream view rates.'}</p>
       </div>
 
       <div className="grid-3 dashboard-stats-row">
@@ -3260,6 +3277,8 @@ const LockoutsTab = ({ token }) => {
   const [lockouts, setLockouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   const fetchLockouts = () => {
     setLoading(true);
@@ -3314,8 +3333,8 @@ const LockoutsTab = ({ token }) => {
   return (
     <div className="admin-tab-content">
       <div className="admin-tab-header">
-        <h2>إدارة الأجهزة المحظورة وسجلات الأمان</h2>
-        <p>مراقبة وتعديل الأجهزة وعناوين الـ IP التي تم قفلها بسبب تكرار إدخال كلمات مرور خاطئة.</p>
+        <h2>{isAr ? 'إدارة الأجهزة المحظورة وسجلات الأمان' : 'Blocked Devices & Security Logs'}</h2>
+        <p>{isAr ? 'مراقبة وتعديل الأجهزة وعناوين الـ IP التي تم قفلها بسبب تكرار إدخال كلمات مرور خاطئة.' : 'Monitor and manage devices & IP addresses locked due to failed login attempts.'}</p>
       </div>
 
       {message && (
@@ -3399,6 +3418,8 @@ const ChatbotTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   const [isChatbotEnabled, setIsChatbotEnabled] = useState(true);
   const [chatbotName, setChatbotName] = useState('');
@@ -3466,8 +3487,8 @@ const ChatbotTab = ({ token }) => {
   return (
     <div className="admin-tab-content">
       <div className="admin-tab-header">
-        <h2>إدارة المساعد الروحي الذكي (AI Chatbot)</h2>
-        <p>تخصيص المساعد الذكي المبني على الذكاء الاصطناعي (Gemini) الذي يجيب الزوار من الكتاب المقدس.</p>
+        <h2>{isAr ? 'إدارة المساعد الروحي الذكي (AI Chatbot)' : 'AI Spiritual Assistant Management'}</h2>
+        <p>{isAr ? 'تخصيص المساعد الذكي المبني على الذكاء الاصطناعي (Gemini) الذي يجيب الزوار من الكتاب المقدس.' : 'Customize the AI Assistant (Gemini) that answers visitors using scripture.'}</p>
       </div>
 
       {success && (
@@ -3845,6 +3866,8 @@ const CounselingTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   const showAlert = (message, type = 'success') => {
     setAlert({ show: true, message, type });
@@ -3936,9 +3959,9 @@ const CounselingTab = ({ token }) => {
     <div className="tab-pane">
       <div className="tab-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2>طلبات الإرشاد الرعوي والمشورة الخاصة 🕊️</h2>
+          <h2>{isAr ? 'طلبات الإرشاد الرعوي والمشورة الخاصة 🕊️' : 'Pastoral Care & Counseling Requests 🕊️'}</h2>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
-            طلبات سرية للغاية ومقيدة لراعي الكنيسة فقط لإرشاد العائلات وحفظ أسرارهم الروحية والشخصية.
+            {isAr ? 'طلبات سرية للغاية ومقيدة لراعي الكنيسة فقط لإرشاد العائلات وحفظ أسرارهم الروحية والشخصية.' : 'Strictly confidential requests restricted to the pastor for family guidance and spiritual care.'}
           </p>
         </div>
       </div>
@@ -4075,6 +4098,8 @@ const ExpensesTab = ({ token }) => {
   const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
   const [description, setDescription] = useState('');
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   const showAlert = (message, type = 'success') => {
     setAlert({ show: true, message, type });
@@ -4188,15 +4213,15 @@ const ExpensesTab = ({ token }) => {
     <div className="tab-pane">
       <div className="tab-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2>إدارة السجلات المالية والمصاريف الكنسية 💰</h2>
+          <h2>{isAr ? 'إدارة السجلات المالية والمصاريف الكنسية 💰' : 'Financial Records & Church Expenses 💰'}</h2>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
-            قسم خاص بالمدراء والمحاسبين المعتمدين لتوثيق المصاريف المالية بكل دقة وأمانة.
+            {isAr ? 'قسم خاص بالمدراء والمحاسبين المعتمدين لتوثيق المصاريف المالية بكل دقة وأمانة.' : 'Restricted to authorized admins and accountants for recording church expenses.'}
           </p>
         </div>
         {!showForm && (
           <button className="btn btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Plus size={16} />
-            <span>تسجيل مصروف جديد</span>
+            <span>{isAr ? 'تسجيل مصروف جديد' : 'Record New Expense'}</span>
           </button>
         )}
       </div>
@@ -4330,6 +4355,8 @@ const DailyVersesTab = ({ token }) => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   // Form State
   const [text, setText] = useState('');
@@ -4434,11 +4461,11 @@ const DailyVersesTab = ({ token }) => {
   return (
     <div>
       <div className="tab-header">
-        <h2>إدارة آيات اليوم 📖</h2>
+        <h2>{isAr ? 'إدارة آيات اليوم 📖' : 'Daily Verses Management 📖'}</h2>
         {!showForm && (
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             <Plus size={16} />
-            <span>إضافة آية جديدة</span>
+            <span>{isAr ? 'إضافة آية جديدة' : 'Add New Daily Verse'}</span>
           </button>
         )}
       </div>
