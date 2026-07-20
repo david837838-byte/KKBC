@@ -11,7 +11,7 @@ const Hymns = () => {
   const [activeHymnId, setActiveHymnId] = useState(null);
   const [activeTab, setActiveTab] = useState('lyrics'); // 'lyrics' or 'video'
   const [selectedLetter, setSelectedLetter] = useState('الكل');
-  const { t, language } = useLanguage();
+  const { t, language, translateText } = useLanguage();
 
   const fetchHymns = () => {
     setLoading(true);
@@ -121,14 +121,14 @@ const Hymns = () => {
                 <div className="search-input-group">
                   <input 
                     type="text" 
-                    placeholder="ابحث بالاسم أو بكلمات من الترنيمة..." 
+                    placeholder={t('common.searchPlaceholder')} 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="form-control"
                   />
                   <button type="submit" className="btn btn-primary search-btn">
                     <Search size={18} />
-                    <span>بحث</span>
+                    <span>{t('common.search')}</span>
                   </button>
                 </div>
               </form>
@@ -138,14 +138,14 @@ const Hymns = () => {
           {/* Alphabetical Filter Bar */}
           <div className="alpha-filter-section glass-card">
             <div className="alpha-filter-label">
-              <span>🔤 تصفح حسب الحرف:</span>
+              <span>🔤 {language === 'ar' ? 'تصفح حسب الحرف:' : 'Browse by Letter:'}</span>
             </div>
             <div className="alpha-filter-bar">
               <button
-                className={`alpha-btn ${selectedLetter === 'الكل' ? 'active' : ''}`}
+                className={`alpha-btn ${selectedLetter === 'الكل' || selectedLetter === 'All' ? 'active' : ''}`}
                 onClick={() => setSelectedLetter('الكل')}
               >
-                الكل
+                {t('common.all')}
                 <span className="alpha-count">{hymns.length}</span>
               </button>
               {ARABIC_LETTERS.map(letter => {
@@ -163,10 +163,10 @@ const Hymns = () => {
                 );
               })}
             </div>
-            {selectedLetter !== 'الكل' && (
+            {selectedLetter !== 'الكل' && selectedLetter !== 'All' && (
               <div className="alpha-result-info">
-                يعرض الترانيم التي تبدأ بحرف: <strong>{selectedLetter}</strong>
-                {filteredHymns.length === 0 && ' — لا توجد ترانيم بهذا الحرف'}
+                {language === 'ar' ? 'يعرض الترانيم التي تبدأ بحرف:' : 'Showing hymns starting with:'} <strong>{selectedLetter}</strong>
+                {filteredHymns.length === 0 && (language === 'ar' ? ' — لا توجد ترانيم بهذا الحرف' : ' — No hymns for this letter')}
               </div>
             )}
           </div>
@@ -178,7 +178,7 @@ const Hymns = () => {
             </div>
           ) : filteredHymns.length === 0 ? (
             <div className="no-data-card glass-card">
-              <p className="no-data">لا توجد ترانيم متوفرة في هذا القسم حالياً.</p>
+              <p className="no-data">{t('common.noData')}</p>
             </div>
           ) : activeTab === 'lyrics' ? (
             /* Lyrics Accordion View */
@@ -190,8 +190,8 @@ const Hymns = () => {
                     <div className="accordion-header" onClick={() => toggleHymn(hymn._id)}>
                       <div className="header-title-wrapper">
                         <Music className="music-icon" size={20} />
-                        <h3>{hymn.title}</h3>
-                        {hymn.category && <span className="hymn-cat-badge">{hymn.category}</span>}
+                        <h3>{translateText(hymn.title, hymn.titleEn)}</h3>
+                        {hymn.category && <span className="hymn-cat-badge">{translateText(hymn.category, hymn.categoryEn)}</span>}
                       </div>
                       <div className="header-toggle-icon">
                         {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Download, X, Info } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const InstallBanner = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
+  const { language } = useLanguage();
 
   useEffect(() => {
     // Check if app is already running in standalone mode
@@ -71,13 +73,13 @@ const InstallBanner = () => {
         <div className="banner-content">
           <Smartphone className="banner-icon" size={24} />
           <div className="banner-text">
-            <h4>تطبيق كنيسة خربة قنافار 📱</h4>
-            <p>ثبّت التطبيق الآن على هاتفك للوصول السريع والتنبيهات المباشرة دون استهلاك مساحة!</p>
+            <h4>{language === 'ar' ? 'تطبيق كنيسة خربة قنافار 📱' : 'Khirbet Qanafar Church App 📱'}</h4>
+            <p>{language === 'ar' ? 'ثبّت التطبيق الآن على هاتفك للوصول السريع والتنبيهات المباشرة!' : 'Install the app now on your phone for quick access & alerts!'}</p>
           </div>
           <div className="banner-actions">
             <button className="btn btn-accent install-btn" onClick={handleInstallClick}>
               <Download size={16} />
-              <span>تنزيل وتثبيت</span>
+              <span>{language === 'ar' ? 'تنزيل وتثبيت' : 'Download & Install'}</span>
             </button>
             <button className="close-btn" onClick={handleClose}>
               <X size={18} />

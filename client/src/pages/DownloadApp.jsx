@@ -47,30 +47,30 @@ const DownloadApp = () => {
         <div className="install-card glass-card">
           <div className="card-header-app">
             <span className="platform-icon">🤖</span>
-            <h3>تحميل للأندرويد (Android)</h3>
+            <h3>{language === 'ar' ? 'تحميل للأندرويد (Android)' : 'Android Installation'}</h3>
           </div>
           <p className="card-desc">
-            يدعم التثبيت المباشر الفوري على كافة أجهزة سامسونج، شاومي، هواوي وكافة أجهزة الأندرويد من خلال متصفح Chrome.
+            {language === 'ar' ? 'يدعم التثبيت المباشر الفوري على كافة أجهزة الأندرويد من خلال متصفح Chrome.' : 'Supports instant direct installation on all Android devices via Google Chrome.'}
           </p>
 
           <div className="steps-list-download">
             <div className="step-item">
               <span className="step-badge">1</span>
-              <p>افتح هذا الموقع من خلال متصفح <strong>Google Chrome</strong>.</p>
+              <p>{language === 'ar' ? 'افتح هذا الموقع من خلال متصفح Google Chrome.' : 'Open this site in Google Chrome browser.'}</p>
             </div>
             <div className="step-item">
               <span className="step-badge">2</span>
-              <p>اضغط على زر <strong>«تثبيت وتنزيل التطبيق»</strong> بالأسفل.</p>
+              <p>{language === 'ar' ? 'اضغط على زر «تثبيت وتنزيل التطبيق» بالأسفل.' : 'Tap "Download for Android Now" button below.'}</p>
             </div>
             <div className="step-item">
               <span className="step-badge">3</span>
-              <p>أو انقر على النقاط الثلاث بالأعلى واختر <strong>«تثبيت التطبيق» (Install)</strong>.</p>
+              <p>{language === 'ar' ? 'أو انقر على النقاط الثلاث بالأعلى واختر «تثبيت التطبيق».' : 'Or click the 3 dots menu and select "Install app".'}</p>
             </div>
           </div>
 
           <button className="btn btn-primary download-action-btn" onClick={handleAndroidInstall}>
             <Download size={18} />
-            <span>تنزيل للأندرويد الآن</span>
+            <span>{language === 'ar' ? 'تنزيل للأندرويد الآن' : 'Download for Android Now'}</span>
           </button>
         </div>
 
@@ -78,52 +78,52 @@ const DownloadApp = () => {
         <div className="install-card glass-card">
           <div className="card-header-app">
             <span className="platform-icon">🍏</span>
-            <h3>تحميل للآيفون والآيباد (iOS)</h3>
+            <h3>{language === 'ar' ? 'تحميل للآيفون والآيباد (iOS)' : 'iPhone & iPad (iOS) Installation'}</h3>
           </div>
           <p className="card-desc">
-            يدعم هواتف الآيفون بجميع إصداراتها ويتم تثبيته كتطبيق مستقل مباشر دون الحاجة لحساب App Store مكلف.
+            {language === 'ar' ? 'يدعم هواتف الآيفون بجميع إصداراتها ويتم تثبيته كتطبيق مستقل مباشر دون الحاجة لمتجر التطبيقات.' : 'Supports all iPhone models. Installs directly without needing an App Store account.'}
           </p>
 
           <div className="steps-list-download">
             <div className="step-item">
               <span className="step-badge">1</span>
-              <p>تأكد من فتح الموقع باستخدام متصفح <strong>Safari</strong> الأصلي.</p>
+              <p>{language === 'ar' ? 'تأكد من فتح الموقع باستخدام متصفح Safari الأصلي.' : 'Open this site using the native Safari browser.'}</p>
             </div>
             <div className="step-item">
               <span className="step-badge">2</span>
-              <p>اضغط على أيقونة <strong>«مشاركة» (Share)</strong> <Share2 size={16} style={{ display: 'inline', margin: '0 0.25rem' }} /> بأسفل الشاشة.</p>
+              <p>{language === 'ar' ? 'اضغط على أيقونة «مشاركة» (Share) بأسفل الشاشة.' : 'Tap the "Share" icon at the bottom of the screen.'}</p>
             </div>
             <div className="step-item">
               <span className="step-badge">3</span>
-              <p>اختر من القائمة <strong>«إضافة إلى الشاشة الرئيسية»</strong> <Plus size={16} style={{ display: 'inline', margin: '0 0.25rem' }} />.</p>
+              <p>{language === 'ar' ? 'اختر من القائمة «إضافة إلى الشاشة الرئيسية».' : 'Select "Add to Home Screen" from the menu.'}</p>
             </div>
           </div>
 
           <button className="btn btn-accent download-action-btn" onClick={() => setShowIOSInstructions(true)}>
             <Download size={18} />
-            <span>عرض تعليمات الآيفون</span>
+            <span>{language === 'ar' ? 'عرض تعليمات الآيفون' : 'View iPhone Instructions'}</span>
           </button>
         </div>
       </div>
 
       {/* Benefits */}
       <div className="app-benefits-section text-center">
-        <h2>لماذا تثبّت تطبيق الكنيسة؟ 🌟</h2>
+        <h2>{language === 'ar' ? 'لماذا تثبّت تطبيق الكنيسة؟ 🌟' : 'Why Install the Church App? 🌟'}</h2>
         <div className="benefits-grid">
           <div className="benefit-item glass-card">
             <div className="benefit-badge">🔔</div>
-            <h4>تنبيهات البث والخدمات الروحية</h4>
-            <p>سيرسل لك التطبيق إشعاراً فورياً عند بدء القسيس بالبث المباشر للاجتماع العام.</p>
+            <h4>{language === 'ar' ? 'تنبيهات البث والخدمات الروحية' : 'Live Stream & Event Alerts'}</h4>
+            <p>{language === 'ar' ? 'سيرسل لك التطبيق إشعاراً فورياً عند بدء القسيس بالبث المباشر للاجتماع العام.' : 'Receive instant notifications when live streams begin or new sermons are published.'}</p>
           </div>
           <div className="benefit-item glass-card">
             <div className="benefit-badge">💾</div>
-            <h4>لا يستهلك مساحة تخزين</h4>
-            <p>التطبيق ذكي وصغير الحجم، حيث لا يستهلك أي مساحة من ذاكرة هاتفك مقارنة بالتطبيقات التقليدية.</p>
+            <h4>{language === 'ar' ? 'لا يستهلك مساحة تخزين' : 'Zero Storage Consumption'}</h4>
+            <p>{language === 'ar' ? 'التطبيق ذكي وصغير الحجم، حيث لا يستهلك أي مساحة من ذاكرة هاتفك.' : 'Lightweight and smart app that consumes almost zero device storage.'}</p>
           </div>
           <div className="benefit-item glass-card">
             <div className="benefit-badge">🌐</div>
-            <h4>الوصول حتى دون اتصال بالشبكة</h4>
-            <p>يحتفظ التطبيق بنسخ احتياطية لتتمكن من تصفح كلمات الترانيم والكتاب المقدس أوفلاين.</p>
+            <h4>{language === 'ar' ? 'الوصول حتى دون اتصال بالشبكة' : 'Offline Access'}</h4>
+            <p>{language === 'ar' ? 'يحتفظ التطبيق بنسخ احتياطية لتتمكن من تصفح الترانيم والكتاب المقدس أوفلاين.' : 'Browse hymns and read the Holy Bible even without an active internet connection.'}</p>
           </div>
         </div>
       </div>
@@ -133,20 +133,20 @@ const DownloadApp = () => {
         <div className="ios-instructions-modal-overlay">
           <div className="ios-modal glass-card">
             <div className="ios-modal-header">
-              <h3>تثبيت التطبيق على آيفون (iPhone) 🍏</h3>
+              <h3>{language === 'ar' ? 'تثبيت التطبيق على آيفون (iPhone) 🍏' : 'Installing App on iPhone (iOS) 🍏'}</h3>
               <button className="ios-close-btn" onClick={() => setShowIOSInstructions(false)}>✕</button>
             </div>
             <div className="ios-modal-body">
-              <p>يرجى اتباع الخطوات البسيطة التالية من خلال متصفح <strong>Safari</strong>:</p>
+              <p>{language === 'ar' ? 'يرجى اتباع الخطوات البسيطة التالية من خلال متصفح Safari:' : 'Please follow these simple steps using Safari browser:'}</p>
               
               <div className="ios-steps-container">
                 <div className="ios-step-row">
                   <span className="badge-step">1</span>
-                  <p>انقر على أيقونة <strong>المشاركة</strong> (السهم الخارج من مربع) الموجودة في شريط الأدوات بالأسفل.</p>
+                  <p>{language === 'ar' ? 'انقر على أيقونة المشاركة (السهم الخارج من مربع) بأسفل الشاشة.' : 'Tap the Share icon (square with arrow pointing up) at bottom toolbar.'}</p>
                 </div>
                 <div className="ios-step-row">
                   <span className="badge-step">2</span>
-                  <p>اسحب القائمة لأعلى واضغط على خيار <strong>«إضافة إلى الشاشة الرئيسية» (Add to Home Screen)</strong>.</p>
+                  <p>{language === 'ar' ? 'اسحب القائمة لأعلى واضغط على «إضافة إلى الشاشة الرئيسية».' : 'Scroll down and tap "Add to Home Screen".'}</p>
                 </div>
                 <div className="ios-step-row">
                   <span className="badge-step">3</span>

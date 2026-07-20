@@ -8,7 +8,7 @@ const Gallery = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [lightboxItem, setLightboxItem] = useState(null);
-  const { t, language } = useLanguage();
+  const { t, language, translateText } = useLanguage();
 
   // Extracted lists for filter dropdowns
   const [categories, setCategories] = useState([]);
@@ -76,28 +76,28 @@ const Gallery = () => {
         <div className="filters-grid">
           {/* Category Filter */}
           <div className="filter-item">
-            <label>النشاط أو المناسبة</label>
+            <label>{language === 'ar' ? 'النشاط أو المناسبة' : 'Activity / Event'}</label>
             <select 
               value={selectedCategory} 
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="form-control"
             >
-              <option value="">كل النشاطات</option>
+              <option value="">{t('common.allCategories')}</option>
               {categories.map((cat, idx) => (
-                <option value={cat} key={idx}>{cat}</option>
+                <option value={cat} key={idx}>{translateText(cat)}</option>
               ))}
             </select>
           </div>
 
           {/* Year Filter */}
           <div className="filter-item">
-            <label>السنة</label>
+            <label>{language === 'ar' ? 'السنة' : 'Year'}</label>
             <select 
               value={selectedYear} 
               onChange={(e) => setSelectedYear(e.target.value)}
               className="form-control"
             >
-              <option value="">كل السنوات</option>
+              <option value="">{language === 'ar' ? 'كل السنوات' : 'All Years'}</option>
               {years.map((year, idx) => (
                 <option value={year} key={idx}>{year}</option>
               ))}
@@ -112,7 +112,7 @@ const Gallery = () => {
           <div className="loading-spinner"></div>
         </div>
       ) : items.length === 0 ? (
-        <p className="no-data">لم نعثر على أي صور أو فيديوهات مطابقة للتصفية الحالية.</p>
+        <p className="no-data">{t('gallery.noGalleryItems')}</p>
       ) : (
         <div className="gallery-grid">
           {items.map((item) => (
@@ -127,7 +127,7 @@ const Gallery = () => {
                 ) : (
                   <div className="video-thumb-placeholder">
                     <Film size={40} className="film-icon" />
-                    <span>تشغيل الفيديو</span>
+                    <span>{language === 'ar' ? 'تشغيل الفيديو' : 'Play Video'}</span>
                   </div>
                 )}
                 <div className="gallery-hover-overlay">
@@ -136,7 +136,7 @@ const Gallery = () => {
               </div>
               
               <div className="gallery-card-info">
-                <h3>{item.title}</h3>
+                <h3>{translateText(item.title, item.titleEn)}</h3>
                 <div className="gallery-card-meta">
                   <span className="info-tag"><Tag size={12} /> {item.category}</span>
                   <span className="info-tag"><Calendar size={12} /> {item.year}</span>

@@ -193,8 +193,8 @@ const Bible = () => {
           <div className="bible-banner-title">
             <div className="bible-banner-icon"><BookOpen size={28} /></div>
             <div>
-              <h1>الكتاب المقدس</h1>
-              <p>تصفح جميع الأسفار والإصحاحات</p>
+              <h1>{t('bible.title')}</h1>
+              <p>{t('bible.subtitle')}</p>
             </div>
           </div>
 
@@ -202,13 +202,13 @@ const Bible = () => {
           <div className="bible-banner-controls">
             {/* Translation */}
             <div className="banner-control">
-              <label className="banner-label"><BookMarked size={13} /> الترجمة</label>
+              <label className="banner-label"><BookMarked size={13} /> {language === 'ar' ? 'الترجمة' : 'Translation'}</label>
               <select
                 className="banner-select"
                 value={selectedTranslation.id}
                 onChange={e => setSelectedTranslation(TRANSLATIONS.find(t => t.id === e.target.value))}
               >
-                <optgroup label="ترجمات عربية">
+                <optgroup label={language === 'ar' ? 'ترجمات عربية' : 'Arabic Translations'}>
                   {TRANSLATIONS.filter(t => t.lang === 'ar').map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
@@ -223,7 +223,7 @@ const Bible = () => {
 
             {/* Book */}
             <div className="banner-control">
-              <label className="banner-label"><BookOpen size={13} /> السفر</label>
+              <label className="banner-label"><BookOpen size={13} /> {t('bible.selectBook')}</label>
               <button className="banner-book-btn" onClick={() => setShowBookList(true)}>
                 <span>{selectedBook.name}</span>
                 <ChevronDown size={14} />
@@ -232,7 +232,7 @@ const Bible = () => {
 
             {/* Chapter */}
             <div className="banner-control">
-              <label className="banner-label"><Search size={13} /> الإصحاح</label>
+              <label className="banner-label"><Search size={13} /> {t('bible.selectChapter')}</label>
               <div className="banner-chapter-nav">
                 <button className="banner-nav-btn" onClick={prevChapter} disabled={selectedChapter <= 1}>
                   <ChevronRight size={16} />
@@ -260,15 +260,15 @@ const Bible = () => {
         <div className="book-modal-overlay" onClick={() => setShowBookList(false)}>
           <div className="book-modal glass-card" onClick={e => e.stopPropagation()}>
             <div className="book-modal-header">
-              <h3><BookOpen size={20} /> اختر السفر</h3>
+              <h3><BookOpen size={20} /> {t('bible.selectBook')}</h3>
               <button className="book-modal-close" onClick={() => setShowBookList(false)}>✕</button>
             </div>
             <div className="testament-tabs">
               <button className={`test-tab ${activeTestament === 'old' ? 'active' : ''}`} onClick={() => setActiveTestament('old')}>
-                العهد القديم ({oldTestamentBooks.length})
+                {t('bible.oldTestament')} ({oldTestamentBooks.length})
               </button>
               <button className={`test-tab ${activeTestament === 'new' ? 'active' : ''}`} onClick={() => setActiveTestament('new')}>
-                العهد الجديد ({newTestamentBooks.length})
+                {t('bible.newTestament')} ({newTestamentBooks.length})
               </button>
             </div>
             <div className="book-grid-modal">
@@ -292,30 +292,30 @@ const Bible = () => {
         <div className="bible-reading-header">
           {showFavoritesOnly ? (
             <div className="reading-title-block">
-              <span className="testament-badge" style={{ background: 'var(--accent-color)', color: 'var(--primary-color)' }}>مفضلتي</span>
-              <h2>الآيات المفضلة 🌟</h2>
-              <span className="translation-badge">إجمالي الآيات المحفوظة: {favorites.length}</span>
+              <span className="testament-badge" style={{ background: 'var(--accent-color)', color: 'var(--primary-color)' }}>{language === 'ar' ? 'مفضلتي' : 'Favorites'}</span>
+              <h2>{language === 'ar' ? 'الآيات المفضلة 🌟' : 'Favorite Verses 🌟'}</h2>
+              <span className="translation-badge">{language === 'ar' ? 'إجمالي الآيات المحفوظة' : 'Total saved verses'}: {favorites.length}</span>
             </div>
           ) : (
             <div className="reading-title-block">
-              <span className="testament-badge">{selectedBook.testament === 'old' ? 'العهد القديم' : 'العهد الجديد'}</span>
-              <h2>{selectedBook.name} — الإصحاح {selectedChapter}</h2>
+              <span className="testament-badge">{selectedBook.testament === 'old' ? t('bible.oldTestament') : t('bible.newTestament')}</span>
+              <h2>{selectedBook.name} — {language === 'ar' ? `الإصحاح ${selectedChapter}` : `Chapter ${selectedChapter}`}</h2>
               <span className="translation-badge">{selectedTranslation.name}</span>
             </div>
           )}
           <div className="chapter-quick-nav" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <button className={`btn ${showFavoritesOnly ? 'btn-accent' : 'btn-outline'}`} onClick={() => setShowFavoritesOnly(!showFavoritesOnly)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 'bold' }}>
               <Star size={16} fill={showFavoritesOnly ? 'currentColor' : 'none'} />
-              <span>{showFavoritesOnly ? 'العودة للقراءة' : `الآيات المفضلة (${favorites.length})`}</span>
+              <span>{showFavoritesOnly ? (language === 'ar' ? 'العودة للقراءة' : 'Back to Scripture') : (language === 'ar' ? `الآيات المفضلة (${favorites.length})` : `Favorite Verses (${favorites.length})`)}</span>
             </button>
             {!showFavoritesOnly && (
               <>
                 <button className="btn btn-outline chapter-nav-large" onClick={prevChapter} disabled={selectedChapter <= 1}>
-                  <ChevronRight size={16} /> السابق
+                  <ChevronRight size={16} /> {language === 'ar' ? 'السابق' : 'Previous'}
                 </button>
                 <span className="chapter-counter">{selectedChapter} / {selectedBook.chapters}</span>
                 <button className="btn btn-outline chapter-nav-large" onClick={nextChapter} disabled={selectedChapter >= selectedBook.chapters}>
-                  التالي <ChevronLeft size={16} />
+                  {language === 'ar' ? 'التالي' : 'Next'} <ChevronLeft size={16} />
                 </button>
               </>
             )}

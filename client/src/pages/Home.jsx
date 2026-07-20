@@ -284,42 +284,44 @@ const Home = () => {
         <div className="app-card glass-card">
           <div className="app-content-wrapper">
             <div className="app-text-column">
-              <span className="app-tag">تطبيق الهواتف الذكية</span>
-              <h2>ثبّت تطبيق كنيسة خربة قنافار على هاتفك 📱</h2>
+              <span className="app-tag">{language === 'ar' ? 'تطبيق الهواتف الذكية' : 'Mobile Application'}</span>
+              <h2>{language === 'ar' ? 'ثبّت تطبيق كنيسة خربة قنافار على هاتفك 📱' : 'Install Khirbet Qanafar Church App 📱'}</h2>
               <p className="app-desc">
-                استمتع بمتابعة البث المباشر، قراءة الكتاب المقدس، الاستماع للترانيم وتصفح الدراسات الروحية مباشرة من شاشتك الرئيسية دون الحاجة لمتجر التطبيقات!
+                {language === 'ar' 
+                  ? 'استمتع بمتابعة البث المباشر، قراءة الكتاب المقدس، الاستماع للترانيم وتصفح الدراسات الروحية مباشرة من شاشتك الرئيسية دون الحاجة لمتجر التطبيقات!'
+                  : 'Enjoy watching live streams, reading the Bible, listening to hymns, and browsing spiritual studies directly from your home screen without app store downloads!'}
               </p>
               
               <div className="pwa-features">
                 <div className="pwa-feature-item">
                   <span className="pwa-feature-badge">⚡</span>
                   <div>
-                    <h4>تنبيهات فورية</h4>
-                    <p>احصل على إشعارات فورية عند بدء البث المباشر أو نشر عظات جديدة.</p>
+                    <h4>{language === 'ar' ? 'تنبيهات فورية' : 'Instant Notifications'}</h4>
+                    <p>{language === 'ar' ? 'احصل على إشعارات فورية عند بدء البث المباشر أو نشر عظات جديدة.' : 'Get instant alerts when live streams start or new sermons are posted.'}</p>
                   </div>
                 </div>
                 <div className="pwa-feature-item">
                   <span className="pwa-feature-badge">📶</span>
                   <div>
-                    <h4>يعمل دون إنترنت</h4>
-                    <p>تصفح الترانيم والكتاب المقدس حتى عند انقطاع الاتصال بالشبكة.</p>
+                    <h4>{language === 'ar' ? 'يعمل دون إنترنت' : 'Works Offline'}</h4>
+                    <p>{language === 'ar' ? 'تصفح الترانيم والكتاب المقدس حتى عند انقطاع الاتصال بالشبكة.' : 'Browse hymns and read the Holy Bible even when offline.'}</p>
                   </div>
                 </div>
               </div>
 
               <div className="installation-steps">
                 <div className="step-col">
-                  <h4>🤖 هواتف الأندرويد (Chrome):</h4>
+                  <h4>🤖 {language === 'ar' ? 'هواتف الأندرويد (Chrome):' : 'Android Phones (Chrome):'}</h4>
                   <ol>
-                    <li>انقر على زر القائمة (3 نقاط) أعلى المتصفح.</li>
-                    <li>اختر <strong>«تثبيت التطبيق»</strong> أو <strong>«إضافة للشاشة الرئيسية»</strong>.</li>
+                    <li>{language === 'ar' ? 'انقر على زر القائمة (3 نقاط) أعلى المتصفح.' : 'Click browser menu (3 dots) at top.'}</li>
+                    <li>{language === 'ar' ? 'اختر «تثبيت التطبيق» أو «إضافة للشاشة الرئيسية».' : 'Select "Install app" or "Add to Home Screen".'}</li>
                   </ol>
                 </div>
                 <div className="step-col">
-                  <h4>🍏 هواتف الآيفون (Safari):</h4>
+                  <h4>🍏 {language === 'ar' ? 'هواتف الآيفون (Safari):' : 'iPhone (Safari):'}</h4>
                   <ol>
-                    <li>انقر على زر <strong>«مشاركة» (Share)</strong> أسفل المتصفح.</li>
-                    <li>اختر <strong>«إضافة إلى الشاشة الرئيسية» (Add to Home Screen)</strong>.</li>
+                    <li>{language === 'ar' ? 'انقر على زر «مشاركة» (Share) أسفل المتصفح.' : 'Tap the "Share" icon at bottom.'}</li>
+                    <li>{language === 'ar' ? 'اختر «إضافة إلى الشاشة الرئيسية» (Add to Home Screen).' : 'Select "Add to Home Screen".'}</li>
                   </ol>
                 </div>
               </div>
@@ -328,10 +330,10 @@ const Home = () => {
             <div className="app-visual-column">
               <div className="smartphone-mockup">
                 <div className="mockup-screen" style={{ backgroundImage: `url(${settings?.logoImageUrl || '/uploads/settings/logo-placeholder.png'})` }}>
-                  <div className="mockup-app-header">كنيسة خربة قنافار</div>
+                  <div className="mockup-app-header">{language === 'ar' ? 'كنيسة خربة قنافار' : 'Khirbet Qanafar Church'}</div>
                   <div className="mockup-app-content">
-                    <span className="mockup-badge">مباشر الآن 🔴</span>
-                    <p style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>انضم إلينا في عبادة روحية مباركة</p>
+                    <span className="mockup-badge">{language === 'ar' ? 'مباشر الآن 🔴' : 'LIVE NOW 🔴'}</span>
+                    <p style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>{language === 'ar' ? 'انضم إلينا في عبادة روحية مباركة' : 'Join us in worship'}</p>
                   </div>
                 </div>
               </div>

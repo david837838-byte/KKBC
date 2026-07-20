@@ -88,7 +88,7 @@ const Prayer = () => {
           ) : (
             <form onSubmit={handleSubmit} className="prayer-form">
               <h3>{t('prayer.formTitle')}</h3>
-              <p className="form-sub">املأ النموذج أدناه. يمكنك ترك الاسم ورقم الهاتف فارغين إذا كنت تفضل إرسال الطلب بشكل مجهول.</p>
+              <p className="form-sub">{language === 'ar' ? 'املأ النموذج أدناه. يمكنك ترك الاسم ورقم الهاتف فارغين إذا كنت تفضل إرسال الطلب بشكل مجهول.' : 'Fill out the form below. You can leave name and phone blank to submit anonymously.'}</p>
 
               {error && (
                 <div className="error-alert">
@@ -99,43 +99,41 @@ const Prayer = () => {
 
               {/* Name (Optional) */}
               <div className="form-group">
-                <label htmlFor="name">الاسم (اختياري)</label>
+                <label htmlFor="name">{language === 'ar' ? 'الاسم (اختياري)' : 'Name (Optional)'}</label>
                 <input 
                   type="text" 
                   id="name" 
                   name="name" 
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="مثال: يوسف، مريم..."
+                  placeholder={t('contact.namePlaceholder')}
                   className="form-control"
                 />
               </div>
 
               {/* Phone (Optional) */}
               <div className="form-group">
-                <label htmlFor="phone">رقم الهاتف (اختياري، للتواصل معك عند الحاجة)</label>
+                <label htmlFor="phone">{language === 'ar' ? 'رقم الهاتف (اختياري، للتواصل معك عند الحاجة)' : 'Phone Number (Optional, to contact you)'}</label>
                 <input 
                   type="text" 
                   id="phone" 
                   name="phone" 
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="مثال: +961 70 000 000"
+                  placeholder={t('contact.phonePlaceholder')}
                   className="form-control"
-                  dir="ltr"
-                  style={{ textAlign: 'right' }}
                 />
               </div>
 
               {/* Prayer Request (Required) */}
               <div className="form-group">
-                <label htmlFor="request">طلبة الصلاة الخاصة بك (مطلوب)</label>
+                <label htmlFor="request">{language === 'ar' ? 'طلبة الصلاة الخاصة بك (مطلوب)' : 'Your Prayer Request (Required)'}</label>
                 <textarea 
                   id="request" 
                   name="request" 
                   value={formData.request}
                   onChange={handleChange}
-                  placeholder="اكتب طلبة الصلاة بالتفصيل هنا..."
+                  placeholder={language === 'ar' ? 'اكتب طلبة الصلاة بالتفصيل هنا...' : 'Write your prayer request in detail here...'}
                   rows="6"
                   className="form-control"
                   required
@@ -147,7 +145,7 @@ const Prayer = () => {
                 className="btn btn-primary submit-btn"
                 disabled={loading}
               >
-                {loading ? 'جاري الإرسال...' : 'إرسال طلب الصلاة'}
+                {loading ? t('common.loading') : t('prayer.sendPrayer')}
               </button>
             </form>
           )}

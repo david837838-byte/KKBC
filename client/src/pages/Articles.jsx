@@ -8,7 +8,7 @@ const Articles = () => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('الكل');
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const { t, language } = useLanguage();
+  const { t, language, translateText } = useLanguage();
 
   const categories = ['الكل', 'دراسات كتابية', 'تأملات روحية', 'الأسرة المسيحية', 'مقالات روحية'];
 
@@ -58,13 +58,13 @@ const Articles = () => {
             )}
             
             <div className="article-header">
-              <span className="article-badge">{selectedArticle.category}</span>
-              <h1>{selectedArticle.title}</h1>
+              <span className="article-badge">{translateText(selectedArticle.category, selectedArticle.categoryEn)}</span>
+              <h1>{translateText(selectedArticle.title, selectedArticle.titleEn)}</h1>
               
               <div className="article-meta-info">
                 <span className="meta-item">
                   <User size={16} />
-                  <span>{selectedArticle.author}</span>
+                  <span>{t('articles.author')}: {translateText(selectedArticle.author, selectedArticle.authorEn)}</span>
                 </span>
                 <span className="meta-item">
                   <Calendar size={16} />
@@ -72,7 +72,7 @@ const Articles = () => {
                 </span>
                 <span className="meta-item">
                   <Clock size={16} />
-                  <span>{selectedArticle.readTime} دقائق للقراءة</span>
+                  <span>{selectedArticle.readTime} {language === 'ar' ? 'دقائق للقراءة' : 'min read'}</span>
                 </span>
               </div>
             </div>
@@ -80,14 +80,14 @@ const Articles = () => {
             <hr className="divider" />
 
             <div className="article-body-text">
-              {selectedArticle.content.split('\n').map((paragraph, index) => (
+              {translateText(selectedArticle.content, selectedArticle.contentEn).split('\n').map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
 
             {selectedArticle.pdfUrl && (
               <div className="article-attachments">
-                <h3>مرفقات الدراسة الروحية</h3>
+                <h3>{language === 'ar' ? 'مرفقات الدراسة الروحية' : 'Study Attachments'}</h3>
                 <a 
                   href={selectedArticle.pdfUrl} 
                   target="_blank" 
@@ -95,7 +95,7 @@ const Articles = () => {
                   className="btn btn-accent attachment-btn"
                 >
                   <FileText size={18} />
-                  <span>تحميل الدراسة كاملة (PDF)</span>
+                  <span>{t('sermons.downloadPdf')}</span>
                 </a>
               </div>
             )}
@@ -104,9 +104,9 @@ const Articles = () => {
       ) : (
         // Main Articles List
         <>
-          <h1 className="section-title">المقالات والدراسات الروحية</h1>
+          <h1 className="section-title">{t('articles.title')}</h1>
           <p className="page-intro">
-            تصفح أحدث الدراسات الروحية، التفسيرات الكتابية والرسائل الرعوية المقدمة لعائلة الكنيسة للنمو الروحي والمعرفة العميقة بكلمة الله.
+            {t('articles.subtitle')}
           </p>
 
           {/* Search and Filters */}
@@ -115,7 +115,7 @@ const Articles = () => {
               <Search className="search-icon" size={18} />
               <input 
                 type="text" 
-                placeholder="ابحث في العناوين والمحتوى..." 
+                placeholder={t('common.searchPlaceholder')} 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="search-input"

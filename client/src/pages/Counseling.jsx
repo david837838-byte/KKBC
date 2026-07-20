@@ -95,8 +95,8 @@ const Counseling = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="counseling-form">
-              <h3>استمارة طلب المشورة</h3>
-              <p className="form-sub">يرجى إدخال بياناتك الصحيحة لنتمكن من التواصل معك لتقديم الدعم والإرشاد.</p>
+              <h3>{t('counseling.formTitle')}</h3>
+              <p className="form-sub">{language === 'ar' ? 'يرجى إدخال بياناتك الصحيحة لنتمكن من التواصل معك لتقديم الدعم والإرشاد.' : 'Please enter your contact info so we can reach out with support and advice.'}</p>
 
               {error && (
                 <div className="error-alert">
@@ -107,14 +107,14 @@ const Counseling = () => {
 
               {/* Name */}
               <div className="form-group">
-                <label htmlFor="name">الاسم الكامل (مطلبوب)</label>
+                <label htmlFor="name">{t('contact.name')} ({language === 'ar' ? 'مطلوب' : 'Required'})</label>
                 <input 
                   type="text" 
                   id="name" 
                   name="name" 
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="الاسم والكنية"
+                  placeholder={t('contact.namePlaceholder')}
                   className="form-control"
                   required
                 />
@@ -123,31 +123,29 @@ const Counseling = () => {
               <div className="grid-2">
                 {/* Phone */}
                 <div className="form-group">
-                  <label htmlFor="phone">رقم الهاتف الجوال (مطلوب)</label>
+                  <label htmlFor="phone">{t('contact.phone')} ({language === 'ar' ? 'مطلوب' : 'Required'})</label>
                   <input 
                     type="text" 
                     id="phone" 
                     name="phone" 
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="مثال: +961 70 000 000"
+                    placeholder={t('contact.phonePlaceholder')}
                     className="form-control"
-                    dir="ltr"
-                    style={{ textAlign: 'right' }}
                     required
                   />
                 </div>
 
                 {/* Email */}
                 <div className="form-group">
-                  <label htmlFor="email">البريد الإلكتروني (اختياري)</label>
+                  <label htmlFor="email">{t('contact.email')} ({language === 'ar' ? 'اختياري' : 'Optional'})</label>
                   <input 
                     type="email" 
                     id="email" 
                     name="email" 
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="yourname@example.com"
+                    placeholder={t('contact.emailPlaceholder')}
                     className="form-control"
                   />
                 </div>
@@ -155,7 +153,7 @@ const Counseling = () => {
 
               {/* Preferred Contact Method */}
               <div className="form-group">
-                <label htmlFor="preferredContact">وسيلة التواصل المفضلة لديك</label>
+                <label htmlFor="preferredContact">{t('counseling.preferredTime')}</label>
                 <select 
                   id="preferredContact" 
                   name="preferredContact" 
@@ -163,21 +161,21 @@ const Counseling = () => {
                   onChange={handleChange}
                   className="form-control"
                 >
-                  <option value="phone">اتصال هاتفي مباشر</option>
-                  <option value="whatsapp">محادثة عبر واتساب (WhatsApp)</option>
-                  <option value="meeting">طلب جلسة زيارة/مقابلة شخصية في مبنى الكنيسة</option>
+                  <option value="phone">{language === 'ar' ? 'اتصال هاتفي مباشر' : 'Direct Phone Call'}</option>
+                  <option value="whatsapp">{language === 'ar' ? 'محادثة عبر واتساب (WhatsApp)' : 'WhatsApp Conversation'}</option>
+                  <option value="meeting">{language === 'ar' ? 'طلب جلسة زيارة/مقابلة شخصية في الكنيسة' : 'In-Person Pastoral Meeting'}</option>
                 </select>
               </div>
 
               {/* Details */}
               <div className="form-group">
-                <label htmlFor="details">تفاصيل طلب المشورة أو الإرشاد (مطلوب)</label>
+                <label htmlFor="details">{t('counseling.topic')} ({language === 'ar' ? 'مطلوب' : 'Required'})</label>
                 <textarea 
                   id="details" 
                   name="details" 
                   value={formData.details}
                   onChange={handleChange}
-                  placeholder="يرجى كتابة لمحة عامة عن الموضوع الذي ترغب في استشارة القس حوله بكل سرية..."
+                  placeholder={language === 'ar' ? 'يرجى كتابة لمحة عامة عن الموضوع...' : 'Please write a brief summary of the subject...'}
                   rows="6"
                   className="form-control"
                   required
@@ -189,7 +187,7 @@ const Counseling = () => {
                 className="btn btn-primary submit-btn"
                 disabled={loading}
               >
-                {loading ? 'جاري إرسال الطلب بشكل آمن...' : 'تقديم طلب المشورة سرّاً'}
+                {loading ? t('common.loading') : t('counseling.bookAppointment')}
               </button>
             </form>
           )}
