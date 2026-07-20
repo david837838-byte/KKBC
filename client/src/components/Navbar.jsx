@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, LogOut, LayoutDashboard, Radio } from 'lucide-react';
+import { Menu, X, Sun, Moon, LogOut, LayoutDashboard, Radio, Globe } from 'lucide-react';
 import Logo from './Logo';
 import io from 'socket.io-client';
+import { useLanguage } from '../context/LanguageContext';
 
 const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { language, toggleLanguage, t } = useLanguage();
 
   useEffect(() => {
     // Fetch current live status
@@ -42,18 +44,18 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
-    { name: 'الرئيسية', path: '/' },
-    { name: 'من نحن', path: '/about' },
-    { name: 'الاجتماعات', path: '/meetings' },
-    { name: 'العظات', path: '/sermons' },
-    { name: 'الترانيم', path: '/hymns' },
-    { name: 'كتاب المقدس', path: '/bible' },
-    { name: 'الدراسات والمقالات', path: '/articles' },
-    { name: 'الأخبار', path: '/news' },
-    { name: 'المعرض', path: '/gallery' },
-    { name: 'طلبات الصلاة', path: '/prayer' },
-    { name: 'تواصل معنا', path: '/contact' },
-    { name: 'تنزيل التطبيق 📱', path: '/download' },
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.about'), path: '/about' },
+    { name: t('nav.meetings'), path: '/meetings' },
+    { name: t('nav.sermons'), path: '/sermons' },
+    { name: t('nav.hymns'), path: '/hymns' },
+    { name: t('nav.bible'), path: '/bible' },
+    { name: t('nav.articles'), path: '/articles' },
+    { name: t('nav.news'), path: '/news' },
+    { name: t('nav.gallery'), path: '/gallery' },
+    { name: t('nav.prayer'), path: '/prayer' },
+    { name: t('nav.contact'), path: '/contact' },
+    { name: `${t('nav.downloadApp')} 📱`, path: '/download' },
   ];
 
   return (
@@ -103,6 +105,27 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
               <span>مباشر</span>
             </Link>
           )}
+
+          {/* Language Switcher Button */}
+          <button 
+            onClick={toggleLanguage} 
+            className="action-btn lang-toggle-btn" 
+            title={language === 'ar' ? 'Switch to English' : 'التحويل للغة العربية'}
+            style={{ 
+              fontWeight: '700', 
+              fontSize: '0.85rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.35rem', 
+              padding: '0.35rem 0.65rem', 
+              borderRadius: '9999px', 
+              border: '1px solid var(--border-color)',
+              background: 'rgba(255, 255, 255, 0.1)'
+            }}
+          >
+            <Globe size={16} />
+            <span>{language === 'ar' ? 'EN' : 'عربي'}</span>
+          </button>
 
           {/* Theme Toggle */}
           <button onClick={toggleTheme} className="action-btn" title="تغيير المظهر">

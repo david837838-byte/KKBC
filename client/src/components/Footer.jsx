@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, MessageCircle, ShieldAlert } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Footer = () => {
   const [settings, setSettings] = useState(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     fetch('/api/settings')
@@ -16,10 +18,10 @@ const Footer = () => {
       .catch(err => console.error('Error fetching settings for footer:', err));
   }, []);
 
-  const churchName = settings?.churchName || 'الكنيسة المعمدانية الإنجيلية – خربة قنافار';
+  const churchName = settings?.churchName || t('common.fullChurchTitle');
   const email = settings?.contactEmail || 'info@churchqanafar.org';
   const phones = settings?.contactPhones || ['+961 70 123 456'];
-  const address = settings?.address || 'خربة قنافار، البقاع الغربي، لبنان';
+  const address = settings?.address || t('contact.addressValue');
   
   const facebookUrl = settings?.facebookUrl || 'https://facebook.com';
   const youtubeUrl = settings?.youtubeUrl || 'https://youtube.com';
@@ -34,23 +36,22 @@ const Footer = () => {
         <div className="footer-about">
           <h3>{churchName}</h3>
           <p>
-            {settings?.welcomeMessage || 
-              'نرحب بكم في موقع الكنيسة المعمدانية الإنجيلية في خربة قنافار. ندعوكم لمشاركتنا في عبادة الرب وسماع الرسائل الكتابية وعيش الشركة الحقيقية.'}
+            {settings?.welcomeMessage || t('footer.description')}
           </p>
           <div className="social-links">
-            <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="social-icon fb" title="فيسبوك">
+            <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="social-icon fb" title="Facebook">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
-            <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="social-icon yt" title="يوتيوب">
+            <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="social-icon yt" title="YouTube">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17z"/><path d="m10 15 5-3-5-3z"/></svg>
             </a>
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-icon wa" title="واتساب">
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="social-icon wa" title="WhatsApp">
               <MessageCircle size={18} />
             </a>
-            <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="social-icon ig" title="انستجرام">
+            <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="social-icon ig" title="Instagram">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
             </a>
-            <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="social-icon tt" title="تيك توك">
+            <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="social-icon tt" title="TikTok">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
             </a>
           </div>
@@ -58,21 +59,21 @@ const Footer = () => {
 
         {/* Quick Links */}
         <div className="footer-links">
-          <h4>روابط سريعة</h4>
+          <h4>{t('footer.quickLinks')}</h4>
           <ul>
-            <li><Link to="/">الرئيسية</Link></li>
-            <li><Link to="/about">من نحن</Link></li>
-            <li><Link to="/meetings">الاجتماعات الأسبوعية</Link></li>
-            <li><Link to="/sermons">العظات والتعليم</Link></li>
-            <li><Link to="/hymns">الترانيم الروحية</Link></li>
-            <li><Link to="/news">الأخبار والإعلانات</Link></li>
-            <li><Link to="/gallery">معرض الصور</Link></li>
+            <li><Link to="/">{t('nav.home')}</Link></li>
+            <li><Link to="/about">{t('nav.about')}</Link></li>
+            <li><Link to="/meetings">{t('nav.meetings')}</Link></li>
+            <li><Link to="/sermons">{t('nav.sermons')}</Link></li>
+            <li><Link to="/hymns">{t('nav.hymns')}</Link></li>
+            <li><Link to="/news">{t('nav.news')}</Link></li>
+            <li><Link to="/gallery">{t('nav.gallery')}</Link></li>
           </ul>
         </div>
 
         {/* Contact Info */}
         <div className="footer-contact">
-          <h4>معلومات الاتصال</h4>
+          <h4>{t('contact.getInTouch')}</h4>
           <div className="contact-item">
             <MapPin size={18} className="contact-icon" />
             <span>{address}</span>
@@ -93,13 +94,15 @@ const Footer = () => {
       {/* Copyright Bar */}
       <div className="footer-bottom">
         <div className="container footer-bottom-flex">
-          <p>© {new Date().getFullYear()} {churchName}. جميع الحقوق محفوظة.</p>
+          <p>© {new Date().getFullYear()} {churchName}. {t('footer.allRightsReserved')}</p>
           {settings?.visitorCount !== undefined && (
-            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'bold' }}>عدد زيارات الموقع: {settings.visitorCount}</span>
+            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'bold' }}>
+              {language === 'ar' ? `عدد زيارات الموقع: ${settings.visitorCount}` : `Site Visits: ${settings.visitorCount}`}
+            </span>
           )}
           <Link to="/login" className="admin-portal-link">
             <ShieldAlert size={14} />
-            <span>بوابة الإدارة</span>
+            <span>{t('nav.admin')}</span>
           </Link>
         </div>
       </div>

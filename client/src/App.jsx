@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
+import { LanguageProvider } from './context/LanguageContext';
+import './english.css';
 
 // Pages
 import Home from './pages/Home';
@@ -132,15 +134,17 @@ const App = () => {
   };
 
   return (
-    <Router>
-      <AnalyticsTracker />
-      <AppContent 
-        isAdmin={isAdmin} 
-        setIsAdmin={setIsAdmin} 
-        theme={theme} 
-        toggleTheme={toggleTheme} 
-      />
-    </Router>
+    <LanguageProvider>
+      <Router>
+        <AnalyticsTracker />
+        <AppContent 
+          isAdmin={isAdmin} 
+          setIsAdmin={setIsAdmin} 
+          theme={theme} 
+          toggleTheme={toggleTheme} 
+        />
+      </Router>
+    </LanguageProvider>
   );
 };
 
