@@ -726,24 +726,24 @@ const MeetingsTab = ({ token }) => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>الترتيب</th>
-                <th>اليوم</th>
-                <th>الوقت</th>
-                <th>الاسم</th>
-                <th>المكان</th>
-                <th>الحالة</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'الترتيب' : 'Order'}</th>
+                <th>{isAr ? 'اليوم' : 'Day'}</th>
+                <th>{isAr ? 'الوقت' : 'Time'}</th>
+                <th>{isAr ? 'الاسم' : 'Title'}</th>
+                <th>{isAr ? 'المكان' : 'Location'}</th>
+                <th>{isAr ? 'الحالة' : 'Status'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {meetings.map((m) => (
                 <tr key={m._id}>
                   <td>{m.order}</td>
-                  <td><strong>{m.day}</strong></td>
-                  <td>{m.time}</td>
-                  <td>{m.title}</td>
-                  <td>{m.location}</td>
-                  <td>{m.isActive ? <span style={{ color: 'var(--success-color)' }}>نشط</span> : <span style={{ color: 'var(--text-light)' }}>غير نشط</span>}</td>
+                  <td><strong>{translateText(m.day, m.dayEn)}</strong></td>
+                  <td>{translateText(m.time, m.timeEn)}</td>
+                  <td>{translateText(m.title, m.titleEn)}</td>
+                  <td>{translateText(m.location, m.locationEn)}</td>
+                  <td>{m.isActive ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نشط' : 'Active'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'غير نشط' : 'Inactive'}</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="admin-btn-action" onClick={() => handleEdit(m)}><Edit2 size={14} /></button>
@@ -1025,22 +1025,22 @@ const SermonsTab = ({ token }) => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>تاريخ النشر</th>
-                <th>العنوان</th>
-                <th>الواعظ</th>
-                <th>التصنيف</th>
-                <th>نوع الوسيط</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'تاريخ النشر' : 'Publish Date'}</th>
+                <th>{isAr ? 'العنوان' : 'Title'}</th>
+                <th>{isAr ? 'الواعظ' : 'Preacher'}</th>
+                <th>{isAr ? 'التصنيف' : 'Category'}</th>
+                <th>{isAr ? 'نوع الوسيط' : 'Media Type'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {sermons.map((s) => (
                 <tr key={s._id}>
-                  <td>{new Date(s.date).toLocaleDateString('ar-LB')}</td>
-                  <td><strong>{s.title}</strong></td>
-                  <td>{s.preacher}</td>
-                  <td>{s.category}</td>
-                  <td>{s.type === 'video' ? 'فيديو' : s.type === 'audio' ? 'صوت' : 'دراسة PDF'}</td>
+                  <td>{new Date(s.date).toLocaleDateString(isAr ? 'ar-LB' : 'en-US')}</td>
+                  <td><strong>{translateText(s.title, s.titleEn)}</strong></td>
+                  <td>{translateText(s.preacher, s.preacherEn)}</td>
+                  <td>{translateText(s.category, s.categoryEn)}</td>
+                  <td>{s.type === 'video' ? (isAr ? 'فيديو' : 'Video') : s.type === 'audio' ? (isAr ? 'صوت' : 'Audio') : (isAr ? 'دراسة PDF' : 'PDF Study')}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="admin-btn-action" onClick={() => handleEdit(s)}><Edit2 size={14} /></button>
@@ -1290,20 +1290,20 @@ const NewsTab = ({ token }) => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>تاريخ النشر</th>
-                <th>العنوان</th>
-                <th>النوع</th>
-                <th>صورة مرفقة</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'تاريخ النشر' : 'Publish Date'}</th>
+                <th>{isAr ? 'العنوان' : 'Title'}</th>
+                <th>{isAr ? 'النوع' : 'Category'}</th>
+                <th>{isAr ? 'صورة مرفقة' : 'Attached Image'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {news.map((item) => (
                 <tr key={item._id}>
-                  <td>{new Date(item.date).toLocaleDateString('ar-LB')}</td>
-                  <td><strong>{item.title}</strong></td>
-                  <td>{item.category === 'event' ? 'فعالية' : item.category === 'announcement' ? 'إعلان' : 'خبر'}</td>
-                  <td>{item.imageUrl ? <span style={{ color: 'var(--success-color)' }}>نعم</span> : <span style={{ color: 'var(--text-light)' }}>لا</span>}</td>
+                  <td>{new Date(item.date).toLocaleDateString(isAr ? 'ar-LB' : 'en-US')}</td>
+                  <td><strong>{translateText(item.title, item.titleEn)}</strong></td>
+                  <td>{item.category === 'event' ? (isAr ? 'فعالية' : 'Event') : item.category === 'announcement' ? (isAr ? 'إعلان' : 'Announcement') : (isAr ? 'خبر' : 'News')}</td>
+                  <td>{item.imageUrl ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نعم' : 'Yes'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="admin-btn-action" onClick={() => handleEdit(item)}><Edit2 size={14} /></button>
@@ -1550,17 +1550,17 @@ const HymnsTab = ({ token }) => {
               padding: '0.5rem 0.85rem'
             }}
           >
-            <span>شاشة العرض والبروجكتر 📺</span>
+            <span>{isAr ? 'شاشة العرض والبروجكتر 📺' : 'Presenter Screen 📺'}</span>
           </a>
           {activePresenterHymn && (
             <button className="btn btn-outline" style={{ borderColor: 'var(--error-color)', color: 'var(--error-color)' }} onClick={handleClearPresentation}>
-              إيقاف العرض الحي ✖️
+              {isAr ? 'إيقاف العرض الحي ✖️' : 'Stop Live Presentation ✖️'}
             </button>
           )}
           {!showForm && (
             <button className="btn btn-primary" onClick={() => setShowForm(true)}>
               <Plus size={16} />
-              <span>إضافة ترنيمة جديدة</span>
+              <span>{isAr ? 'إضافة ترنيمة جديدة' : 'Add New Hymn'}</span>
             </button>
           )}
         </div>
@@ -1863,11 +1863,11 @@ const GalleryTab = ({ token }) => {
   return (
     <div>
       <div className="tab-header">
-        <h2>إدارة معرض الصور والفيديو</h2>
+        <h2>{isAr ? 'إدارة معرض الصور والفيديو' : 'Photo & Video Gallery Management'}</h2>
         {!showForm && (
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             <Plus size={16} />
-            <span>إضافة وسيط جديد</span>
+            <span>{isAr ? 'إضافة وسيط جديد' : 'Add New Gallery Media'}</span>
           </button>
         )}
       </div>
@@ -1912,44 +1912,44 @@ const GalleryTab = ({ token }) => {
 
       {showForm ? (
         <form onSubmit={handleSubmit} className="glass-card" style={{ marginBottom: '2rem' }}>
-          <h3>إضافة صورة أو فيديو إلى المعرض</h3>
+          <h3>{isAr ? 'إضافة صورة أو فيديو جديد للمعرض' : 'Add New Photo or Video to Gallery'}</h3>
           <hr style={{ margin: '1rem 0', borderColor: 'var(--border-color)' }} />
           
           <div className="grid-2">
             <div className="form-group">
-              <label>عنوان الوسيط / المناسبة</label>
+              <label>{isAr ? 'العنوان' : 'Title'}</label>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="form-control" />
             </div>
 
             <div className="form-group">
-              <label>النوع</label>
+              <label>{isAr ? 'نوع الوسائط' : 'Media Type'}</label>
               <select value={type} onChange={(e) => setType(e.target.value)} className="form-control">
-                <option value="image">صورة</option>
-                <option value="video">فيديو يوتيوب</option>
+                <option value="image">{isAr ? 'صورة' : 'Image'}</option>
+                <option value="video">{isAr ? 'فيديو' : 'Video'}</option>
               </select>
             </div>
           </div>
 
           <div className="grid-2">
             <div className="form-group">
-              <label>النشاط / التصنيف الكنسي</label>
+              <label>{isAr ? 'النشاط / التصنيف الكنسي' : 'Category / Event'}</label>
               <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="مثال: المخيم الصيفي" required className="form-control" />
             </div>
 
             <div className="form-group">
-              <label>السنة</label>
+              <label>{isAr ? 'السنة' : 'Year'}</label>
               <input type="number" value={year} onChange={(e) => setYear(e.target.value)} required className="form-control" />
             </div>
           </div>
 
           {type === 'video' ? (
             <div className="form-group">
-              <label>رابط فيديو يوتيوب (URL)</label>
+              <label>{isAr ? 'رابط فيديو يوتيوب (URL)' : 'YouTube Video URL'}</label>
               <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder="https://youtube.com/watch?v=..." className="form-control" />
             </div>
           ) : (
             <div className="form-group">
-              <label>رفع ملف الصورة</label>
+              <label>{isAr ? 'رفع ملف الصورة' : 'Upload Image File'}</label>
               <input 
                 type="file" 
                 onChange={(e) => setFile(e.target.files[0])} 
@@ -1962,9 +1962,9 @@ const GalleryTab = ({ token }) => {
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'جاري رفع الملف وحفظ البيانات...' : 'حفظ'}
+              {loading ? (isAr ? 'جاري رفع الملف وحفظ البيانات...' : 'Uploading...') : (isAr ? 'حفظ' : 'Save')}
             </button>
-            <button type="button" className="btn btn-outline" onClick={handleCancel}>إلغاء</button>
+            <button type="button" className="btn btn-outline" onClick={handleCancel}>{isAr ? 'إلغاء' : 'Cancel'}</button>
           </div>
         </form>
       ) : (
@@ -1972,24 +1972,24 @@ const GalleryTab = ({ token }) => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>العنوان</th>
-                <th>النوع</th>
-                <th>المناسبة / النشاط</th>
-                <th>السنة</th>
-                <th>عرض الرابط</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'العنوان' : 'Title'}</th>
+                <th>{isAr ? 'النوع' : 'Type'}</th>
+                <th>{isAr ? 'المناسبة / النشاط' : 'Event / Category'}</th>
+                <th>{isAr ? 'السنة' : 'Year'}</th>
+                <th>{isAr ? 'عرض الرابط' : 'Preview Link'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
                 <tr key={item._id}>
-                  <td><strong>{item.title}</strong></td>
-                  <td>{item.type === 'image' ? 'صورة' : 'فيديو'}</td>
-                  <td>{item.category}</td>
+                  <td><strong>{translateText(item.title, item.titleEn)}</strong></td>
+                  <td>{item.type === 'image' ? (isAr ? 'صورة' : 'Image') : (isAr ? 'فيديو' : 'Video')}</td>
+                  <td>{translateText(item.category, item.categoryEn)}</td>
                   <td>{item.year}</td>
                   <td>
                     <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-color)' }}>
-                      معاينة
+                      {isAr ? 'معاينة' : 'Preview'}
                     </a>
                   </td>
                   <td>
@@ -2131,30 +2131,30 @@ const PrayersTab = ({ token }) => {
         <table className="custom-table">
           <thead>
             <tr>
-              <th>التاريخ</th>
-              <th>المرسل</th>
-              <th>رقم الهاتف</th>
-              <th>الطلبة</th>
-              <th>الحالة</th>
-              <th>الإجراءات</th>
+              <th>{isAr ? 'التاريخ' : 'Date'}</th>
+              <th>{isAr ? 'المرسل' : 'Sender'}</th>
+              <th>{isAr ? 'رقم الهاتف' : 'Phone'}</th>
+              <th>{isAr ? 'الطلبة' : 'Prayer Request'}</th>
+              <th>{isAr ? 'الحالة' : 'Status'}</th>
+              <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
             </tr>
           </thead>
           <tbody>
             {prayers.map((p) => (
               <tr key={p._id} style={!p.isRead ? { backgroundColor: 'rgba(197, 168, 128, 0.05)', fontWeight: 'bold' } : {}}>
-                <td>{new Date(p.createdAt).toLocaleString('ar-LB')}</td>
+                <td>{new Date(p.createdAt).toLocaleString(isAr ? 'ar-LB' : 'en-US')}</td>
                 <td>{p.name}</td>
-                <td dir="ltr" style={{ textAlign: 'right' }}>{p.phone || 'غير مزود'}</td>
+                <td dir="ltr" style={{ textAlign: isAr ? 'right' : 'left' }}>{p.phone || (isAr ? 'غير مزود' : 'N/A')}</td>
                 <td style={{ maxWidth: '350px', whiteSpace: 'pre-wrap' }}>{p.request}</td>
-                <td>{!p.isRead ? <span style={{ color: 'var(--warning-color)' }}>جديد</span> : <span style={{ color: 'var(--text-light)' }}>تمت القراءة</span>}</td>
+                <td>{!p.isRead ? <span style={{ color: 'var(--warning-color)' }}>{isAr ? 'جديد' : 'New'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'تمت القراءة' : 'Read'}</span>}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {!p.isRead && (
-                      <button className="admin-btn-action" onClick={() => handleMarkAsRead(p._id)} title="تعليم كـ مقروء">
+                      <button className="admin-btn-action" onClick={() => handleMarkAsRead(p._id)} title={isAr ? 'تعليم كـ مقروء' : 'Mark as Read'}>
                         <Check size={14} />
                       </button>
                     )}
-                    <button className="admin-btn-action admin-btn-delete" onClick={() => handleDelete(p._id)} title="حذف">
+                    <button className="admin-btn-action admin-btn-delete" onClick={() => handleDelete(p._id)} title={isAr ? 'حذف' : 'Delete'}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -2895,18 +2895,18 @@ const UsersTab = ({ token }) => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>تاريخ الإنشاء</th>
-                <th>اسم المستخدم</th>
-                <th>البريد الإلكتروني</th>
-                <th>الصلاحيات</th>
-                <th>إدارة المصاريف</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'تاريخ الإنشاء' : 'Created Date'}</th>
+                <th>{isAr ? 'اسم المستخدم' : 'Username'}</th>
+                <th>{isAr ? 'البريد الإلكتروني' : 'Email'}</th>
+                <th>{isAr ? 'الصلاحيات' : 'Role / Permissions'}</th>
+                <th>{isAr ? 'إدارة المصاريف' : 'Manage Expenses'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
                 <tr key={u._id}>
-                  <td>{new Date(u.createdAt).toLocaleDateString('ar-LB')}</td>
+                  <td>{new Date(u.createdAt).toLocaleDateString(isAr ? 'ar-LB' : 'en-US')}</td>
                   <td><strong>{u.username}</strong></td>
                   <td>{u.email}</td>
                   <td>
@@ -2916,8 +2916,8 @@ const UsersTab = ({ token }) => {
                       className="form-control"
                       style={{ width: 'auto', display: 'inline-block', fontSize: '0.85rem', padding: '0.2rem 0.5rem', height: 'auto' }}
                     >
-                      <option value="editor">محرر</option>
-                      <option value="admin">مدير كامل</option>
+                      <option value="editor">{isAr ? 'محرر' : 'Editor'}</option>
+                      <option value="admin">{isAr ? 'مدير كامل' : 'Full Admin'}</option>
                     </select>
                   </td>
                   <td>
@@ -3231,21 +3231,21 @@ const AnalyticsTab = ({ token }) => {
       </div>
 
       <div className="analytics-table-section glass-card" style={{ marginTop: '2rem', padding: '1.75rem' }}>
-        <h3>جدول البيانات التفصيلي</h3>
+        <h3>{isAr ? 'جدول البيانات التفصيلي' : 'Detailed Data Table'}</h3>
         <div className="table-container" style={{ marginTop: '1rem' }}>
           <table className="custom-table">
             <thead>
               <tr>
-                <th>الشهر والسنة</th>
-                <th>إجمالي زيارات الموقع</th>
-                <th>مشاهدي البث المباشر (نقرات)</th>
-                <th>نسبة المتابعة</th>
+                <th>{isAr ? 'الشهر والسنة' : 'Month & Year'}</th>
+                <th>{isAr ? 'إجمالي زيارات الموقع' : 'Total Site Visits'}</th>
+                <th>{isAr ? 'مشاهدي البث المباشر (نقرات)' : 'Live Stream Viewers (Clicks)'}</th>
+                <th>{isAr ? 'نسبة المتابعة' : 'Engagement Rate'}</th>
               </tr>
             </thead>
             <tbody>
               {monthlyList.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>لا توجد بيانات مسجلة حتى الآن.</td>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>{isAr ? 'لا توجد بيانات مسجلة حتى الآن.' : 'No data recorded yet.'}</td>
                 </tr>
               ) : (
                 monthlyList.map((item, idx) => {
@@ -3253,8 +3253,8 @@ const AnalyticsTab = ({ token }) => {
                   return (
                     <tr key={idx}>
                       <td><strong>{getMonthName(item.month)} {item.year}</strong></td>
-                      <td>{item.pageViews} زيارة</td>
-                      <td>{item.liveViews} نقرة</td>
+                      <td>{item.pageViews} {isAr ? 'زيارة' : 'visits'}</td>
+                      <td>{item.liveViews} {isAr ? 'نقرة' : 'clicks'}</td>
                       <td>
                         <span className="hymn-cat-badge" style={{ backgroundColor: 'rgba(76, 175, 80, 0.15)', color: '#4caf50', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
                           {rate}%
@@ -3348,19 +3348,19 @@ const LockoutsTab = ({ token }) => {
         <table className="custom-table">
           <thead>
             <tr>
-              <th>آخر تحديث</th>
-              <th>عنوان الـ IP</th>
-              <th>بيانات المتصفح والجهاز</th>
-              <th>المحاولات</th>
-              <th>حالة الحظر</th>
-              <th>الإجراءات</th>
+              <th>{isAr ? 'آخر تحديث' : 'Last Updated'}</th>
+              <th>{isAr ? 'عنوان الـ IP' : 'IP Address'}</th>
+              <th>{isAr ? 'بيانات المتصفح والجهاز' : 'Browser & Device Info'}</th>
+              <th>{isAr ? 'المحاولات' : 'Attempts'}</th>
+              <th>{isAr ? 'حالة الحظر' : 'Lockout Status'}</th>
+              <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
             </tr>
           </thead>
           <tbody>
             {lockouts.length === 0 ? (
               <tr>
                 <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
-                  لا توجد أجهزة محظورة أو تحت المراقبة حالياً. الموقع آمن تماماً!
+                  {isAr ? 'لا توجد أجهزة محظورة أو تحت المراقبة حالياً. الموقع آمن تماماً!' : 'No blocked or monitored devices currently. Site is secure!'}
                 </td>
               </tr>
             ) : (
@@ -3373,20 +3373,20 @@ const LockoutsTab = ({ token }) => {
 
                 return (
                   <tr key={item._id}>
-                    <td>{new Date(item.updatedAt || item.createdAt).toLocaleString('ar-LB')}</td>
+                    <td>{new Date(item.updatedAt || item.createdAt).toLocaleString(isAr ? 'ar-LB' : 'en-US')}</td>
                     <td><code style={{ fontSize: '0.9rem', color: 'var(--primary-color)' }}>{item.ip}</code></td>
                     <td style={{ maxWidth: '280px', fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.userAgent}>
                       {item.userAgent}
                     </td>
-                    <td><strong>{item.attempts} محاولات</strong></td>
+                    <td><strong>{item.attempts} {isAr ? 'محاولات' : 'attempts'}</strong></td>
                     <td>
                       {isBlocked ? (
                         <span className="hymn-cat-badge" style={{ backgroundColor: 'rgba(244, 67, 54, 0.15)', color: '#f44336', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                          محظور حالياً (متبقي {remainingMinutes} دقيقة)
+                          {isAr ? `محظور حالياً (متبقي ${remainingMinutes} دقيقة)` : `Currently Blocked (${remainingMinutes} min left)`}
                         </span>
                       ) : (
                         <span className="hymn-cat-badge" style={{ backgroundColor: 'rgba(255, 152, 0, 0.15)', color: '#ff9800', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                          تحت المراقبة ({item.attempts}/10)
+                          {isAr ? `تحت المراقبة (${item.attempts}/10)` : `Under Monitoring (${item.attempts}/10)`}
                         </span>
                       )}
                     </td>
@@ -3394,10 +3394,10 @@ const LockoutsTab = ({ token }) => {
                       <button 
                         className="admin-btn-action" 
                         onClick={() => handleUnblock(item._id)} 
-                        title="إلغاء الحظر وتصفير المحاولات"
+                        title={isAr ? "إلغاء الحظر وتصفير المحاولات" : "Unblock device"}
                         style={{ color: '#4caf50', border: '1px solid rgba(76, 175, 80, 0.3)', padding: '0.25rem 0.6rem', height: 'auto', fontSize: '0.8rem' }}
                       >
-                        فك الحظر
+                        {isAr ? 'فك الحظر' : 'Unblock'}
                       </button>
                     </td>
                   </tr>
@@ -3826,24 +3826,24 @@ const ArticlesTab = ({ token }) => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>تاريخ النشر</th>
-                <th>العنوان</th>
-                <th>الكاتب</th>
-                <th>التصنيف</th>
-                <th>وقت القراءة</th>
-                <th>ملف PDF</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'تاريخ النشر' : 'Publish Date'}</th>
+                <th>{isAr ? 'العنوان' : 'Title'}</th>
+                <th>{isAr ? 'الكاتب' : 'Author'}</th>
+                <th>{isAr ? 'التصنيف' : 'Category'}</th>
+                <th>{isAr ? 'وقت القراءة' : 'Read Time'}</th>
+                <th>{isAr ? 'ملف PDF' : 'PDF File'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {articles.map((art) => (
                 <tr key={art._id}>
-                  <td>{new Date(art.createdAt).toLocaleDateString('ar-LB')}</td>
-                  <td><strong>{art.title}</strong></td>
-                  <td>{art.author}</td>
-                  <td>{art.category}</td>
-                  <td>{art.readTime} د</td>
-                  <td>{art.pdfUrl ? <span style={{ color: 'var(--success-color)', fontWeight: 'bold' }}>نعم</span> : <span style={{ color: 'var(--text-light)' }}>لا</span>}</td>
+                  <td>{new Date(art.createdAt).toLocaleDateString(isAr ? 'ar-LB' : 'en-US')}</td>
+                  <td><strong>{translateText(art.title, art.titleEn)}</strong></td>
+                  <td>{translateText(art.author, art.authorEn)}</td>
+                  <td>{translateText(art.category, art.categoryEn)}</td>
+                  <td>{art.readTime} {isAr ? 'د' : 'min'}</td>
+                  <td>{art.pdfUrl ? <span style={{ color: 'var(--success-color)', fontWeight: 'bold' }}>{isAr ? 'نعم' : 'Yes'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="admin-btn-action" onClick={() => handleEdit(art)}><Edit2 size={14} /></button>
@@ -4198,11 +4198,11 @@ const ExpensesTab = ({ token }) => {
 
   const getCategoryText = (cat) => {
     switch (cat) {
-      case 'maintenance': return 'صيانة وترميم 🛠️';
-      case 'charity': return 'مساعدات ورحمة 🕊️';
-      case 'utilities': return 'فواتير وخدمات عامة 🔌';
-      case 'ministries': return 'خدمات روحية ونشاطات 📖';
-      default: return 'مصاريف أخرى 📝';
+      case 'maintenance': return isAr ? 'صيانة وترميم 🛠️' : 'Maintenance & Repairs 🛠️';
+      case 'charity': return isAr ? 'مساعدات ورحمة 🕊️' : 'Charity & Relief 🕊️';
+      case 'utilities': return isAr ? 'فواتير وخدمات عامة 🔌' : 'Utilities & Bills 🔌';
+      case 'ministries': return isAr ? 'خدمات روحية ونشاطات 📖' : 'Ministries & Activities 📖';
+      default: return isAr ? 'مصاريف أخرى 📝' : 'Other Expenses 📝';
     }
   };
 
@@ -4236,11 +4236,11 @@ const ExpensesTab = ({ token }) => {
       {/* Summary box */}
       {!showForm && (
         <div className="analytics-overview" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          <div className="stat-card glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', borderRight: '5px solid var(--accent-color)', borderLeft: '0' }}>
+          <div className="stat-card glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', borderRight: isAr ? '5px solid var(--accent-color)' : 'none', borderLeft: isAr ? 'none' : '5px solid var(--accent-color)' }}>
             <div>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-light)', fontWeight: 'bold' }}>إجمالي المصاريف الكنسية المسجلة</p>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-light)', fontWeight: 'bold' }}>{isAr ? 'إجمالي المصاريف الكنسية المسجلة' : 'Total Recorded Church Expenses'}</p>
               <h3 style={{ fontSize: '2rem', color: 'var(--accent-color)', marginTop: '0.5rem', fontWeight: '800' }}>
-                {totalAmount.toLocaleString('en-US')} ل.ل.
+                {totalAmount.toLocaleString('en-US')} {isAr ? 'ل.ل.' : 'LBP'}
               </h3>
             </div>
             <span style={{ fontSize: '2.5rem' }}>💵</span>
@@ -4250,88 +4250,88 @@ const ExpensesTab = ({ token }) => {
 
       {showForm ? (
         <form onSubmit={handleSubmit} className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h3>تسجيل قيد مصروف جديد</h3>
+          <h3>{isAr ? 'تسجيل قيد مصروف جديد' : 'Record New Expense Entry'}</h3>
           <hr style={{ borderColor: 'var(--border-color)', margin: '0.5rem 0' }} />
 
           <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label>بيان المصروف / الغرض (مطلوب)</label>
+              <label>{isAr ? 'بيان المصروف / الغرض (مطلوب)' : 'Expense Title / Purpose (Required)'}</label>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="form-control" placeholder="مثال: فاتورة المولد الكهربائي لشهر تموز" />
             </div>
             <div className="form-group">
-              <label>المبلغ الإجمالي بالليرة اللبنانية (مطلوب)</label>
+              <label>{isAr ? 'المبلغ الإجمالي بالليرة اللبنانية (مطلوب)' : 'Total Amount in LBP (Required)'}</label>
               <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required className="form-control" placeholder="المبلغ" min="0" />
             </div>
           </div>
 
           <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label>التصنيف المالي</label>
+              <label>{isAr ? 'التصنيف المالي' : 'Category'}</label>
               <select value={category} onChange={(e) => setCategory(e.target.value)} className="form-control">
-                <option value="utilities">فواتير وخدمات عامة 🔌</option>
-                <option value="maintenance">صيانة وترميم 🛠️</option>
-                <option value="charity">مساعدات ورحمة 🕊️</option>
-                <option value="ministries">خدمات روحية ونشاطات 📖</option>
-                <option value="other">مصاريف أخرى 📝</option>
+                <option value="utilities">{isAr ? 'فواتير وخدمات عامة 🔌' : 'Utilities & Bills 🔌'}</option>
+                <option value="maintenance">{isAr ? 'صيانة وترميم 🛠️' : 'Maintenance & Repairs 🛠️'}</option>
+                <option value="charity">{isAr ? 'مساعدات ورحمة 🕊️' : 'Charity & Relief 🕊️'}</option>
+                <option value="ministries">{isAr ? 'خدمات روحية ونشاطات 📖' : 'Ministries & Activities 📖'}</option>
+                <option value="other">{isAr ? 'مصاريف أخرى 📝' : 'Other Expenses 📝'}</option>
               </select>
             </div>
             <div className="form-group">
-              <label>تاريخ الصرف</label>
+              <label>{isAr ? 'تاريخ الصرف' : 'Expense Date'}</label>
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="form-control" />
             </div>
           </div>
 
           <div className="form-group">
-            <label>ملاحظات / تفاصيل إضافية (اختياري)</label>
+            <label>{isAr ? 'ملاحظات / تفاصيل إضافية (اختياري)' : 'Notes / Additional Details (Optional)'}</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="form-control" placeholder="اكتب أي ملاحظات تخص طريقة الدفع أو المستفيد..." rows="4"></textarea>
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'جاري الحفظ...' : 'تسجيل وحفظ القيد'}
+              {loading ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'تسجيل وحفظ القيد' : 'Save Expense Entry')}
             </button>
-            <button type="button" className="btn btn-outline" onClick={handleCancel}>إلغاء</button>
+            <button type="button" className="btn btn-outline" onClick={handleCancel}>{isAr ? 'إلغاء' : 'Cancel'}</button>
           </div>
         </form>
       ) : loading ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>
           <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
-          <p>جارٍ تحميل القيود المالية...</p>
+          <p>{isAr ? 'جارٍ تحميل القيود المالية...' : 'Loading financial records...'}</p>
         </div>
       ) : expenses.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-light)' }}>
           <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>💵</span>
-          <p>لا توجد مصاريف مسجلة حالياً.</p>
+          <p>{isAr ? 'لا توجد مصاريف مسجلة حالياً.' : 'No recorded expenses currently.'}</p>
         </div>
       ) : (
         <div className="table-container">
           <table className="custom-table">
             <thead>
               <tr>
-                <th>التاريخ</th>
-                <th>بيان المصروف</th>
-                <th>التصنيف</th>
-                <th>المبلغ المسجل</th>
-                <th>التفاصيل</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'التاريخ' : 'Date'}</th>
+                <th>{isAr ? 'بيان المصروف' : 'Title'}</th>
+                <th>{isAr ? 'التصنيف' : 'Category'}</th>
+                <th>{isAr ? 'المبلغ المسجل' : 'Amount'}</th>
+                <th>{isAr ? 'التفاصيل' : 'Details'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {expenses.map((exp) => (
                 <tr key={exp._id}>
-                  <td>{new Date(exp.date).toLocaleDateString('ar-LB')}</td>
-                  <td><strong>{exp.title}</strong></td>
+                  <td>{new Date(exp.date).toLocaleDateString(isAr ? 'ar-LB' : 'en-US')}</td>
+                  <td><strong>{translateText(exp.title, exp.titleEn)}</strong></td>
                   <td>{getCategoryText(exp.category)}</td>
                   <td style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>
-                    {(exp.amount || 0).toLocaleString('en-US')} ل.ل.
+                    {(exp.amount || 0).toLocaleString('en-US')} {isAr ? 'ل.ل.' : 'LBP'}
                   </td>
                   <td>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      {exp.description || 'بلا ملاحظات'}
+                      {translateText(exp.description, exp.descriptionEn) || (isAr ? 'بلا ملاحظات' : 'No notes')}
                     </span>
                   </td>
                   <td>
-                    <button className="admin-btn-action admin-btn-delete" onClick={() => handleDelete(exp._id)} title="حذف القيد المالي">
+                    <button className="admin-btn-action admin-btn-delete" onClick={() => handleDelete(exp._id)} title={isAr ? "حذف القيد المالي" : "Delete expense entry"}>
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -4549,23 +4549,23 @@ const DailyVersesTab = ({ token }) => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>نص الآية</th>
-                <th>المرجع / الشاهد</th>
-                <th>تاريخ الإضافة</th>
-                <th>الإجراءات</th>
+                <th>{isAr ? 'نص الآية' : 'Verse Text'}</th>
+                <th>{isAr ? 'المرجع / الشاهد' : 'Scripture Reference'}</th>
+                <th>{isAr ? 'تاريخ الإضافة' : 'Date Added'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
               {verses.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>لا توجد آيات مضافة حالياً. يرجى إضافة بعض الآيات.</td>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>{isAr ? 'لا توجد آيات مضافة حالياً. يرجى إضافة بعض الآيات.' : 'No verses added yet. Please add some verses.'}</td>
                 </tr>
               ) : (
                 verses.map((v) => (
                   <tr key={v._id}>
-                    <td style={{ maxWidth: '400px', whiteSpace: 'pre-wrap', fontWeight: 'bold' }}>{v.text}</td>
-                    <td><span className="role-tag">{v.reference}</span></td>
-                    <td>{new Date(v.createdAt).toLocaleDateString('ar-LB')}</td>
+                    <td style={{ maxWidth: '400px', whiteSpace: 'pre-wrap', fontWeight: 'bold' }}>{translateText(v.text, v.textEn)}</td>
+                    <td><span className="role-tag">{translateText(v.reference, v.referenceEn)}</span></td>
+                    <td>{new Date(v.createdAt).toLocaleDateString(isAr ? 'ar-LB' : 'en-US')}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button className="admin-btn-action" onClick={() => handleEdit(v)}><Edit2 size={14} /></button>
