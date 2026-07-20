@@ -18,10 +18,12 @@ const Footer = () => {
       .catch(err => console.error('Error fetching settings for footer:', err));
   }, []);
 
-  const churchName = settings?.churchName || t('common.fullChurchTitle');
+  const isAr = language === 'ar';
+  const churchName = isAr ? (settings?.churchName || t('common.fullChurchTitle')) : t('common.fullChurchTitle');
   const email = settings?.contactEmail || 'info@churchqanafar.org';
   const phones = settings?.contactPhones || ['+961 70 123 456'];
-  const address = settings?.address || t('contact.addressValue');
+  const address = isAr ? (settings?.address || t('contact.addressValue')) : t('contact.addressValue');
+  const welcomeText = isAr ? (settings?.welcomeMessage || t('footer.description')) : t('footer.description');
   
   const facebookUrl = settings?.facebookUrl || 'https://facebook.com';
   const youtubeUrl = settings?.youtubeUrl || 'https://youtube.com';
@@ -36,7 +38,7 @@ const Footer = () => {
         <div className="footer-about">
           <h3>{churchName}</h3>
           <p>
-            {settings?.welcomeMessage || t('footer.description')}
+            {welcomeText}
           </p>
           <div className="social-links">
             <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="social-icon fb" title="Facebook">

@@ -86,6 +86,7 @@ export const LanguageProvider = ({ children }) => {
     const isAr = language === 'ar';
     document.documentElement.lang = language;
     document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+    document.title = isAr ? 'الكنيسة المعمدانية الإنجيلية - خربة قنافار' : 'Evangelical Baptist Church - Khirbet Qanafar';
 
     if (isAr) {
       document.body.classList.remove('lang-en');
