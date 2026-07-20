@@ -1,8 +1,12 @@
 import React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Logo = ({ className = "h-12 w-12", showText = true }) => {
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', direction: 'rtl' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', direction: isAr ? 'rtl' : 'ltr' }}>
       {/* SVG Icon representing the Church Logo */}
       <svg 
         viewBox="0 0 200 200" 
@@ -47,22 +51,22 @@ const Logo = ({ className = "h-12 w-12", showText = true }) => {
       </svg>
 
       {showText && (
-        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2', textAlign: isAr ? 'right' : 'left' }}>
           <span style={{ 
             fontWeight: '800', 
-            fontSize: '1.1rem', 
+            fontSize: '1.05rem', 
             color: 'var(--primary-color)',
             fontFamily: 'var(--font-family)'
           }}>
-            الكنيسة المعمدانية الإنجيلية
+            {isAr ? 'الكنيسة المعمدانية الإنجيلية' : 'Evangelical Baptist Church'}
           </span>
           <span style={{ 
             fontWeight: '600', 
             fontSize: '0.85rem', 
             color: 'var(--accent-color)',
-            letterSpacing: '0.5px'
+            letterSpacing: isAr ? '0' : '0.5px'
           }}>
-            خربة قنافار
+            {isAr ? 'خربة قنافار' : 'Khirbet Qanafar'}
           </span>
         </div>
       )}

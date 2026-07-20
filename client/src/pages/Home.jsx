@@ -86,7 +86,8 @@ const Home = () => {
     
     // Default to the first meeting (usually Sunday Service)
     const primaryMeeting = meetingsList[0];
-    setCountdownText(language === 'ar' ? `اجتماعنا القادم: يوم ${primaryMeeting.day} الساعة ${primaryMeeting.time}` : `Next Meeting: ${primaryMeeting.day} at ${primaryMeeting.time}`);
+    const dayStr = translateText(primaryMeeting.day, primaryMeeting.dayEn);
+    setCountdownText(language === 'ar' ? `اجتماعنا القادم: يوم ${primaryMeeting.day} الساعة ${primaryMeeting.time}` : `Next Meeting: ${dayStr} at ${primaryMeeting.time}`);
   };
 
   const getMediaIcon = (type) => {
@@ -113,9 +114,9 @@ const Home = () => {
       }}>
         <div className="container hero-content">
           <span className="welcome-tag">{t('common.welcome')}</span>
-          <h1>{settings?.churchName || t('home.heroTitle')}</h1>
+          <h1>{language === 'ar' ? (settings?.churchName || t('home.heroTitle')) : t('home.heroTitle')}</h1>
           <p className="welcome-message">
-            {settings?.welcomeMessage || t('home.welcomeMessage')}
+            {language === 'ar' ? (settings?.welcomeMessage || t('home.heroSubtitle')) : t('home.heroSubtitle')}
           </p>
 
           <div className="hero-cta-group">

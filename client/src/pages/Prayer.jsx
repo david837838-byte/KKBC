@@ -62,7 +62,7 @@ const Prayer = () => {
         {/* Intro Info */}
         <div className="prayer-info glass-card">
           <HeartHandshake size={44} className="prayer-info-icon" />
-          <h2>«لأَنَّهُ حَيْثُمَا اجْتَمَعَ اثْنَانِ أَوْ ثَلاَثَةٌ بِاسْمِي فَهُنَاكَ أَكُونُ فِي وَسَطِهِمْ»</h2>
+          <h2>{language === 'ar' ? '«لأَنَّهُ حَيْثُمَا اجْتَمَعَ اثْنَانِ أَوْ ثَلاَثَةٌ بِاسْمِي فَهُنَاكَ أَكُونُ فِي وَسَطِهِمْ»' : '«For where two or three gather in my name, there am I with them.»'}</h2>
           <span className="bible-ref">{language === 'ar' ? 'متى 18: 20' : 'Matthew 18:20'}</span>
           
           <p>

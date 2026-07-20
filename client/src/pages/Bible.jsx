@@ -14,72 +14,72 @@ const TRANSLATIONS = [
 
 // ===== BIBLE BOOKS (full 66 books) =====
 const BIBLE_BOOKS = [
-  { id: 'GEN', name: 'التكوين',          testament: 'old', chapters: 50 },
-  { id: 'EXO', name: 'الخروج',          testament: 'old', chapters: 40 },
-  { id: 'LEV', name: 'اللاويين',        testament: 'old', chapters: 27 },
-  { id: 'NUM', name: 'العدد',           testament: 'old', chapters: 36 },
-  { id: 'DEU', name: 'التثنية',         testament: 'old', chapters: 34 },
-  { id: 'JOS', name: 'يشوع',            testament: 'old', chapters: 24 },
-  { id: 'JDG', name: 'القضاة',          testament: 'old', chapters: 21 },
-  { id: 'RUT', name: 'راعوث',           testament: 'old', chapters: 4  },
-  { id: '1SA', name: 'صموئيل الأول',    testament: 'old', chapters: 31 },
-  { id: '2SA', name: 'صموئيل الثاني',   testament: 'old', chapters: 24 },
-  { id: '1KI', name: 'الملوك الأول',    testament: 'old', chapters: 22 },
-  { id: '2KI', name: 'الملوك الثاني',   testament: 'old', chapters: 25 },
-  { id: '1CH', name: 'أيام الأول',      testament: 'old', chapters: 29 },
-  { id: '2CH', name: 'أيام الثاني',     testament: 'old', chapters: 36 },
-  { id: 'EZR', name: 'عزرا',            testament: 'old', chapters: 10 },
-  { id: 'NEH', name: 'نحميا',           testament: 'old', chapters: 13 },
-  { id: 'EST', name: 'أستير',           testament: 'old', chapters: 10 },
-  { id: 'JOB', name: 'أيوب',            testament: 'old', chapters: 42 },
-  { id: 'PSA', name: 'المزامير',        testament: 'old', chapters: 150},
-  { id: 'PRO', name: 'الأمثال',         testament: 'old', chapters: 31 },
-  { id: 'ECC', name: 'الجامعة',         testament: 'old', chapters: 12 },
-  { id: 'SNG', name: 'نشيد الأناشيد',   testament: 'old', chapters: 8  },
-  { id: 'ISA', name: 'إشعياء',          testament: 'old', chapters: 66 },
-  { id: 'JER', name: 'إرميا',           testament: 'old', chapters: 52 },
-  { id: 'LAM', name: 'مراثي إرميا',     testament: 'old', chapters: 5  },
-  { id: 'EZK', name: 'حزقيال',          testament: 'old', chapters: 48 },
-  { id: 'DAN', name: 'دانيال',          testament: 'old', chapters: 12 },
-  { id: 'HOS', name: 'هوشع',            testament: 'old', chapters: 14 },
-  { id: 'JOL', name: 'يوئيل',           testament: 'old', chapters: 3  },
-  { id: 'AMO', name: 'عاموس',           testament: 'old', chapters: 9  },
-  { id: 'OBA', name: 'عوبديا',          testament: 'old', chapters: 1  },
-  { id: 'JON', name: 'يونان',           testament: 'old', chapters: 4  },
-  { id: 'MIC', name: 'ميخا',            testament: 'old', chapters: 7  },
-  { id: 'NAM', name: 'ناحوم',           testament: 'old', chapters: 3  },
-  { id: 'HAB', name: 'حبقوق',           testament: 'old', chapters: 3  },
-  { id: 'ZEP', name: 'صفنيا',           testament: 'old', chapters: 3  },
-  { id: 'HAG', name: 'حجي',             testament: 'old', chapters: 2  },
-  { id: 'ZEC', name: 'زكريا',           testament: 'old', chapters: 14 },
-  { id: 'MAL', name: 'ملاخي',           testament: 'old', chapters: 4  },
-  { id: 'MAT', name: 'متى',             testament: 'new', chapters: 28 },
-  { id: 'MRK', name: 'مرقس',            testament: 'new', chapters: 16 },
-  { id: 'LUK', name: 'لوقا',            testament: 'new', chapters: 24 },
-  { id: 'JHN', name: 'يوحنا',           testament: 'new', chapters: 21 },
-  { id: 'ACT', name: 'أعمال الرسل',     testament: 'new', chapters: 28 },
-  { id: 'ROM', name: 'رومية',           testament: 'new', chapters: 16 },
-  { id: '1CO', name: 'كورنثوس الأول',   testament: 'new', chapters: 16 },
-  { id: '2CO', name: 'كورنثوس الثاني',  testament: 'new', chapters: 13 },
-  { id: 'GAL', name: 'غلاطية',          testament: 'new', chapters: 6  },
-  { id: 'EPH', name: 'أفسس',            testament: 'new', chapters: 6  },
-  { id: 'PHP', name: 'فيلبي',           testament: 'new', chapters: 4  },
-  { id: 'COL', name: 'كولوسي',          testament: 'new', chapters: 4  },
-  { id: '1TH', name: 'تسالونيكي الأول', testament: 'new', chapters: 5  },
-  { id: '2TH', name: 'تسالونيكي الثاني',testament: 'new', chapters: 3  },
-  { id: '1TI', name: 'تيموثاوس الأول',  testament: 'new', chapters: 6  },
-  { id: '2TI', name: 'تيموثاوس الثاني', testament: 'new', chapters: 4  },
-  { id: 'TIT', name: 'تيطس',            testament: 'new', chapters: 3  },
-  { id: 'PHM', name: 'فيلمون',          testament: 'new', chapters: 1  },
-  { id: 'HEB', name: 'العبرانيين',      testament: 'new', chapters: 13 },
-  { id: 'JAS', name: 'يعقوب',           testament: 'new', chapters: 5  },
-  { id: '1PE', name: 'بطرس الأول',      testament: 'new', chapters: 5  },
-  { id: '2PE', name: 'بطرس الثاني',     testament: 'new', chapters: 3  },
-  { id: '1JN', name: 'يوحنا الأول',     testament: 'new', chapters: 5  },
-  { id: '2JN', name: 'يوحنا الثاني',    testament: 'new', chapters: 1  },
-  { id: '3JN', name: 'يوحنا الثالث',    testament: 'new', chapters: 1  },
-  { id: 'JUD', name: 'يهوذا',           testament: 'new', chapters: 1  },
-  { id: 'REV', name: 'الرؤيا',          testament: 'new', chapters: 22 },
+  { id: 'GEN', name: 'التكوين', nameEn: 'Genesis', testament: 'old', chapters: 50 },
+  { id: 'EXO', name: 'الخروج', nameEn: 'Exodus', testament: 'old', chapters: 40 },
+  { id: 'LEV', name: 'اللاويين', nameEn: 'Leviticus', testament: 'old', chapters: 27 },
+  { id: 'NUM', name: 'العدد', nameEn: 'Numbers', testament: 'old', chapters: 36 },
+  { id: 'DEU', name: 'التثنية', nameEn: 'Deuteronomy', testament: 'old', chapters: 34 },
+  { id: 'JOS', name: 'يشوع', nameEn: 'Joshua', testament: 'old', chapters: 24 },
+  { id: 'JDG', name: 'القضاة', nameEn: 'Judges', testament: 'old', chapters: 21 },
+  { id: 'RUT', name: 'راعوث', nameEn: 'Ruth', testament: 'old', chapters: 4 },
+  { id: '1SA', name: 'صموئيل الأول', nameEn: '1 Samuel', testament: 'old', chapters: 31 },
+  { id: '2SA', name: 'صموئيل الثاني', nameEn: '2 Samuel', testament: 'old', chapters: 24 },
+  { id: '1KI', name: 'الملوك الأول', nameEn: '1 Kings', testament: 'old', chapters: 22 },
+  { id: '2KI', name: 'الملوك الثاني', nameEn: '2 Kings', testament: 'old', chapters: 25 },
+  { id: '1CH', name: 'أيام الأول', nameEn: '1 Chronicles', testament: 'old', chapters: 29 },
+  { id: '2CH', name: 'أيام الثاني', nameEn: '2 Chronicles', testament: 'old', chapters: 36 },
+  { id: 'EZR', name: 'عزرا', nameEn: 'Ezra', testament: 'old', chapters: 10 },
+  { id: 'NEH', name: 'نحميا', nameEn: 'Nehemiah', testament: 'old', chapters: 13 },
+  { id: 'EST', name: 'أستير', nameEn: 'Esther', testament: 'old', chapters: 10 },
+  { id: 'JOB', name: 'أيوب', nameEn: 'Job', testament: 'old', chapters: 42 },
+  { id: 'PSA', name: 'المزامير', nameEn: 'Psalms', testament: 'old', chapters: 150 },
+  { id: 'PRO', name: 'الأمثال', nameEn: 'Proverbs', testament: 'old', chapters: 31 },
+  { id: 'ECC', name: 'الجامعة', nameEn: 'Ecclesiastes', testament: 'old', chapters: 12 },
+  { id: 'SNG', name: 'نشيد الأناشيد', nameEn: 'Song of Solomon', testament: 'old', chapters: 8 },
+  { id: 'ISA', name: 'إشعياء', nameEn: 'Isaiah', testament: 'old', chapters: 66 },
+  { id: 'JER', name: 'إرميا', nameEn: 'Jeremiah', testament: 'old', chapters: 52 },
+  { id: 'LAM', name: 'مراثي إرميا', nameEn: 'Lamentations', testament: 'old', chapters: 5 },
+  { id: 'EZK', name: 'حزقيال', nameEn: 'Ezekiel', testament: 'old', chapters: 48 },
+  { id: 'DAN', name: 'دانيال', nameEn: 'Daniel', testament: 'old', chapters: 12 },
+  { id: 'HOS', name: 'هوشع', nameEn: 'Hosea', testament: 'old', chapters: 14 },
+  { id: 'JOL', name: 'يوئيل', nameEn: 'Joel', testament: 'old', chapters: 3 },
+  { id: 'AMO', name: 'عاموس', nameEn: 'Amos', testament: 'old', chapters: 9 },
+  { id: 'OBA', name: 'عوبديا', nameEn: 'Obadiah', testament: 'old', chapters: 1 },
+  { id: 'JON', name: 'يونان', nameEn: 'Jonah', testament: 'old', chapters: 4 },
+  { id: 'MIC', name: 'ميخا', nameEn: 'Micah', testament: 'old', chapters: 7 },
+  { id: 'NAM', name: 'ناحوم', nameEn: 'Nahum', testament: 'old', chapters: 3 },
+  { id: 'HAB', name: 'حبقوق', nameEn: 'Habakkuk', testament: 'old', chapters: 3 },
+  { id: 'ZEP', name: 'صفنيا', nameEn: 'Zephaniah', testament: 'old', chapters: 3 },
+  { id: 'HAG', name: 'حجي', nameEn: 'Haggai', testament: 'old', chapters: 2 },
+  { id: 'ZEC', name: 'زكريا', nameEn: 'Zechariah', testament: 'old', chapters: 14 },
+  { id: 'MAL', name: 'ملاخي', nameEn: 'Malachi', testament: 'old', chapters: 4 },
+  { id: 'MAT', name: 'متى', nameEn: 'Matthew', testament: 'new', chapters: 28 },
+  { id: 'MRK', name: 'مرقس', nameEn: 'Mark', testament: 'new', chapters: 16 },
+  { id: 'LUK', name: 'لوقا', nameEn: 'Luke', testament: 'new', chapters: 24 },
+  { id: 'JHN', name: 'يوحنا', nameEn: 'John', testament: 'new', chapters: 21 },
+  { id: 'ACT', name: 'أعمال الرسل', nameEn: 'Acts', testament: 'new', chapters: 28 },
+  { id: 'ROM', name: 'رومية', nameEn: 'Romans', testament: 'new', chapters: 16 },
+  { id: '1CO', name: 'كورنثوس الأول', nameEn: '1 Corinthians', testament: 'new', chapters: 16 },
+  { id: '2CO', name: 'كورنثوس الثاني', nameEn: '2 Corinthians', testament: 'new', chapters: 13 },
+  { id: 'GAL', name: 'غلاطية', nameEn: 'Galatians', testament: 'new', chapters: 6 },
+  { id: 'EPH', name: 'أفسس', nameEn: 'Ephesians', testament: 'new', chapters: 6 },
+  { id: 'PHP', name: 'فيلبي', nameEn: 'Philippians', testament: 'new', chapters: 4 },
+  { id: 'COL', name: 'كولوسي', nameEn: 'Colossians', testament: 'new', chapters: 4 },
+  { id: '1TH', name: 'تسالونيكي الأول', nameEn: '1 Thessalonians', testament: 'new', chapters: 5 },
+  { id: '2TH', name: 'تسالونيكي الثاني', nameEn: '2 Thessalonians', testament: 'new', chapters: 3 },
+  { id: '1TI', name: 'تيموثاوس الأول', nameEn: '1 Timothy', testament: 'new', chapters: 6 },
+  { id: '2TI', name: 'تيموثاوس الثاني', nameEn: '2 Timothy', testament: 'new', chapters: 4 },
+  { id: 'TIT', name: 'تيطس', nameEn: 'Titus', testament: 'new', chapters: 3 },
+  { id: 'PHM', name: 'فيلمون', nameEn: 'Philemon', testament: 'new', chapters: 1 },
+  { id: 'HEB', name: 'العبرانيين', nameEn: 'Hebrews', testament: 'new', chapters: 13 },
+  { id: 'JAS', name: 'يعقوب', nameEn: 'James', testament: 'new', chapters: 5 },
+  { id: '1PE', name: 'بطرس الأول', nameEn: '1 Peter', testament: 'new', chapters: 5 },
+  { id: '2PE', name: 'بطرس الثاني', nameEn: '2 Peter', testament: 'new', chapters: 3 },
+  { id: '1JN', name: 'يوحنا الأول', nameEn: '1 John', testament: 'new', chapters: 5 },
+  { id: '2JN', name: 'يوحنا الثاني', nameEn: '2 John', testament: 'new', chapters: 1 },
+  { id: '3JN', name: 'يوحنا الثالث', nameEn: '3 John', testament: 'new', chapters: 1 },
+  { id: 'JUD', name: 'يهوذا', nameEn: 'Jude', testament: 'new', chapters: 1 },
+  { id: 'REV', name: 'الرؤيا', nameEn: 'Revelation', testament: 'new', chapters: 22 },
 ];
 
 // Extract plain text from verse content array (handles strings + objects)
@@ -225,7 +225,7 @@ const Bible = () => {
             <div className="banner-control">
               <label className="banner-label"><BookOpen size={13} /> {t('bible.selectBook')}</label>
               <button className="banner-book-btn" onClick={() => setShowBookList(true)}>
-                <span>{selectedBook.name}</span>
+                <span>{language === 'ar' ? selectedBook.name : (selectedBook.nameEn || selectedBook.name)}</span>
                 <ChevronDown size={14} />
               </button>
             </div>
@@ -278,7 +278,7 @@ const Bible = () => {
                   className={`book-item ${selectedBook.id === book.id ? 'active' : ''}`}
                   onClick={() => handleBookSelect(book)}
                 >
-                  {book.name}
+                  {language === 'ar' ? book.name : (book.nameEn || book.name)}
                 </button>
               ))}
             </div>
@@ -299,7 +299,7 @@ const Bible = () => {
           ) : (
             <div className="reading-title-block">
               <span className="testament-badge">{selectedBook.testament === 'old' ? t('bible.oldTestament') : t('bible.newTestament')}</span>
-              <h2>{selectedBook.name} — {language === 'ar' ? `الإصحاح ${selectedChapter}` : `Chapter ${selectedChapter}`}</h2>
+              <h2>{language === 'ar' ? selectedBook.name : (selectedBook.nameEn || selectedBook.name)} — {language === 'ar' ? `الإصحاح ${selectedChapter}` : `Chapter ${selectedChapter}`}</h2>
               <span className="translation-badge">{selectedTranslation.name}</span>
             </div>
           )}

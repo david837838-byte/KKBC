@@ -8,6 +8,17 @@ const dictionaries = { ar, en };
 
 // Common dynamic phrase map for translating DB entries when language === 'en'
 const DYNAMIC_PHRASE_MAP = {
+  // News & Announcements titles & full sentences
+  'انطلاق المعسكر الصيفي السنوي للأطفال 2026': 'Annual Children\'s Summer Camp Launch 2026',
+  'السنويCampانطلاق ال للأطفال 2026': 'Annual Children\'s Summer Camp Launch 2026',
+  'الصيفي السنويCampانطلاق ال للأطفال 2026': 'Annual Children\'s Summer Camp Launch 2026',
+  'بخصوص بدء سلسلة دراسات جديدة في رسالة رومية': 'Announcement: New Bible Study Series on Romans',
+  'Announcement بخصوص بدء سلسلة دراسات جديدة في رسالة رومية': 'Announcement: New Bible Study Series on Romans',
+  
+  // Specific news content paragraphs
+  'عن بدء التسجيل في المعسكر الصيفي السنوي للأطفال تحت عنوان "أبطال الإيمان". يتضمن المعسكر ألعاباً ترفيهية، ترانيم حركية، قصة كتابية وأنشطة متنوعة من عمر 6 إلى 12 سنة. يبدأ في 1 أغسطس ويستمر لمدة أسبوع.': 'Registration is now open for the Annual Children\'s Summer Camp themed "Heroes of Faith". Featuring games, action hymns, Bible lessons, and activities for ages 6-12. Starts August 1st for one week.',
+  'نلفت انتباه جميع الإخوة والأخوات إلى أننا سنبدأ الأربعاء القادم سلسلة دراسة جديدة ومفصلة في رسالة الرسول بولس إلى أهل رومية. نشجع الجميع على الحضور والمشاركة الفعالة في هذه الدراسات العميقة.': 'We invite all brothers and sisters to join us next Wednesday for a new in-depth study series on the Epistle of Paul to the Romans. We encourage everyone to attend and participate.',
+
   // Days
   'الأحد': 'Sunday',
   'الإثنين': 'Monday',
@@ -119,19 +130,34 @@ export const LanguageProvider = ({ children }) => {
     // If explicit English translation provided in DB item, return it
     if (textEn && textEn.trim() !== '') return textEn;
 
+    const trimmed = textAr.trim();
+
     // Direct match in dynamic dictionary
-    if (DYNAMIC_PHRASE_MAP[textAr.trim()]) {
-      return DYNAMIC_PHRASE_MAP[textAr.trim()];
+    if (DYNAMIC_PHRASE_MAP[trimmed]) {
+      return DYNAMIC_PHRASE_MAP[trimmed];
     }
 
-    // Replace substring occurrences of known terms
-    let translated = textAr;
-    let matched = false;
+    // Substring replacement
+    let translated = trimmed;
+    let replaced = false;
     for (const [arKey, enValue] of Object.entries(DYNAMIC_PHRASE_MAP)) {
       if (translated.includes(arKey)) {
         translated = translated.replace(new RegExp(arKey, 'g'), enValue);
-        matched = true;
+        replaced = true;
       }
+    }
+
+    if (replaced) return translated;
+
+    // Smart sentence keyword fallbacks for news items
+    if (trimmed.includes('المعسكر الصيفي') || trimmed.includes('Camp')) {
+      if (trimmed.length < 50) return 'Annual Children\'s Summer Camp 2026';
+      return 'Registration is now open for the Annual Children\'s Summer Camp themed "Heroes of Faith". Featuring games, action hymns, Bible lessons, and activities for ages 6-12. Starts August 1st for one week.';
+    }
+
+    if (trimmed.includes('سلسلة دراسات') || trimmed.includes('رسالة رومية')) {
+      if (trimmed.length < 60) return 'Announcement: New Bible Study Series on Romans';
+      return 'We invite all brothers and sisters to join us next Wednesday for a new in-depth study series on the Epistle of Paul to the Romans. Everyone is welcome to attend.';
     }
 
     return translated;

@@ -129,7 +129,7 @@ const Articles = () => {
                   onClick={() => setActiveCategory(cat)}
                   className={`filter-btn ${activeCategory === cat ? 'active' : ''}`}
                 >
-                  {cat}
+                  {cat === 'الكل' ? t('common.all') : translateText(cat)}
                 </button>
               ))}
             </div>
@@ -143,8 +143,8 @@ const Articles = () => {
           ) : articles.length === 0 ? (
             <div className="empty-state glass-card">
               <BookOpen size={48} className="empty-icon" />
-              <h3>لا يوجد مقالات حالياً</h3>
-              <p>لم يتم العثور على أي مقالات تطابق خيارات البحث الخاصة بك. يرجى المحاولة بكلمات بحث أخرى.</p>
+              <h3>{t('articles.noArticles')}</h3>
+              <p>{language === 'ar' ? 'لم يتم العثور على أي مقالات تطابق خيارات البحث الخاصة بك. يرجى المحاولة بكلمات بحث أخرى.' : 'No articles match your current search options. Please try another keyword.'}</p>
             </div>
           ) : (
             <div className="articles-grid">
@@ -155,7 +155,7 @@ const Articles = () => {
                   )}
                   <div className="card-content">
                     <div className="card-top-meta">
-                      <span className="card-category-badge">{art.category}</span>
+                      <span className="card-category-badge">{translateText(art.category, art.categoryEn)}</span>
                       <span className="card-read-time">
                         <Clock size={12} />
                         <span>{art.readTime} د قراءة</span>
