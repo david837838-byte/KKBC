@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Download, AlertCircle, Share2, Plus, Info, Award } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const DownloadApp = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
@@ -26,7 +28,7 @@ const DownloadApp = () => {
         setDeferredPrompt(null);
       });
     } else {
-      alert('لتثبيت التطبيق على جهاز الأندرويد الخاص بك، يرجى النقر على زر القائمة (3 نقاط) في متصفح Chrome ثم اختيار "تثبيت التطبيق" أو "إضافة للشاشة الرئيسية".');
+      alert(language === 'ar' ? 'لتثبيت التطبيق على جهاز الأندرويد، انقر على زر القائمة (3 نقاط) ثم اختر "تثبيت التطبيق".' : 'To install the app on Android, tap browser menu (3 dots) and select "Install app".');
     }
   };
 
@@ -34,9 +36,9 @@ const DownloadApp = () => {
     <div className="download-app-page container animate-fade-in">
       <div className="download-hero text-center">
         <Smartphone className="hero-icon" size={64} />
-        <h1>تطبيق كنيسة خربة قنافار للهواتف الذكية 📱</h1>
+        <h1>{t('downloadApp.title')} 📱</h1>
         <p className="page-intro">
-          قم بتنزيل وتثبيت تطبيق الكنيسة المستقل لتصل لخدمات البث المباشر، العظات، الترانيم، وقراءة الكتاب المقدس بنقرة واحدة مباشرة من هاتفك وبسرعة فائقة!
+          {t('downloadApp.subtitle')}
         </p>
       </div>
 

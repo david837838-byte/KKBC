@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Clock, MapPin, Calendar, HeartHandshake } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const Meetings = () => {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     fetch('/api/meetings')
@@ -23,10 +25,10 @@ const Meetings = () => {
 
   return (
     <div className="meetings-page container">
-      <h1 className="section-title">الاجتماعات الأسبوعية</h1>
+      <h1 className="section-title">{t('meetings.title')}</h1>
       
       <p className="page-intro">
-        يسعدنا حضوركم ومشاركتنا في اجتماعاتنا الروحية المختلفة على مدار الأسبوع. تم تصميم هذه الاجتماعات لتناسب كافة الأعمار وتهدف لبنائنا روحيّاً في معرفة كلمة الله وعبادته بالروح والحق.
+        {t('meetings.subtitle')}
       </p>
 
       {loading ? (
@@ -34,7 +36,7 @@ const Meetings = () => {
           <div className="loading-spinner"></div>
         </div>
       ) : meetings.length === 0 ? (
-        <p className="no-data">لا توجد اجتماعات مضافة حالياً. الرجاء مراجعة لوحة التحكم.</p>
+        <p className="no-data">{t('common.noData')}</p>
       ) : (
         <div className="grid-3 meetings-grid">
           {meetings.map((meeting) => (
@@ -46,11 +48,11 @@ const Meetings = () => {
               <div className="meeting-meta">
                 <div className="meta-item">
                   <Clock size={16} className="meta-icon" />
-                  <span>الوقت: {meeting.time}</span>
+                  <span>{t('meetings.time')}: {meeting.time}</span>
                 </div>
                 <div className="meta-item">
                   <MapPin size={16} className="meta-icon" />
-                  <span>المكان: {meeting.location || 'مبنى الكنيسة'}</span>
+                  <span>{t('meetings.location')}: {meeting.location || (language === 'ar' ? 'مبنى الكنيسة' : 'Church Building')}</span>
                 </div>
               </div>
 
@@ -66,11 +68,11 @@ const Meetings = () => {
       <section className="meetings-invite glass-card">
         <HeartHandshake size={36} className="invite-icon" />
         <div>
-          <h3>هل تود الزيارة أو لديك استفسار؟</h3>
-          <p>أبواب الكنيسة مفتوحة لجميع الباحثين والراغبين في معرفة كلمة الله. إذا كنت بحاجة إلى وسيلة نقل أو لديك أي سؤال بخصوص مواعيد وأماكن الاجتماعات، يرجى التحدث إلينا مباشرة.</p>
+          <h3>{language === 'ar' ? 'هل تود الزيارة أو لديك استفسار؟' : 'Would You Like to Visit or Have a Question?'}</h3>
+          <p>{t('contact.subtitle')}</p>
         </div>
         <Link to="/contact" className="btn btn-accent">
-          تواصل معنا الآن
+          {t('nav.contact')}
         </Link>
       </section>
 

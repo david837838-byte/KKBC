@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Calendar, User, Volume2, Video, FileText, Download, Play, Pause, ExternalLink } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Sermons = () => {
   const [sermons, setSermons] = useState([]);
@@ -8,6 +9,7 @@ const Sermons = () => {
   const [selectedPreacher, setSelectedPreacher] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedType, setSelectedType] = useState('');
+  const { t, language } = useLanguage();
 
   // Dropdown lists
   const [preachers, setPreachers] = useState([]);
@@ -65,7 +67,7 @@ const Sermons = () => {
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('ar-LB', options);
+    return new Date(dateString).toLocaleDateString(language === 'ar' ? 'ar-LB' : 'en-US', options);
   };
 
   const cleanYoutubeUrl = (url) => {
@@ -81,10 +83,10 @@ const Sermons = () => {
 
   return (
     <div className="sermons-page container">
-      <h1 className="section-title">العظات والتعليم الروحي</h1>
+      <h1 className="section-title">{t('sermons.title')}</h1>
       
       <p className="page-intro">
-        استمع وشاهد مكتبة العظات والرسائل الروحية المسجلة لمجموعة من الرعاة والخدام. يمكنك البحث والتصفية حسب نوع العظة والواعظ والتصنيف الدراسي.
+        {t('sermons.subtitle')}
       </p>
 
       {/* Filter and Search Bar */}
@@ -93,14 +95,14 @@ const Sermons = () => {
           <div className="search-input-group">
             <input 
               type="text" 
-              placeholder="ابحث عن عنوان العظة أو الواعظ..." 
+              placeholder={t('sermons.searchPlaceholder')} 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="form-control"
             />
             <button type="submit" className="btn btn-primary search-btn">
               <Search size={18} />
-              <span>بحث</span>
+              <span>{t('common.search')}</span>
             </button>
           </div>
         </form>
@@ -108,13 +110,13 @@ const Sermons = () => {
         <div className="filters-grid">
           {/* Preacher Filter */}
           <div className="filter-item">
-            <label>الواعظ</label>
+            <label>{t('sermons.preacher')}</label>
             <select 
               value={selectedPreacher} 
               onChange={(e) => setSelectedPreacher(e.target.value)}
               className="form-control"
             >
-              <option value="">كل الخدام</option>
+              <option value="">{t('sermons.filterByPreacher')}</option>
               {preachers.map((preacher, idx) => (
                 <option value={preacher} key={idx}>{preacher}</option>
               ))}
@@ -123,13 +125,13 @@ const Sermons = () => {
 
           {/* Category Filter */}
           <div className="filter-item">
-            <label>التصنيف الروحي</label>
+            <label>{t('sermons.category')}</label>
             <select 
               value={selectedCategory} 
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="form-control"
             >
-              <option value="">كل التصنيفات</option>
+              <option value="">{t('sermons.filterByCategory')}</option>
               {categories.map((cat, idx) => (
                 <option value={cat} key={idx}>{cat}</option>
               ))}
@@ -138,16 +140,16 @@ const Sermons = () => {
 
           {/* Media Type Filter */}
           <div className="filter-item">
-            <label>الوسائط</label>
+            <label>{t('sermons.mediaType')}</label>
             <select 
               value={selectedType} 
               onChange={(e) => setSelectedType(e.target.value)}
               className="form-control"
             >
-              <option value="">كل أنواع الوسائط</option>
-              <option value="video">فيديو</option>
-              <option value="audio">ملف صوتي</option>
-              <option value="pdf">ملف PDF / نص</option>
+              <option value="">{t('sermons.filterByType')}</option>
+              <option value="video">{t('sermons.videoSermon')}</option>
+              <option value="audio">{t('sermons.audioSermon')}</option>
+              <option value="pdf">{t('sermons.pdfSermon')}</option>
             </select>
           </div>
         </div>
@@ -159,7 +161,7 @@ const Sermons = () => {
           <div className="loading-spinner"></div>
         </div>
       ) : sermons.length === 0 ? (
-        <p className="no-data">لم نعثر على أي عظات مطابقة لبحثك.</p>
+        <p className="no-data">{t('sermons.noSermonsFound')}</p>
       ) : (
         <div className="grid-2 sermons-grid">
           {sermons.map((sermon) => (
@@ -174,11 +176,11 @@ const Sermons = () => {
               <div className="sermon-meta">
                 <div className="meta-item">
                   <User size={16} />
-                  <span>الواعظ: {sermon.preacher}</span>
+                  <span>{t('sermons.preacher')}: {sermon.preacher}</span>
                 </div>
                 <div className="meta-item">
                   <Calendar size={16} />
-                  <span>تاريخ النشر: {formatDate(sermon.date)}</span>
+                  <span>{t('sermons.date')}: {formatDate(sermon.date)}</span>
                 </div>
               </div>
 

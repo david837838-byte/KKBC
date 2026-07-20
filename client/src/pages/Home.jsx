@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Radio, Calendar, BookOpen, ChevronLeft, Volume2, Video, FileText, HeartHandshake } from 'lucide-react';
 import io from 'socket.io-client';
+import { useLanguage } from '../context/LanguageContext';
 
 const Home = () => {
   const [settings, setSettings] = useState(null);
@@ -11,6 +12,7 @@ const Home = () => {
   const [meetings, setMeetings] = useState([]);
   const [countdownText, setCountdownText] = useState('');
   const [dailyVerse, setDailyVerse] = useState(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     // 1. Fetch website settings
@@ -78,13 +80,13 @@ const Home = () => {
   // Simplified Countdown to Sunday meeting (or next meeting)
   const calculateCountdown = (meetingsList) => {
     if (!meetingsList || meetingsList.length === 0) {
-      setCountdownText('الأحد القادم الساعة 10:00 صباحاً');
+      setCountdownText(language === 'ar' ? 'الأحد القادم الساعة 10:00 صباحاً' : 'Next Sunday at 10:00 AM');
       return;
     }
     
     // Default to the first meeting (usually Sunday Service)
     const primaryMeeting = meetingsList[0];
-    setCountdownText(`اجتماعنا القادم: يوم ${primaryMeeting.day} الساعة ${primaryMeeting.time}`);
+    setCountdownText(language === 'ar' ? `اجتماعنا القادم: يوم ${primaryMeeting.day} الساعة ${primaryMeeting.time}` : `Next Meeting: ${primaryMeeting.day} at ${primaryMeeting.time}`);
   };
 
   const getMediaIcon = (type) => {
@@ -98,7 +100,7 @@ const Home = () => {
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('ar-LB', options);
+    return new Date(dateString).toLocaleDateString(language === 'ar' ? 'ar-LB' : 'en-US', options);
   };
 
   return (
@@ -110,27 +112,27 @@ const Home = () => {
           : 'linear-gradient(rgba(15, 35, 67, 0.85), rgba(15, 35, 67, 0.85)), url("/church_building.jpg")'
       }}>
         <div className="container hero-content">
-          <span className="welcome-tag">أهلاً وسهلاً بكم في كنيستنا</span>
-          <h1>{settings?.churchName || 'الكنيسة المعمدانية الإنجيلية – خربة قنافار'}</h1>
+          <span className="welcome-tag">{t('common.welcome')}</span>
+          <h1>{settings?.churchName || t('home.heroTitle')}</h1>
           <p className="welcome-message">
-            {settings?.welcomeMessage || 'نحن جماعة من المؤمنين بالمسيح نسعى لعيش الإيمان بفاعلية ونشر الكلمة وتلمذة النفوس.'}
+            {settings?.welcomeMessage || t('home.welcomeMessage')}
           </p>
 
           <div className="hero-cta-group">
             {isLive ? (
               <Link to="/live" className="btn btn-accent pulse-btn">
                 <Radio size={20} className="blink" />
-                <span>شاهد البث المباشر الآن!</span>
+                <span>{t('common.watchLive')}</span>
               </Link>
             ) : (
               <div className="countdown-container">
-                <span className="countdown-label">البث غير نشط حالياً</span>
+                <span className="countdown-label">{t('common.liveInactive')}</span>
                 <span className="countdown-timer">{countdownText}</span>
               </div>
             )}
             
             <Link to="/about" className="btn btn-outline" style={{ border: '2px solid white', color: 'white' }}>
-              تعرف علينا
+              {t('home.aboutChurchTitle')}
             </Link>
           </div>
         </div>
@@ -152,7 +154,7 @@ const Home = () => {
               const currentVerse = dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»');
               const currentRef = dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15');
               navigator.clipboard.writeText(`"${currentVerse}" - ${currentRef}`);
-              alert('تم نسخ آية اليوم بنجاح لمشاركتها! 📋');
+              alert(t('common.verseCopied'));
             }}
             className="btn btn-outline" 
             style={{ 
@@ -165,7 +167,7 @@ const Home = () => {
               borderRadius: 'var(--radius-sm)'
             }}
           >
-            📋 نسخ ومشاركة آية اليوم
+            {t('common.copyVerse')}
           </button>
         </div>
       </section>
@@ -176,16 +178,16 @@ const Home = () => {
           {/* Latest Sermons */}
           <div className="home-column">
             <div className="column-header">
-              <h2>آخر العظات والرسائل</h2>
+              <h2>{t('home.latestSermonsTitle')}</h2>
               <Link to="/sermons" className="view-all-link">
-                <span>كل العظات</span>
+                <span>{t('home.allSermons')}</span>
                 <ChevronLeft size={16} />
               </Link>
             </div>
             
             <div className="list-cards">
               {latestSermons.length === 0 ? (
-                <p className="no-data">لا توجد عظات متوفرة حالياً</p>
+                <p className="no-data">{t('home.noSermons')}</p>
               ) : (
                 latestSermons.map(sermon => (
                   <div className="item-card glass-card" key={sermon._id}>
@@ -195,12 +197,12 @@ const Home = () => {
                     </div>
                     <h3>{sermon.title}</h3>
                     <div className="card-meta">
-                      <span>الواعظ: {sermon.preacher}</span>
+                      <span>{t('common.preacher')}: {sermon.preacher}</span>
                       <span>•</span>
                       <span>{formatDate(sermon.date)}</span>
                     </div>
                     {sermon.description && <p className="card-desc">{sermon.description.substring(0, 100)}...</p>}
-                    <Link to="/sermons" className="card-action-btn">استمع / شاهد</Link>
+                    <Link to="/sermons" className="card-action-btn">{t('common.listenWatch')}</Link>
                   </div>
                 ))
               )}
@@ -210,28 +212,28 @@ const Home = () => {
           {/* Latest News */}
           <div className="home-column">
             <div className="column-header">
-              <h2>الأخبار والإعلانات</h2>
+              <h2>{t('home.latestNewsTitle')}</h2>
               <Link to="/news" className="view-all-link">
-                <span>كل الأخبار</span>
+                <span>{t('home.allNews')}</span>
                 <ChevronLeft size={16} />
               </Link>
             </div>
             
             <div className="list-cards">
               {latestNews.length === 0 ? (
-                <p className="no-data">لا توجد أخبار أو إعلانات متوفرة حالياً</p>
+                <p className="no-data">{t('home.noNews')}</p>
               ) : (
                 latestNews.map(newsItem => (
                   <div className="item-card glass-card" key={newsItem._id}>
                     <span className={`news-tag ${newsItem.category}`}>
-                      {newsItem.category === 'event' ? 'فعالية' : newsItem.category === 'announcement' ? 'إعلان' : 'خبر'}
+                      {newsItem.category === 'event' ? t('common.event') : newsItem.category === 'announcement' ? t('common.announcement') : t('common.newsItem')}
                     </span>
                     <h3>{newsItem.title}</h3>
                     {newsItem.content && <p className="card-desc">{newsItem.content.substring(0, 110)}...</p>}
                     <div className="card-meta">
                       <span>{formatDate(newsItem.date)}</span>
                     </div>
-                    <Link to="/news" className="card-action-btn">اقرأ المزيد</Link>
+                    <Link to="/news" className="card-action-btn">{t('common.readMore')}</Link>
                   </div>
                 ))
               )}
@@ -244,11 +246,11 @@ const Home = () => {
       <section className="schedule-preview-section">
         <div className="container preview-wrapper">
           <div className="preview-info">
-            <h2>شاركنا العبادة والشركة</h2>
-            <p>ندعو عائلتك للانضمام إلينا في اجتماعاتنا الروحية لمختلف الفئات العمرية.</p>
+            <h2>{t('home.joinWorship')}</h2>
+            <p>{t('home.joinWorshipDesc')}</p>
             <Link to="/meetings" className="btn btn-accent">
               <Calendar size={18} />
-              <span>جدول الاجتماعات الكامل</span>
+              <span>{t('home.viewSchedule')}</span>
             </Link>
           </div>
           <div className="preview-grid">
@@ -268,11 +270,11 @@ const Home = () => {
         <div className="prayer-cta-card glass-card">
           <HeartHandshake size={48} className="cta-icon" />
           <div className="cta-text">
-            <h3>هل تحتاج إلى صلاة؟</h3>
-            <p>نحن هنا لنرفع صلواتنا معك ولأجلك. لا تتردد في مشاركتنا طلباتك، وسوف يرفعها فريق الصلاة بكل أمانة وسرية.</p>
+            <h3>{language === 'ar' ? 'هل تحتاج إلى صلاة؟' : 'Need Prayer?'}</h3>
+            <p>{t('prayer.subtitle')}</p>
           </div>
           <Link to="/prayer" className="btn btn-primary">
-            أرسل طلبة صلاة
+            {t('prayer.sendPrayer')}
           </Link>
         </div>
       </section>

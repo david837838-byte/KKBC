@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, MessageSquare, CheckCircle, AlertCircle, Info, Heart } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Counseling = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const Counseling = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const { t, language } = useLanguage();
 
   const handleChange = (e) => {
     setFormData({
@@ -23,7 +25,7 @@ const Counseling = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.phone.trim() || !formData.details.trim()) {
-      setError('يرجى ملء جميع الحقول المطلوبة (الاسم، رقم الهاتف، وتفاصيل الطلب).');
+      setError(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة (الاسم، رقم الهاتف، وتفاصيل الطلب).' : 'Please fill out all required fields.');
       return;
     }
 
@@ -44,13 +46,13 @@ const Counseling = () => {
           setSubmitted(true);
           setFormData({ name: '', phone: '', email: '', preferredContact: 'phone', details: '' });
         } else {
-          setError(data.message || 'حدث خطأ أثناء إرسال طلب المشورة. حاول مرة أخرى.');
+          setError(data.message || (language === 'ar' ? 'حدث خطأ أثناء إرسال طلب المشورة. حاول مرة أخرى.' : 'Error sending request.'));
         }
       })
       .catch(err => {
         console.error(err);
         setLoading(false);
-        setError('حدث خطأ في الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.');
+        setError(language === 'ar' ? 'حدث خطأ في الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.' : 'Network error.');
       });
   };
 
@@ -58,9 +60,9 @@ const Counseling = () => {
     <div className="counseling-page container animate-fade-in">
       <div className="counseling-hero text-center">
         <ShieldCheck className="hero-icon" size={64} />
-        <h1>طلب مشورة رعوية خاصة 🕊️</h1>
+        <h1>{t('counseling.title')} 🕊️</h1>
         <p className="page-intro">
-          يسر راعي الكنيسة تقديم الإرشاد الروحي والمشورة الشخصية لكل من يمر بظروف صعبة أو يحتاج لتوجيه روحي مبني على كلمة الله بكل سرية وأمانة.
+          {t('counseling.subtitle')}
         </p>
       </div>
 
@@ -69,18 +71,15 @@ const Counseling = () => {
         <div className="counseling-info glass-card">
           <Heart size={44} className="info-icon" />
           <h2>«أَمَّا الْمَشُورَةُ الصَّالِحَةُ فَتُنَجِّي»</h2>
-          <span className="bible-ref">أمثال 11: 14</span>
+          <span className="bible-ref">{language === 'ar' ? 'أمثال 11: 14' : 'Proverbs 11:14'}</span>
           
           <p>
-            نحن ندرك حساسية الأمور الشخصية والعائلية، لذلك نلتزم بـ **السرية التامة والمطلقة**.
-          </p>
-          <p>
-            هذه الطلبات تُرسل **حصراً ومباشرة إلى راعي الكنيسة (القسيس)**، ولا يمكن لأي من الخدام أو المحررين الآخرين في الموقع الاطلاع عليها بأي حال من الأحوال.
+            {t('counseling.subtitle')}
           </p>
 
           <div className="privacy-badge">
             <ShieldCheck size={18} />
-            <span>طلب آمن وسري ومحمي بالكامل 🔒</span>
+            <span>{language === 'ar' ? 'طلب آمن وسري ومحمي بالكامل 🔒' : 'Secure, confidential request 🔒'}</span>
           </div>
         </div>
 
@@ -89,12 +88,9 @@ const Counseling = () => {
           {submitted ? (
             <div className="success-state">
               <CheckCircle size={64} className="success-icon" />
-              <h2>تم إرسال طلب المشورة بنجاح!</h2>
-              <p>
-                تم استلام طلبك بأمان وسرية تامة. سيقوم القسيس بمراجعة طلبك والتواصل معك شخصياً بأسرع وقت ممكن عبر وسيلة الاتصال المفضلة التي اخترتها.
-              </p>
+              <h2>{t('counseling.counselingSuccess')}</h2>
               <button onClick={() => setSubmitted(false)} className="btn btn-primary">
-                تقديم طلب مشورة آخر
+                {t('counseling.formTitle')}
               </button>
             </div>
           ) : (

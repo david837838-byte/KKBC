@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, ChevronDown, Copy, Check, Search, BookMarked, RefreshCw, ChevronRight, ChevronLeft, Star, Share2, Trash2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 // ===== TRANSLATIONS (hardcoded for fast load) =====
 const TRANSLATIONS = [
@@ -92,6 +93,7 @@ function extractVerseText(content) {
 }
 
 const Bible = () => {
+  const { t, language } = useLanguage();
   const [selectedTranslation, setSelectedTranslation] = useState(TRANSLATIONS[0]);
   const [selectedBook, setSelectedBook] = useState(BIBLE_BOOKS[0]);
   const [selectedChapter, setSelectedChapter] = useState(1);

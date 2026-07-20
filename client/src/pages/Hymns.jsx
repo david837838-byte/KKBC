@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Music, Play, Video, ChevronDown, ChevronUp, ExternalLink, Library } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const ARABIC_LETTERS = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
 
@@ -10,6 +11,7 @@ const Hymns = () => {
   const [activeHymnId, setActiveHymnId] = useState(null);
   const [activeTab, setActiveTab] = useState('lyrics'); // 'lyrics' or 'video'
   const [selectedLetter, setSelectedLetter] = useState('الكل');
+  const { t, language } = useLanguage();
 
   const fetchHymns = () => {
     setLoading(true);
@@ -69,7 +71,7 @@ const Hymns = () => {
       if (!hymn.videoUrl || hymn.videoUrl.trim() === '') return false;
     }
     // Letter filter
-    if (selectedLetter !== 'الكل') {
+    if (selectedLetter !== 'الكل' && selectedLetter !== 'All') {
       const firstChar = normalizeArabic(hymn.title?.charAt(0));
       const targetChar = normalizeArabic(selectedLetter);
       if (firstChar !== targetChar) return false;
@@ -88,10 +90,10 @@ const Hymns = () => {
 
   return (
     <div className="hymns-page container">
-      <h1 className="section-title">الترانيم والتسبيح</h1>
+      <h1 className="section-title">{t('hymns.title')}</h1>
       
       <p className="page-intro">
-        تصفح كلمات الترانيم الروحية واستمع للترانيم المصورة والمسجلة الخاصة بالكنيسة.
+        {t('hymns.subtitle')}
       </p>
 
           {/* Navigation Tabs */}
@@ -101,14 +103,14 @@ const Hymns = () => {
               className={`tab-btn ${activeTab === 'lyrics' ? 'active' : ''}`}
             >
               <Music size={18} />
-              <span>كلمات الترانيم</span>
+              <span>{t('hymns.lyrics')}</span>
             </button>
             <button 
               onClick={() => setActiveTab('video')}
               className={`tab-btn ${activeTab === 'video' ? 'active' : ''}`}
             >
               <Video size={18} />
-              <span>الترانيم المصورة (فيديو)</span>
+              <span>{t('hymns.watchVideo')}</span>
             </button>
           </div>
 

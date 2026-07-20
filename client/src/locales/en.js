@@ -23,7 +23,7 @@ const en = {
     churchName: 'Evangelical Baptist Church',
     churchLocation: 'Khirbet Qanafar',
     fullChurchTitle: 'Evangelical Baptist Church - Khirbet Qanafar',
-    welcome: 'Welcome',
+    welcome: 'Welcome to Our Church',
     search: 'Search',
     searchPlaceholder: 'Search website...',
     readMore: 'Read More',
@@ -44,22 +44,38 @@ const en = {
     close: 'Close',
     verseOfTheDay: 'Verse of the Day',
     shareVerse: 'Share Verse',
+    copyVerse: '📋 Copy & Share Daily Verse',
+    verseCopied: 'Daily verse copied successfully to clipboard! 📋',
     nextVerse: 'Next Verse',
     liveStream: 'Live Stream',
-    watchLive: 'Watch Live Stream Now',
+    watchLive: 'Watch Live Stream Now!',
+    liveInactive: 'Stream currently offline',
+    listenWatch: 'Listen / Watch',
+    preacher: 'Preacher',
+    date: 'Date',
+    event: 'Event',
+    announcement: 'Announcement',
+    newsItem: 'News',
   },
 
   // Home Page
   home: {
-    heroTitle: 'Evangelical Baptist Church in Khirbet Qanafar',
+    heroTitle: 'Evangelical Baptist Church – Khirbet Qanafar',
     heroSubtitle: 'A home for active fellowship, worship in spirit and truth, and spreading Christ\'s love in West Bekaa.',
+    welcomeMessage: 'We are a community of believers in Christ seeking to live out our faith actively, preach the Word, and make disciples.',
     joinUsSunday: 'Join us every Sunday at 10:00 AM',
-    latestSermons: 'Latest Sermons & Teachings',
-    upcomingMeetings: 'Weekly Meeting Schedule',
-    latestNews: 'Latest News & Announcements',
-    dailyVerseTitle: 'Meditate on the Word of God Today',
+    latestSermonsTitle: 'Latest Sermons & Messages',
+    allSermons: 'All Sermons',
+    noSermons: 'No sermons currently available',
+    latestNewsTitle: 'News & Announcements',
+    allNews: 'All News',
+    noNews: 'No news or announcements currently available',
+    dailyVerseTitle: 'Meditate on God\'s Word Today',
     visionTitle: 'Our Vision & Mission',
-    aboutChurchTitle: 'About the Church',
+    aboutChurchTitle: 'About Us',
+    joinWorship: 'Join Us for Worship & Fellowship',
+    joinWorshipDesc: 'We invite your family to join our spiritual meetings for all age groups.',
+    viewSchedule: 'Detailed Meeting Schedule',
   },
 
   // About Page
@@ -88,10 +104,11 @@ const en = {
   // Sermons Page
   sermons: {
     title: 'Sermons & Spiritual Teachings',
-    subtitle: 'Listen and watch our library of recorded biblical sermons and messages',
+    subtitle: 'Listen and watch our library of recorded biblical sermons and messages from pastors and ministers. Search and filter by topic, preacher, or media type.',
+    searchPlaceholder: 'Search sermon title or preacher...',
     preacher: 'Preacher',
     date: 'Publish Date',
-    category: 'Category',
+    category: 'Spiritual Category',
     mediaType: 'Media Type',
     filterByPreacher: 'All Preachers',
     filterByCategory: 'All Categories',
@@ -100,16 +117,21 @@ const en = {
     audioSermon: 'Audio Track',
     pdfSermon: 'PDF / Text Document',
     downloadPdf: 'Download or Read PDF',
+    noSermonsFound: 'No sermons found matching your search.',
   },
 
   // Hymns Page
   hymns: {
     title: 'Hymns & Worship Songs',
     subtitle: 'A library of written, audio, and video spiritual hymns for worship and fellowship',
+    searchPlaceholder: 'Search hymn title or author...',
     lyrics: 'Song Lyrics',
     listenAudio: 'Listen to Audio',
     watchVideo: 'Watch Video Hymn',
     presenterMode: 'Screen Presenter Mode',
+    audioTrack: 'Audio track for practice and listening:',
+    showLyrics: 'Display Accompanied Lyrics',
+    attachedMedia: 'Attached Media for Practice & Listening',
   },
 
   // Bible Page
@@ -121,6 +143,27 @@ const en = {
     selectBook: 'Select Book',
     selectChapter: 'Chapter',
     searchVerse: 'Search Scripture...',
+  },
+
+  // News Page
+  news: {
+    title: 'News & Announcements',
+    subtitle: 'Stay updated with the latest news, activities, and official announcements of our church',
+    allCategories: 'All News & Events',
+    eventsOnly: 'Events Only',
+    announcementsOnly: 'Announcements Only',
+    generalNewsOnly: 'General News',
+    noNewsFound: 'No news items matching your selection.',
+  },
+
+  // Gallery Page
+  gallery: {
+    title: 'Photo & Video Gallery',
+    subtitle: 'A visual archive documenting church events, camps, services, and activities',
+    allMedia: 'All Media',
+    imagesOnly: 'Photos Only',
+    videosOnly: 'Videos Only',
+    noGalleryItems: 'No photos or videos in this section.',
   },
 
   // Contact Page
@@ -135,8 +178,13 @@ const en = {
     socialMedia: 'Social Media Channels',
     formTitle: 'Send Us a Message',
     name: 'Full Name',
+    namePlaceholder: 'Enter your full name...',
+    emailPlaceholder: 'example@domain.com',
+    phonePlaceholder: '+961 70 123456',
     subject: 'Message Subject',
+    subjectPlaceholder: 'Subject of your inquiry or message...',
     message: 'Message Content',
+    messagePlaceholder: 'Write your message here freely...',
     sendSuccess: 'Your message has been sent successfully! We will get back to you soon.',
   },
 
@@ -150,6 +198,8 @@ const en = {
     isAnonymous: 'Submit anonymously (without displaying name)',
     sendPrayer: 'Lift Prayer Request',
     prayerListTitle: 'Brothers and Sisters\' Prayer Requests',
+    submitSuccess: 'Thank you! Your prayer request has been submitted, and we will pray with you.',
+    anonymousUser: 'Anonymous',
   },
 
   // Counseling Page
@@ -159,6 +209,46 @@ const en = {
     formTitle: 'Book a Counseling Session',
     preferredTime: 'Preferred Contact Time',
     topic: 'Counseling Subject',
+    bookAppointment: 'Submit Counseling Request',
+    counselingSuccess: 'Your counseling request has been received. A pastor will reach out to you with total confidentiality.',
+  },
+
+  // Articles / Studies Page
+  articles: {
+    title: 'Spiritual Studies & Articles',
+    subtitle: 'Scriptural articles and deep theological meditations to grow in the knowledge of God\'s word',
+    author: 'By',
+    readFullArticle: 'Read Full Article',
+    noArticles: 'No articles currently available.',
+  },
+
+  // Download App Page
+  downloadApp: {
+    title: 'PWA Mobile App',
+    subtitle: 'Install the Khirbet Qanafar Church app on your mobile device for instant access, live stream notifications, and prayers without app store downloads',
+    installBtn: 'Install App on Your Device Now 📲',
+    installedText: 'App is installed and ready on your device! 🎉',
+    featuresTitle: 'App Features',
+    feature1: 'Fast, 1-tap direct access from your home screen',
+    feature2: 'Instant notifications for live streams & meetings',
+    feature3: 'Browse hymns and sermons with low data consumption',
+  },
+
+  // Chatbot Assistant Widget
+  chatbot: {
+    title: 'AI Spiritual Assistant',
+    subtitle: 'A scriptural assistant to answer your questions and help you search God\'s Word',
+    placeholder: 'Type your spiritual question or verse you are searching for...',
+    welcomeMessage: 'Welcome! I am the spiritual assistant for Khirbet Qanafar Church. How can I help you today in God\'s Word?',
+  },
+
+  // Login Page
+  login: {
+    title: 'Admin Login Portal',
+    subtitle: 'This page is reserved for church ministers and site administrators to update data and manage content.',
+    usernameLabel: 'Username or Email',
+    passwordLabel: 'Password',
+    loginBtn: 'Log In',
   },
 
   // Footer

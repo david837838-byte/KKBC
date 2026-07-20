@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, BookOpen, Clock, FileText, ChevronRight, User, Calendar } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Articles = () => {
   const [articles, setArticles] = useState([]);
@@ -7,13 +8,14 @@ const Articles = () => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('الكل');
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const { t, language } = useLanguage();
 
   const categories = ['الكل', 'دراسات كتابية', 'تأملات روحية', 'الأسرة المسيحية', 'مقالات روحية'];
 
   const fetchArticles = () => {
     setLoading(true);
     let url = `/api/articles?search=${search}`;
-    if (activeCategory !== 'الكل') {
+    if (activeCategory !== 'الكل' && activeCategory !== 'All') {
       url += `&category=${activeCategory}`;
     }
 
@@ -37,7 +39,7 @@ const Articles = () => {
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('ar-LB', options);
+    return new Date(dateString).toLocaleDateString(language === 'ar' ? 'ar-LB' : 'en-US', options);
   };
 
   return (
@@ -47,7 +49,7 @@ const Articles = () => {
         <div className="article-detail-view animate-fade-in">
           <button className="back-btn" onClick={() => setSelectedArticle(null)}>
             <ChevronRight size={18} />
-            <span>العودة للمقالات</span>
+            <span>{t('common.back')}</span>
           </button>
 
           <article className="glass-card article-content-card">

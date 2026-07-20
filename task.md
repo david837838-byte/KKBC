@@ -1,0 +1,7 @@
+- [x] Create translation dictionaries `client/src/locales/ar.js` and `client/src/locales/en.js`
+- [x] Create independent `client/src/english.css` stylesheet for LTR layout and English fonts
+- [x] Create `LanguageContext.jsx` for managing active language state and translations
+- [x] Wrap application with `LanguageProvider` in `App.jsx`
+- [x] Add language switcher button to `Navbar.jsx`
+- [x] Translate navigation links, footer, and main page components
+- [x] Verify build and test bilingual switching

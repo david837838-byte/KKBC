@@ -23,7 +23,7 @@ const ar = {
     churchName: 'الكنيسة المعمدانية الإنجيلية',
     churchLocation: 'خربة قنافار',
     fullChurchTitle: 'الكنيسة المعمدانية الإنجيلية - خربة قنافار',
-    welcome: 'أهلاً وسهلاً بكم',
+    welcome: 'أهلاً وسهلاً بكم في كنيستنا',
     search: 'بحث',
     searchPlaceholder: 'ابحث في الموقع...',
     readMore: 'اقرأ المزيد',
@@ -44,22 +44,38 @@ const ar = {
     close: 'إغلاق',
     verseOfTheDay: 'آية اليوم',
     shareVerse: 'مشاركة الآية',
+    copyVerse: '📋 نسخ ومشاركة آية اليوم',
+    verseCopied: 'تم نسخ آية اليوم بنجاح لمشاركتها! 📋',
     nextVerse: 'آية أخرى',
     liveStream: 'البث المباشر',
-    watchLive: 'شاهد البث المباشر الآن',
+    watchLive: 'شاهد البث المباشر الآن!',
+    liveInactive: 'البث غير نشط حالياً',
+    listenWatch: 'استمع / شاهد',
+    preacher: 'الواعظ',
+    date: 'التاريخ',
+    event: 'فعالية',
+    announcement: 'إعلان',
+    newsItem: 'خبر',
   },
 
   // Home Page
   home: {
-    heroTitle: 'الكنيسة المعمدانية الإنجيلية في خربة قنافار',
+    heroTitle: 'الكنيسة المعمدانية الإنجيلية – خربة قنافار',
     heroSubtitle: 'بيت للشركة الفعّالة، وعبادة بالروح والحق، ونشر محبة المسيح في البقاع الغربي.',
+    welcomeMessage: 'نحن جماعة من المؤمنين بالمسيح نسعى لعيش الإيمان بفاعلية ونشر الكلمة وتلمذة النفوس.',
     joinUsSunday: 'انضم إلينا كل يوم أحد الساعة 10:00 صباحاً',
-    latestSermons: 'أحدث العظات والتعاليم',
-    upcomingMeetings: 'مواعيد الاجتماعات الأسبوعية',
-    latestNews: 'آخر الأخبار والإعلانات',
+    latestSermonsTitle: 'آخر العظات والرسائل',
+    allSermons: 'كل العظات',
+    noSermons: 'لا توجد عظات متوفرة حالياً',
+    latestNewsTitle: 'الأخبار والإعلانات',
+    allNews: 'كل الأخبار',
+    noNews: 'لا توجد أخبار أو إعلانات متوفرة حالياً',
     dailyVerseTitle: 'تأمل في كلمة الرب اليوم',
     visionTitle: 'رؤيتنا ورسالتنا',
-    aboutChurchTitle: 'عن الكنيسة',
+    aboutChurchTitle: 'تعرف علينا',
+    joinWorship: 'شاركنا العبادة والشركة',
+    joinWorshipDesc: 'ندعو عائلتك للانضمام إلينا في اجتماعاتنا الروحية لمختلف الفئات العمرية.',
+    viewSchedule: 'جدول الاجتماعات التفصيلي',
   },
 
   // About Page
@@ -88,11 +104,12 @@ const ar = {
   // Sermons Page
   sermons: {
     title: 'العظات والتعليم الروحي',
-    subtitle: 'استمع وشاهد مكتبة العظات والرسائل الروحية المسجلة',
+    subtitle: 'استمع وشاهد مكتبة العظات والرسائل الروحية المسجلة لمجموعة من الرعاة والخدام. يمكنك البحث والتصفية حسب نوع العظة والواعظ والتصنيف الدراسي.',
+    searchPlaceholder: 'ابحث عن عنوان العظة أو الواعظ...',
     preacher: 'الواعظ',
     date: 'تاريخ النشر',
-    category: 'التصنيف',
-    mediaType: 'نوع الوسائط',
+    category: 'التصنيف الروحي',
+    mediaType: 'الوسائط',
     filterByPreacher: 'كل الخدام',
     filterByCategory: 'كل التصنيفات',
     filterByType: 'كل أنواع الوسائط',
@@ -100,16 +117,21 @@ const ar = {
     audioSermon: 'ملف صوتي',
     pdfSermon: 'ملف PDF / نص',
     downloadPdf: 'تنزيل أو قراءة ملف PDF',
+    noSermonsFound: 'لم نعثر على أي عظات مطابقة لبحثك.',
   },
 
   // Hymns Page
   hymns: {
     title: 'ترانيم وتسبيح',
     subtitle: 'مكتبة الترانيم الروحية المكتوبة والمسموعة والمصورة للعبادة والشركة',
+    searchPlaceholder: 'ابحث عن عنوان الترنيمة أو كاتبها...',
     lyrics: 'كلمات الترنيمة',
     listenAudio: 'استماع للتسجيل الصوتي',
     watchVideo: 'مشاهدة فيديو الترنيمة',
     presenterMode: 'عرض الترانيم للشاشة (Presenter)',
+    audioTrack: 'ملف صوتي للتدريب والاستماع:',
+    showLyrics: 'عرض الكلمات المصاحبة',
+    attachedMedia: 'الوسائط المرفقة للتدريب أو الاستماع',
   },
 
   // Bible Page
@@ -121,6 +143,27 @@ const ar = {
     selectBook: 'اختر السفر',
     selectChapter: 'الإصحاح',
     searchVerse: 'البحث في الكتاب المقدس...',
+  },
+
+  // News Page
+  news: {
+    title: 'الأخبار والإعلانات',
+    subtitle: 'تابع أحدث أخبار ونشاطات وإعلانات كنيستنا الرسمية',
+    allCategories: 'جميع الأخبار والفعاليات',
+    eventsOnly: 'الفعاليات فقط',
+    announcementsOnly: 'الإعلانات فقط',
+    generalNewsOnly: 'الأخبار العامة',
+    noNewsFound: 'لا توجد أخبار مطابقة لتصنيفك.',
+  },
+
+  // Gallery Page
+  gallery: {
+    title: 'معرض الصور والفيديوهات',
+    subtitle: 'توثيق بالصور لمختلف المناسبات والمخيمات والخدمات والنشاطات الكنسية',
+    allMedia: 'جميع الوسائط',
+    imagesOnly: 'الصور فقط',
+    videosOnly: 'الفيديوهات فقط',
+    noGalleryItems: 'لا توجد صور أو فيديوهات في هذا القسم.',
   },
 
   // Contact Page
@@ -135,8 +178,13 @@ const ar = {
     socialMedia: 'قنوات التواصل الاجتماعي',
     formTitle: 'أرسل لنا رسالة',
     name: 'الاسم الكامل',
+    namePlaceholder: 'أدخل اسمك الكريم...',
+    emailPlaceholder: 'example@domain.com',
+    phonePlaceholder: '+961 70 123456',
     subject: 'موضوع الرسالة',
+    subjectPlaceholder: 'عنوان الاستفسار أو الرسالة...',
     message: 'نص الرسالة',
+    messagePlaceholder: 'اكتب رسالتك هنا بكل حرية...',
     sendSuccess: 'تم إرسال رسالتك بنجاح! سنقوم بالرد عليك في أقرب وقت.',
   },
 
@@ -150,6 +198,8 @@ const ar = {
     isAnonymous: 'إرسال كطلب مجهول الهوية (بدون ذكر الاسم)',
     sendPrayer: 'رفع طلب الصلاة',
     prayerListTitle: 'طلبات صلاة الإخوة والأخوات',
+    submitSuccess: 'شكراً لك! تم إرسال طلب الصلاة وسوف نرفع صلواتنا معك.',
+    anonymousUser: 'مجهول الهوية',
   },
 
   // Counseling Page
@@ -159,6 +209,46 @@ const ar = {
     formTitle: 'حجز موعد مشورة روحية',
     preferredTime: 'الوقت المفضل للاتصال',
     topic: 'موضوع المشورة',
+    bookAppointment: 'إرسال طلب المشورة',
+    counselingSuccess: 'تم استلام طلب المشورة بنجاح. سيتواصل معك أحد الرعاة بشرية تامة.',
+  },
+
+  // Articles / Studies Page
+  articles: {
+    title: 'الدراسات والمقالات الروحية',
+    subtitle: 'مقالات كتابية وتأملات لاهوتية عميقة للنمو في معرفة كلمة الله',
+    author: 'بقلم',
+    readFullArticle: 'قراءة المقال بالكامل',
+    noArticles: 'لا توجد مقالات متوفرة حالياً.',
+  },
+
+  // Download App Page
+  downloadApp: {
+    title: 'تطبيق الهاتف PWA',
+    subtitle: 'قم بتثبيت تطبيق كنيسة خربة قنافار على هاتفك المحمول للوصول السريع ومتابعة البث والصلوات بدون تنزيل من المتاجر',
+    installBtn: 'تثبيت التطبيق على جهازك الآن 📲',
+    installedText: 'التطبيق مثبت وجاهز على جهازك! 🎉',
+    featuresTitle: 'مميزات التطبيق',
+    feature1: 'وصول سريع ومباشر بلمسة واحدة من الشاشة الرئيسية',
+    feature2: 'تنبيهات فورية للبث المباشر والاجتماعات',
+    feature3: 'تصفح الترانيم والعظات بدون استهلاك بيانات عالية',
+  },
+
+  // Chatbot Assistant Widget
+  chatbot: {
+    title: 'المساعد الروحي الذكي',
+    subtitle: 'مساعد كتابي للإجابة عن أسئلتك ومساعدتك في البحث في كلمة الرب',
+    placeholder: 'اكتب سؤالك الروحي أو الآية التي تبحث عنها...',
+    welcomeMessage: 'مرحباً بك! أنا المساعد الروحي لكنيسة خربة قنافار. كيف يمكنني مساعدتك اليوم في كلمة الله؟',
+  },
+
+  // Login Page
+  login: {
+    title: 'بوابة تسجيل الدخول للإدارة',
+    subtitle: 'هذه الصفحة مخصصة لخدام الكنيسة ومسؤولي إدارة الموقع لتحديث البيانات وتعديل المحتوى.',
+    usernameLabel: 'اسم المستخدم أو البريد الإلكتروني',
+    passwordLabel: 'كلمة المرور',
+    loginBtn: 'تسجيل الدخول',
   },
 
   // Footer

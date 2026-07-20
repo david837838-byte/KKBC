@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Phone, Mail, MapPin, MessageCircle, Calendar } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Contact = () => {
   const [settings, setSettings] = useState(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     fetch('/api/settings')
@@ -15,10 +17,10 @@ const Contact = () => {
       .catch(err => console.error(err));
   }, []);
 
-  const churchName = settings?.churchName || 'الكنيسة المعمدانية الإنجيلية – خربة قنافار';
+  const churchName = settings?.churchName || t('common.fullChurchTitle');
   const email = settings?.contactEmail || 'info@churchqanafar.org';
   const phones = settings?.contactPhones || ['+961 70 123 456'];
-  const address = settings?.address || 'خربة قنافار، البقاع الغربي، لبنان';
+  const address = settings?.address || t('contact.addressValue');
   const mapUrl = settings?.addressMapUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13264.44473335439!2d35.733796590835974!3d33.615286591039845!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151ee68f237efb8d%3A0xe51a7024e036e4f3!2sKhirbet%20Qanafar!5e0!3m2!1sen!2slb!4v1700000000000!5m2!1sen!2slb';
   
   const facebookUrl = settings?.facebookUrl || 'https://facebook.com';
@@ -29,10 +31,10 @@ const Contact = () => {
 
   return (
     <div className="contact-page container">
-      <h1 className="section-title">تواصل معنا</h1>
+      <h1 className="section-title">{t('contact.title')}</h1>
       
       <p className="page-intro">
-        يسعدنا تواصلكم معنا والإجابة على أي استفسارات تخص المواعيد أو الخدمات الروحية والاجتماعية التي تقدمها الكنيسة.
+        {t('contact.subtitle')}
       </p>
 
       <div className="contact-layout">
@@ -42,7 +44,7 @@ const Contact = () => {
           <div className="contact-card glass-card">
             <MapPin size={24} className="card-icon" />
             <div className="card-details">
-              <h3>موقع الكنيسة</h3>
+              <h3>{t('contact.address')}</h3>
               <p>{address}</p>
             </div>
           </div>
@@ -51,9 +53,9 @@ const Contact = () => {
           <div className="contact-card glass-card">
             <Phone size={24} className="card-icon" />
             <div className="card-details">
-              <h3>أرقام الهواتف</h3>
+              <h3>{t('contact.phone')}</h3>
               {phones.map((phone, idx) => (
-                <p key={idx} dir="ltr" style={{ textAlign: 'right' }}>{phone}</p>
+                <p key={idx} dir="ltr" style={{ textAlign: language === 'ar' ? 'right' : 'left' }}>{phone}</p>
               ))}
             </div>
           </div>
@@ -62,7 +64,7 @@ const Contact = () => {
           <div className="contact-card glass-card">
             <Mail size={24} className="card-icon" />
             <div className="card-details">
-              <h3>البريد الإلكتروني</h3>
+              <h3>{t('contact.email')}</h3>
               <p>{email}</p>
             </div>
           </div>
@@ -71,27 +73,23 @@ const Contact = () => {
           <div className="contact-card glass-card">
             <MessageCircle size={24} className="card-icon" />
             <div className="card-details">
-              <h3>قنوات التواصل الاجتماعي</h3>
+              <h3>{t('contact.socialMedia')}</h3>
               <div className="social-links-grid">
                 <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline sm-btn fb">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-                  <span>صفحتنا على فيسبوك</span>
+                  <span>Facebook</span>
                 </a>
                 <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline sm-btn yt">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17z"/><path d="m10 15 5-3-5-3z"/></svg>
-                  <span>قناتنا على يوتيوب</span>
+                  <span>YouTube</span>
                 </a>
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline sm-btn wa">
                   <MessageCircle size={16} />
-                  <span>محادثة عبر واتساب</span>
+                  <span>WhatsApp</span>
                 </a>
                 <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline sm-btn ig">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                  <span>حسابنا على انستجرام</span>
+                  <span>Instagram</span>
                 </a>
                 <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline sm-btn tt">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
-                  <span>حسابنا على تيك توك</span>
+                  <span>TikTok</span>
                 </a>
               </div>
             </div>
@@ -100,13 +98,13 @@ const Contact = () => {
           <div className="contact-card glass-card counseling-cta-card" style={{ borderRightColor: 'var(--accent-color)' }}>
             <div className="card-details" style={{ width: '100%' }}>
               <h3 style={{ color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                طلب إرشاد ومشورة سرية 🕊️
+                {t('counseling.title')} 🕊️
               </h3>
               <p style={{ fontSize: '0.88rem', margin: '0.5rem 0 1rem', lineHeight: '1.5' }}>
-                إذا كنت تمر بظروف صعبة أو تحتاج إلى مشورة روحية شخصية وسرية مع راعي الكنيسة مباشرة، يمكنك تقديم طلبك عبر استمارة المشورة المحمية والمشفرة.
+                {t('counseling.subtitle')}
               </p>
               <a href="/counseling" className="btn btn-accent sm-btn" style={{ display: 'inline-flex', width: 'auto', padding: '0.5rem 1.25rem', fontWeight: 'bold' }}>
-                تقديم طلب مشورة سرية
+                {t('counseling.formTitle')}
               </a>
             </div>
           </div>
@@ -114,8 +112,8 @@ const Contact = () => {
 
         {/* Map View */}
         <div className="map-view-wrapper glass-card">
-          <h3>موقعنا الجغرافي على الخريطة</h3>
-          <p>تفضلوا بزيارتنا لحضور اجتماعات العبادة الأسبوعية. يمكنك اتباع الخريطة أدناه للوصول لمبنى الكنيسة:</p>
+          <h3>{language === 'ar' ? 'موقعنا الجغرافي على الخريطة' : 'Our Map Location'}</h3>
+          <p>{t('contact.subtitle')}</p>
           <div className="iframe-map-container">
             <iframe
               src={mapUrl}

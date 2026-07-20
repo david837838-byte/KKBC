@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HeartHandshake, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Prayer = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const Prayer = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const { t, language } = useLanguage();
 
   const handleChange = (e) => {
     setFormData({
@@ -21,7 +23,7 @@ const Prayer = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.request.trim()) {
-      setError('من فضلك اكتب طلبة الصلاة قبل الإرسال.');
+      setError(language === 'ar' ? 'من فضلك اكتب طلبة الصلاة قبل الإرسال.' : 'Please write your prayer request before submitting.');
       return;
     }
 
@@ -42,39 +44,34 @@ const Prayer = () => {
           setSubmitted(true);
           setFormData({ name: '', phone: '', request: '' });
         } else {
-          setError(data.message || 'حدث خطأ أثناء إرسال طلبة الصلاة. حاول مرة أخرى.');
+          setError(data.message || (language === 'ar' ? 'حدث خطأ أثناء إرسال طلبة الصلاة. حاول مرة أخرى.' : 'Error sending prayer request. Try again.'));
         }
       })
       .catch(err => {
         console.error(err);
         setLoading(false);
-        setError('حدث خطأ في الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.');
+        setError(language === 'ar' ? 'حدث خطأ في الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.' : 'Network connection error.');
       });
   };
 
   return (
     <div className="prayer-page container">
-      <h1 className="section-title">طلب الصلاة</h1>
+      <h1 className="section-title">{t('prayer.title')}</h1>
 
       <div className="prayer-container">
         {/* Intro Info */}
         <div className="prayer-info glass-card">
           <HeartHandshake size={44} className="prayer-info-icon" />
           <h2>«لأَنَّهُ حَيْثُمَا اجْتَمَعَ اثْنَانِ أَوْ ثَلاَثَةٌ بِاسْمِي فَهُنَاكَ أَكُونُ فِي وَسَطِهِمْ»</h2>
-          <span className="bible-ref">متى 18: 20</span>
+          <span className="bible-ref">{language === 'ar' ? 'متى 18: 20' : 'Matthew 18:20'}</span>
           
           <p>
-            نحن نؤمن بقوة الصلاة وفعاليتها الكبيرة في تغيير مجرى الأمور وشفاء القلوب والنفوس. يسعد فريق الصلاة في الكنيسة المعمدانية الإنجيلية بخربة قنافار مشاركتك أثقالك ورفع احتياجاتك وعائلتك أمام الرب يسوع المسيح بكل سرية وأمانة.
+            {t('prayer.subtitle')}
           </p>
 
           <div className="info-badge">
             <Sparkles size={16} />
-            <span>جميع الطلبات يتم التعامل معها بسرية مطلقة وتُعرض على القس والمجموعة المخصصة للصلاة فقط.</span>
-          </div>
-
-          <div className="info-badge" style={{ background: 'rgba(197, 168, 128, 0.1)', border: '1px solid rgba(197, 168, 128, 0.2)', color: 'var(--accent-color)', marginTop: '0.5rem' }}>
-            <Sparkles size={16} />
-            <span>هل تحتاج لمشورة روحية سرية مع القسيس مباشرة؟ <a href="/counseling" style={{ textDecoration: 'underline', color: 'var(--accent-color)', fontWeight: 'bold' }}>اضغط هنا لتقديم طلب مشورة سرية</a></span>
+            <span>{language === 'ar' ? 'جميع الطلبات يتم التعامل معها بسرية مطلقة.' : 'All prayer requests are kept strictly confidential.'}</span>
           </div>
         </div>
 
@@ -83,15 +80,14 @@ const Prayer = () => {
           {submitted ? (
             <div className="success-state">
               <CheckCircle2 size={64} className="success-icon" />
-              <h2>تم إرسال طلبتك بنجاح!</h2>
-              <p>نشكرك على ثقتك ومشاركتنا طلبتك. نحن نصلي لأجلك ونثق في أمانة الرب واستجابته وفق مشيئته الصالحة والكاملة.</p>
+              <h2>{t('prayer.submitSuccess')}</h2>
               <button onClick={() => setSubmitted(false)} className="btn btn-primary">
-                أرسل طلب صلاة آخر
+                {t('prayer.sendPrayer')}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="prayer-form">
-              <h3>أرسل طلبتك الآن</h3>
+              <h3>{t('prayer.formTitle')}</h3>
               <p className="form-sub">املأ النموذج أدناه. يمكنك ترك الاسم ورقم الهاتف فارغين إذا كنت تفضل إرسال الطلب بشكل مجهول.</p>
 
               {error && (

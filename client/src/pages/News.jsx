@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Tag, ChevronLeft } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const News = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const { t, language } = useLanguage();
 
   const fetchNews = () => {
     setLoading(true);
@@ -33,15 +35,15 @@ const News = () => {
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('ar-LB', options);
+    return new Date(dateString).toLocaleDateString(language === 'ar' ? 'ar-LB' : 'en-US', options);
   };
 
   return (
     <div className="news-page container">
-      <h1 className="section-title">الأخبار والإعلانات</h1>
+      <h1 className="section-title">{t('news.title')}</h1>
       
       <p className="page-intro">
-        تابع آخر مستجدات ونشاطات الكنيسة المعمدانية الإنجيلية في خربة قنافار، واطلع على الإعلانات والفعاليات القادمة.
+        {t('news.subtitle')}
       </p>
 
       {/* Category filters */}
@@ -50,25 +52,25 @@ const News = () => {
           onClick={() => setSelectedCategory('')}
           className={`filter-btn ${selectedCategory === '' ? 'active' : ''}`}
         >
-          الكل
+          {t('news.allCategories')}
         </button>
         <button 
           onClick={() => setSelectedCategory('news')}
           className={`filter-btn ${selectedCategory === 'news' ? 'active' : ''}`}
         >
-          أخبار الكنيسة
+          {t('news.generalNewsOnly')}
         </button>
         <button 
           onClick={() => setSelectedCategory('announcement')}
           className={`filter-btn ${selectedCategory === 'announcement' ? 'active' : ''}`}
         >
-          إعلانات عامة
+          {t('news.announcementsOnly')}
         </button>
         <button 
           onClick={() => setSelectedCategory('event')}
           className={`filter-btn ${selectedCategory === 'event' ? 'active' : ''}`}
         >
-          فعاليات ومخيمات
+          {t('news.eventsOnly')}
         </button>
       </div>
 
@@ -78,7 +80,7 @@ const News = () => {
           <div className="loading-spinner"></div>
         </div>
       ) : news.length === 0 ? (
-        <p className="no-data">لا توجد أخبار مضافة حالياً في هذا القسم.</p>
+        <p className="no-data">{t('news.noNewsFound')}</p>
       ) : (
         <div className="grid-3 news-grid">
           {news.map((item) => (
@@ -92,7 +94,7 @@ const News = () => {
               <div className="news-card-content">
                 <div className="news-card-meta">
                   <span className={`news-tag ${item.category}`}>
-                    {item.category === 'event' ? 'فعالية' : item.category === 'announcement' ? 'إعلان' : 'خبر'}
+                    {item.category === 'event' ? t('common.event') : item.category === 'announcement' ? t('common.announcement') : t('common.newsItem')}
                   </span>
                   <div className="news-date">
                     <Calendar size={14} />

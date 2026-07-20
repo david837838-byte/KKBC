@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ShieldCheck, History, Award, Users } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const About = () => {
   const [settings, setSettings] = useState(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetch('/api/settings')
@@ -17,13 +19,12 @@ const About = () => {
 
   return (
     <div className="about-page container">
-      <h1 className="section-title">من نحن</h1>
+      <h1 className="section-title">{t('about.title')}</h1>
       
       {/* Intro section */}
       <div className="about-intro glass-card">
         <p>
-          {settings?.welcomeMessage || 
-            'مرحباً بكم في الكنيسة المعمدانية الإنجيلية في خربة قنافار. نحن هنا لنكون منارة لمحبة ونعمة الرب يسوع المسيح، نعلن بشارة الخلاص، ونهتم ببناء النفوس وتلمذة القلوب على الحق الإلهي.'}
+          {settings?.welcomeMessage || t('footer.description')}
         </p>
       </div>
 
@@ -31,7 +32,7 @@ const About = () => {
       <div className="grid-2 vision-mission-grid">
         <div className="glass-card flex-col-align">
           <Award className="about-card-icon" size={32} />
-          <h2>رؤيتنا</h2>
+          <h2>{t('about.ourVision')}</h2>
           <p>
             {settings?.vision || 
               'رؤيتنا هي أن نكون منارة حية لمحبّة المسيح في منطقة البقاع الغربي، نكرز بإنجيل الخلاص، ونبني كنيسة تنمو روحياً وتتلمذ النفوس لتمجيد اسم الرب.'}
@@ -40,7 +41,7 @@ const About = () => {
 
         <div className="glass-card flex-col-align">
           <ShieldCheck className="about-card-icon" size={32} />
-          <h2>رسالتنا</h2>
+          <h2>{t('about.ourMission')}</h2>
           <p>
             {settings?.mission || 
               'رسالتنا هي تمجيد الله من خلال عبادة مقدسة بالروح والحق، الكرازة الفعّالة بروح الإنجيل، تعليم كلمة الله للنمو والنضوج الروحي، وخدمة احتياجات المجتمع المحلي بمحبة المسيح.'}
@@ -52,11 +53,11 @@ const About = () => {
       <section className="about-section glass-card">
         <div className="section-header">
           <History className="section-icon" size={24} />
-          <h2>تاريخ الكنيسة</h2>
+          <h2>{t('about.ourHistory')}</h2>
         </div>
         <p>
           {settings?.history || 
-            'تأسست الكنيسة المعمدانية الإنجيلية في خربة قنافار لتكون مركزاً للشركة الروحية ونشر رسالة الخلاص وتقديم الدعم والتعليم لمختلف الفئات العمرية في منطقة البقاع. على مر العقود، كانت الكنيسة شاهدة على أمانة الله وعمله المغير للقلوب، مستمرة في خدمتها وشهادتها ومواجهة شتى الظروف متمسكة برجائها الثابت في الرب.'}
+            'تأسست الكنيسة المعمدانية الإنجيلية في خربة قنافار لتكون مركزاً للشركة الروحية ونشر رسالة الخلاص وتقديم الدعم والتعليم لمختلف الفئات العمرية في منطقة البقاع.'}
         </p>
       </section>
 
@@ -64,11 +65,11 @@ const About = () => {
       <section className="about-section glass-card">
         <div className="section-header">
           <Users className="section-icon" size={24} />
-          <h2>الخدام والرعاة</h2>
+          <h2>{t('about.pastorsSection')}</h2>
         </div>
         <p>
           {settings?.pastorsInfo || 
-            'يخدم الكنيسة بنعمة الله القس الراعي بمساعدة فريق من الأخوة والأخوات الخدام الملتزمين بقيادة فترات العبادة، إلقاء المواعظ الكتابية، رعاية مدارس الأحد للأطفال، وتوجيه فئات الشباب وإرشادهم كتابياً وتأهيلهم للخدمة الفعالة.'}
+            'يخدم الكنيسة بنعمة الله القس الراعي بمساعدة فريق من الأخوة والأخوات الخدام الملتزمين بقيادة فترات العبادة، إلقاء المواعظ الكتابية، رعاية مدارس الأحد للأطفال، وتوجيه فئات الشباب.'}
         </p>
       </section>
 
@@ -76,7 +77,7 @@ const About = () => {
       <section className="about-section glass-card">
         <div className="section-header">
           <ShieldCheck className="section-icon" size={24} />
-          <h2>القيم والإيمان</h2>
+          <h2>{t('about.ourBeliefs')}</h2>
         </div>
         <p style={{ whiteSpace: 'pre-line' }}>
           {settings?.beliefs || 
@@ -84,9 +85,7 @@ const About = () => {
             1. الكتاب المقدس: هو كلمة الله الموحى بها والمعصومة عن الخطأ، وهو المرجع الأسمى للإيمان والسلوك اليومي.
             2. الله الواحد: معلن في ثلاثة أقانيم متساوية في الجوهر والقدرة والمجد: الآب، والابن، والروح القدس.
             3. الرب يسوع المسيح: نؤمن بلاهوته الكامل، وبولادته العذراوية، وبموته الكفاري النيابي على الصليب، وبقيامته الجسدية وصعوده وجلوسه عن يمين الآب ومجيئه الثاني المجيد.
-            4. الخلاص بالنعمة: نؤمن بأن الخلاص هبة مجانية من الله بالنعمة، يتم بالإيمان الشخصي والتوبة الصادقة بعمل الروح القدس، وليس بالأعمال أو الطقوس.
-            5. المعمودية للمؤمنين بالتغطيس: كإعلان خارجي عن التوبة الداخلية، والاتحاد مع المسيح في موته ودفنه وقيامته.
-            6. الكنيسة المحلية: هي جماعة المؤمنين المتحدين معاً للعبادة، للشركة، للتلمذة، ولبشارة الإنجيل في العالم.`}
+            4. الخلاص بالنعمة: نؤمن بأن الخلاص هبة مجانية من الله بالنعمة، يتم بالإيمان الشخصي والتوبة الصادقة بعمل الروح القدس، وليس بالأعمال أو الطقوس.`}
         </p>
       </section>
 

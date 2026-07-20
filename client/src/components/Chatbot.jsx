@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const Chatbot = () => {
   const [isEnabled, setIsEnabled] = useState(false);
-  const [chatbotName, setChatbotName] = useState('المساعد الروحي');
+  const [chatbotName, setChatbotName] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t, language } = useLanguage();
   
   const location = useLocation();
   const messagesEndRef = useRef(null);
@@ -21,19 +23,19 @@ const Chatbot = () => {
         if (data.success && data.data) {
           const s = data.data;
           setIsEnabled(s.isChatbotEnabled !== false);
-          setChatbotName(s.chatbotName || 'المساعد الروحي للكنيسة');
+          setChatbotName(s.chatbotName || t('chatbot.title'));
           
           // Initial greeting message
           setMessages([
             {
               sender: 'bot',
-              text: `أهلاً بك! أنا "${s.chatbotName || 'المساعد الروحي للكنيسة'}". يسعدني جداً الإجابة على أسئلتك وتأملاتك من الكتاب المقدس ومشاركتك آيات مشجعة. كيف يمكنني مساعدتك روحياً اليوم؟`
+              text: t('chatbot.welcomeMessage')
             }
           ]);
         }
       })
       .catch(err => console.error('Error fetching chatbot settings:', err));
-  }, []);
+  }, [language]);
 
   // Scroll to bottom whenever messages or loading state changes
   useEffect(() => {
@@ -79,7 +81,7 @@ const Chatbot = () => {
           ...prev, 
           { 
             sender: 'bot', 
-            text: 'عذراً، واجهت مشكلة في الاتصال. يمكنك المحاولة مجدداً أو استشارة راعي الكنيسة مباشرة.' 
+            text: language === 'ar' ? 'عذراً، واجهت مشكلة في الاتصال. يمكنك المحاولة مجدداً.' : 'Sorry, encountered a network issue. Please try again.' 
           }
         ]);
       }
@@ -90,20 +92,20 @@ const Chatbot = () => {
         ...prev, 
         { 
           sender: 'bot', 
-          text: 'حدث خطأ في الاتصال بالشبكة. يرجى المحاولة بعد قليل.' 
+          text: language === 'ar' ? 'حدث خطأ في الاتصال بالشبكة. يرجى المحاولة بعد قليل.' : 'Network connection error. Please try again shortly.' 
         }
       ]);
     }
   };
 
   return (
-    <div className="chatbot-widget-container" dir="rtl">
+    <div className="chatbot-widget-container">
       {/* Floating Chat Button */}
       {!isOpen && (
         <button 
           className="chatbot-float-btn pulse-effect" 
           onClick={() => setIsOpen(true)}
-          title="تحدث مع المساعد الروحي الذكي"
+          title={t('chatbot.title')}
         >
           <MessageCircle size={28} />
           <span className="chatbot-badge">AI</span>
@@ -120,10 +122,10 @@ const Chatbot = () => {
                 <Sparkles size={16} className="chatbot-sparkle-icon" />
               </div>
               <div>
-                <h4>{chatbotName}</h4>
+                <h4>{chatbotName || t('chatbot.title')}</h4>
                 <div className="chatbot-status">
                   <span className="chatbot-status-dot"></span>
-                  <span>متصل الآن بالذكاء الاصطناعي</span>
+                  <span>{language === 'ar' ? 'متصل الآن بالذكاء الاصطناعي' : 'Connected to AI'}</span>
                 </div>
               </div>
             </div>
@@ -167,7 +169,7 @@ const Chatbot = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="اسأل عن الكتاب المقدس أو اطلب آية مشجعة..."
+              placeholder={t('chatbot.placeholder')}
               className="chatbot-input"
               maxLength={400}
             />

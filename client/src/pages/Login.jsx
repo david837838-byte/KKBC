@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Lock, User, AlertCircle } from 'lucide-react';
 import Logo from '../components/Logo';
+import { useLanguage } from '../context/LanguageContext';
 
 const Login = ({ isAdmin, setIsAdmin }) => {
   const [emailOrUsername, setEmailOrUsername] = useState('');
@@ -9,6 +10,7 @@ const Login = ({ isAdmin, setIsAdmin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -20,7 +22,7 @@ const Login = ({ isAdmin, setIsAdmin }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!emailOrUsername.trim() || !password.trim()) {
-      setError('يرجى كتابة اسم المستخدم وكلمة المرور.');
+      setError(language === 'ar' ? 'يرجى كتابة اسم المستخدم وكلمة المرور.' : 'Please enter username and password.');
       return;
     }
 
@@ -42,13 +44,13 @@ const Login = ({ isAdmin, setIsAdmin }) => {
           setIsAdmin(true);
           navigate('/admin');
         } else {
-          setError(data.message || 'بيانات الدخول غير صحيحة. يرجى التحقق وإعادة المحاولة.');
+          setError(data.message || (language === 'ar' ? 'بيانات الدخول غير صحيحة. يرجى التحقق وإعادة المحاولة.' : 'Invalid credentials. Please try again.'));
         }
       })
       .catch(err => {
         console.error(err);
         setLoading(false);
-        setError('حدث خطأ أثناء الاتصال بالخادم. يرجى إعادة المحاولة.');
+        setError(language === 'ar' ? 'حدث خطأ أثناء الاتصال بالخادم. يرجى إعادة المحاولة.' : 'Server connection error. Please try again.');
       });
   };
 
@@ -59,8 +61,8 @@ const Login = ({ isAdmin, setIsAdmin }) => {
           <Logo showText={false} />
         </div>
         
-        <h2>بوابة تسجيل الدخول للإدارة</h2>
-        <p className="login-sub">هذه الصفحة مخصصة لخدام الكنيسة ومسؤولي إدارة الموقع لتحديث البيانات وتعديل المحتوى.</p>
+        <h2>{t('login.title')}</h2>
+        <p className="login-sub">{t('login.subtitle')}</p>
 
         {error && (
           <div className="error-alert">
@@ -72,7 +74,7 @@ const Login = ({ isAdmin, setIsAdmin }) => {
         <form onSubmit={handleSubmit} className="login-form">
           {/* Email or Username */}
           <div className="form-group">
-            <label htmlFor="identity">اسم المستخدم أو البريد الإلكتروني</label>
+            <label htmlFor="identity">{t('login.usernameLabel')}</label>
             <div className="input-with-icon">
               <User size={18} className="input-icon" />
               <input 
@@ -80,7 +82,7 @@ const Login = ({ isAdmin, setIsAdmin }) => {
                 id="identity" 
                 value={emailOrUsername} 
                 onChange={(e) => setEmailOrUsername(e.target.value)}
-                placeholder="مثال: admin"
+                placeholder="admin"
                 className="form-control"
                 required
               />
@@ -89,7 +91,7 @@ const Login = ({ isAdmin, setIsAdmin }) => {
 
           {/* Password */}
           <div className="form-group">
-            <label htmlFor="password">كلمة المرور</label>
+            <label htmlFor="password">{t('login.passwordLabel')}</label>
             <div className="input-with-icon">
               <Lock size={18} className="input-icon" />
               <input 
@@ -104,12 +106,8 @@ const Login = ({ isAdmin, setIsAdmin }) => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
-            className="btn btn-primary login-btn"
-            disabled={loading}
-          >
-            {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
+          <button type="submit" className="btn btn-primary submit-btn" disabled={loading}>
+            {loading ? t('common.loading') : t('login.loginBtn')}
           </button>
         </form>
       </div>

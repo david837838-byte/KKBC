@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Image, Video, Calendar, Tag, X, ZoomIn, Film } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Gallery = () => {
   const [items, setItems] = useState([]);
@@ -7,6 +8,7 @@ const Gallery = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [lightboxItem, setLightboxItem] = useState(null);
+  const { t, language } = useLanguage();
 
   // Extracted lists for filter dropdowns
   const [categories, setCategories] = useState([]);
@@ -63,10 +65,10 @@ const Gallery = () => {
 
   return (
     <div className="gallery-page container">
-      <h1 className="section-title">معرض الصور والفيديو</h1>
+      <h1 className="section-title">{t('gallery.title')}</h1>
       
       <p className="page-intro">
-        استعرض ألبوم الصور والفيديوهات للأنشطة المختلفة، والمخيمات الصيفية والخدمات الاجتماعية والروحية في الكنيسة مرتبة حسب السنوات.
+        {t('gallery.subtitle')}
       </p>
 
       {/* Filter Bar */}
