@@ -144,16 +144,24 @@ const Home = () => {
         <div className="verse-card" style={{ position: 'relative' }}>
           <BookOpen className="verse-icon" size={32} />
           <blockquote className="verse-text">
-            {dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»')}
+            {language === 'ar' 
+              ? (dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»')) 
+              : (dailyVerse ? translateText(dailyVerse.text, dailyVerse.textEn) : '«The LORD is my shepherd; I shall not want.»')}
           </blockquote>
           <cite className="verse-ref">
-            {dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15')}
+            {language === 'ar' 
+              ? (dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15')) 
+              : (dailyVerse ? translateText(dailyVerse.reference, dailyVerse.referenceEn) : 'Psalm 23:1')}
           </cite>
           
           <button 
             onClick={() => {
-              const currentVerse = dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»');
-              const currentRef = dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15');
+              const currentVerse = language === 'ar' 
+                ? (dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»')) 
+                : (dailyVerse ? translateText(dailyVerse.text, dailyVerse.textEn) : '«The LORD is my shepherd; I shall not want.»');
+              const currentRef = language === 'ar' 
+                ? (dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15')) 
+                : (dailyVerse ? translateText(dailyVerse.reference, dailyVerse.referenceEn) : 'Psalm 23:1');
               navigator.clipboard.writeText(`"${currentVerse}" - ${currentRef}`);
               alert(t('common.verseCopied'));
             }}

@@ -6,6 +6,7 @@ import {
   ShieldAlert, Bot, AlertCircle, FileText, Database, Download
 } from 'lucide-react';
 import io from 'socket.io-client';
+import { useLanguage } from '../context/LanguageContext';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('livestream');
@@ -14,6 +15,8 @@ const AdminDashboard = () => {
   const [newPrayerCount, setNewPrayerCount] = useState(0);
   const [settings, setSettings] = useState(null);
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const isAr = language === 'ar';
 
   // Fetch website settings for visitor count
   useEffect(() => {
@@ -79,10 +82,10 @@ const AdminDashboard = () => {
             <div className="avatar-placeholder">{userProfile?.username?.substring(0, 2).toUpperCase()}</div>
             <div>
               <h4>{userProfile?.username}</h4>
-              <span className="role-tag">{userProfile?.role === 'admin' ? 'مدير كامل' : 'محرر'}</span>
+              <span className="role-tag">{userProfile?.role === 'admin' ? (isAr ? 'مدير كامل' : 'Full Admin') : (isAr ? 'محرر' : 'Editor')}</span>
               {settings?.visitorCount !== undefined && (
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginTop: '0.35rem', fontWeight: 'bold' }}>
-                  زيارات الموقع: {settings.visitorCount}
+                  {isAr ? `زيارات الموقع: ${settings.visitorCount}` : `Site Visits: ${settings.visitorCount}`}
                 </div>
               )}
             </div>
@@ -91,68 +94,68 @@ const AdminDashboard = () => {
           <ul className="sidebar-menu">
             <li className={activeTab === 'livestream' ? 'active' : ''} onClick={() => setActiveTab('livestream')}>
               <Radio size={18} />
-              <span>البث المباشر</span>
+              <span>{isAr ? 'البث المباشر' : 'Live Stream'}</span>
             </li>
             <li className={activeTab === 'meetings' ? 'active' : ''} onClick={() => setActiveTab('meetings')}>
               <Calendar size={18} />
-              <span>الاجتماعات الأسبوعية</span>
+              <span>{isAr ? 'الاجتماعات الأسبوعية' : 'Weekly Meetings'}</span>
             </li>
             <li className={activeTab === 'sermons' ? 'active' : ''} onClick={() => setActiveTab('sermons')}>
               <BookOpen size={18} />
-              <span>العظات والتعليم</span>
+              <span>{isAr ? 'العظات والتعليم' : 'Sermons & Teaching'}</span>
             </li>
             <li className={activeTab === 'news' ? 'active' : ''} onClick={() => setActiveTab('news')}>
               <Info size={18} />
-              <span>الأخبار والإعلانات</span>
+              <span>{isAr ? 'الأخبار والإعلانات' : 'News & Announcements'}</span>
             </li>
             <li className={activeTab === 'articles' ? 'active' : ''} onClick={() => setActiveTab('articles')}>
               <FileText size={18} />
-              <span>المقالات والدراسات</span>
+              <span>{isAr ? 'المقالات والدراسات' : 'Articles & Studies'}</span>
             </li>
             <li className={activeTab === 'hymns' ? 'active' : ''} onClick={() => setActiveTab('hymns')}>
               <Music size={18} />
-              <span>الترانيم</span>
+              <span>{isAr ? 'الترانيم' : 'Hymns'}</span>
             </li>
             <li className={activeTab === 'gallery' ? 'active' : ''} onClick={() => setActiveTab('gallery')}>
               <Image size={18} />
-              <span>معرض الصور والفيديو</span>
+              <span>{isAr ? 'معرض الصور والفيديو' : 'Gallery'}</span>
             </li>
             <li className={activeTab === 'prayers' ? 'active' : ''} onClick={() => { setActiveTab('prayers'); setNewPrayerCount(0); }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
                 <HeartHandshake size={18} />
-                <span>طلبات الصلاة</span>
+                <span>{isAr ? 'طلبات الصلاة' : 'Prayer Requests'}</span>
                 {newPrayerCount > 0 && <span className="alert-count-badge">{newPrayerCount}</span>}
               </div>
             </li>
             <li className={activeTab === 'analytics' ? 'active' : ''} onClick={() => setActiveTab('analytics')}>
               <BarChart3 size={18} />
-              <span>إحصائيات الزيارات</span>
+              <span>{isAr ? 'إحصائيات الزيارات' : 'Visit Analytics'}</span>
             </li>
             <li className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
               <Settings size={18} />
-              <span>إعدادات الموقع</span>
+              <span>{isAr ? 'إعدادات الموقع' : 'Site Settings'}</span>
             </li>
             <li className={activeTab === 'daily-verses' ? 'active' : ''} onClick={() => setActiveTab('daily-verses')}>
               <BookOpen size={18} />
-              <span>آيات اليوم</span>
+              <span>{isAr ? 'آيات اليوم' : 'Daily Verses'}</span>
             </li>
             {userProfile?.role === 'admin' && (
               <>
                 <li className={activeTab === 'chatbot' ? 'active' : ''} onClick={() => setActiveTab('chatbot')}>
                   <Bot size={18} />
-                  <span>الذكاء الاصطناعي</span>
+                  <span>{isAr ? 'الذكاء الاصطناعي' : 'AI Assistant'}</span>
                 </li>
                 <li className={activeTab === 'counseling' ? 'active' : ''} onClick={() => setActiveTab('counseling')}>
                   <HeartHandshake size={18} />
-                  <span>طلبات الإرشاد والمشورة</span>
+                  <span>{isAr ? 'طلبات الإرشاد والمشورة' : 'Counseling Requests'}</span>
                 </li>
                 <li className={activeTab === 'lockouts' ? 'active' : ''} onClick={() => setActiveTab('lockouts')}>
                   <ShieldAlert size={18} />
-                  <span>الأجهزة المحظورة</span>
+                  <span>{isAr ? 'الأجهزة المحظورة' : 'Blocked Devices'}</span>
                 </li>
                 <li className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
                   <Users size={18} />
-                  <span>إدارة المدراء</span>
+                  <span>{isAr ? 'إدارة المدراء' : 'User Management'}</span>
                 </li>
               </>
             )}
@@ -160,13 +163,13 @@ const AdminDashboard = () => {
               <li className={activeTab === 'expenses' ? 'active' : ''} onClick={() => setActiveTab('expenses')}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
                   <span style={{ fontSize: '18px' }}>💰</span>
-                  <span>المصاريف الكنسية</span>
+                  <span>{isAr ? 'المصاريف الكنسية' : 'Church Expenses'}</span>
                 </div>
               </li>
             )}
             <li className="logout-item" onClick={handleLogout}>
               <LogOut size={18} />
-              <span>تسجيل الخروج</span>
+              <span>{isAr ? 'تسجيل الخروج' : 'Log Out'}</span>
             </li>
           </ul>
         </aside>
@@ -367,6 +370,8 @@ const LiveStreamTab = ({ token }) => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
 
   useEffect(() => {
     fetch('/api/livestream')
@@ -399,7 +404,7 @@ const LiveStreamTab = ({ token }) => {
       .then(data => {
         setLoading(false);
         if (data.success) {
-          setSuccess('تم تحديث حالة إعدادات البث المباشر بنجاح وبثها للموقع!');
+          setSuccess(isAr ? 'تم تحديث حالة إعدادات البث المباشر بنجاح وبثها للموقع!' : 'Live stream settings updated and published successfully!');
           setTimeout(() => setSuccess(''), 4000);
         }
       })
@@ -412,7 +417,7 @@ const LiveStreamTab = ({ token }) => {
   return (
     <div>
       <div className="tab-header">
-        <h2>إدارة البث المباشر للموقع</h2>
+        <h2>{isAr ? 'إدارة البث المباشر للموقع' : 'Live Stream Management'}</h2>
       </div>
 
       {success && (
@@ -431,56 +436,56 @@ const LiveStreamTab = ({ token }) => {
               onChange={(e) => setIsLive(e.target.checked)}
               style={{ width: '18px', height: '18px' }}
             />
-            بث مباشر نشط حالياً (تفعيل البث المباشر في الصفحة الرئيسية)
+            {isAr ? 'بث مباشر نشط حالياً (تفعيل البث المباشر في الصفحة الرئيسية)' : 'Live Stream Currently Active (Enable Live Banner on Home Page)'}
           </label>
         </div>
 
         <div className="grid-2">
           <div className="form-group">
-            <label>منصة البث</label>
+            <label>{isAr ? 'منصة البث' : 'Streaming Platform'}</label>
             <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="form-control">
-              <option value="youtube">يوتيوب (YouTube Live)</option>
-              <option value="facebook">فيسبوك (Facebook Live)</option>
-              <option value="other">رابط بث خارجي / منصة أخرى</option>
+              <option value="youtube">{isAr ? 'يوتيوب (YouTube Live)' : 'YouTube Live'}</option>
+              <option value="facebook">{isAr ? 'فيسبوك (Facebook Live)' : 'Facebook Live'}</option>
+              <option value="other">{isAr ? 'رابط بث خارجي / منصة أخرى' : 'External Stream / Other Platform'}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label>رابط البث المباشر (URL)</label>
+            <label>{isAr ? 'رابط البث المباشر (URL)' : 'Live Stream URL'}</label>
             <input 
               type="text" 
               value={url} 
               onChange={(e) => setUrl(e.target.value)} 
-              placeholder="مثال: https://www.youtube.com/watch?v=..." 
+              placeholder={isAr ? 'مثال: https://www.youtube.com/watch?v=...' : 'https://www.youtube.com/live/...'} 
               className="form-control"
             />
           </div>
         </div>
 
         <div className="form-group">
-          <label>عنوان البث</label>
+          <label>{isAr ? 'عنوان البث' : 'Stream Title'}</label>
           <input 
             type="text" 
             value={title} 
             onChange={(e) => setTitle(e.target.value)} 
-            placeholder="مثال: بث مباشر لاجتماع العبادة الأسبوعي" 
+            placeholder={isAr ? 'مثال: بث مباشر لاجتماع العبادة الأسبوعي' : 'e.g., Weekly Worship Live Stream'} 
             className="form-control"
           />
         </div>
 
         <div className="form-group">
-          <label>وصف البث / تفاصيل</label>
+          <label>{isAr ? 'وصف البث / تفاصيل' : 'Stream Description / Details'}</label>
           <textarea 
             value={description} 
             onChange={(e) => setDescription(e.target.value)} 
-            placeholder="مثال: انضموا إلينا للمشاركة في العبادة..." 
+            placeholder={isAr ? 'مثال: انضموا إلينا للمشاركة في العبادة...' : 'Join us live for worship and scripture...'} 
             rows="3" 
             className="form-control"
           ></textarea>
         </div>
 
         <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '1rem' }}>
-          {loading ? 'جاري الحفظ والتعميم...' : 'حفظ ونشر التعديلات'}
+          {loading ? (isAr ? 'جاري الحفظ والتعميم...' : 'Saving & Publishing...') : (isAr ? 'حفظ ونشر التعديلات' : 'Save & Publish Changes')}
         </button>
       </form>
     </div>

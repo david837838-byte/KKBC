@@ -8,6 +8,18 @@ const dictionaries = { ar, en };
 
 // Common dynamic phrase map for translating DB entries when language === 'en'
 const DYNAMIC_PHRASE_MAP = {
+  // Sermons & Verses
+  'أمانة الله مقابل تمرد الإنسان (مر 1:12-13)': 'God\'s Faithfulness vs. Human Rebellion (Mark 12:1-13)',
+  'Announcementات الله مقابل تمرد الإنسان (مر 1:12-13)': 'God\'s Faithfulness vs. Human Rebellion (Mark 12:1-13)',
+  'أمانة الله مقابل تمرد الإنسان': 'God\'s Faithfulness vs. Human Rebellion',
+  'الرَّبُّ رَاعِيَّ فَلاَ يَعْوِزُنِي شَيْءٌ': 'The LORD is my shepherd; I shall not want.',
+  '«الرَّبُّ رَاعِيَّ فَلاَ يَعْوِزُنِي شَيْءٌ»': '«The LORD is my shepherd; I shall not want.»',
+  'مزمور 23: 1': 'Psalm 23:1',
+  'مزمور 23: 1-6': 'Psalm 23:1-6',
+  'روحي': 'Spiritual',
+  'دراسي': 'Doctrinal',
+  'رعوي': 'Pastoral',
+
   // News & Announcements titles & full sentences
   'انطلاق المعسكر الصيفي السنوي للأطفال 2026': 'Annual Children\'s Summer Camp Launch 2026',
   'السنويCampانطلاق ال للأطفال 2026': 'Annual Children\'s Summer Camp Launch 2026',
