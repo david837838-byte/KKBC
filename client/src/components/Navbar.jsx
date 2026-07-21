@@ -65,6 +65,9 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
     { name: `${t('nav.downloadApp')} 📱`, path: '/download' },
   ];
 
+  const hasToken = Boolean(localStorage.getItem('token'));
+  const showAdminControls = isAdmin && hasToken;
+
   return (
     <header className="glass-header">
       <nav className="nav-container">
@@ -88,7 +91,7 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
           ))}
 
           {/* Admin specific links */}
-          {isAdmin && (
+          {showAdminControls && (
             <li>
               <Link
                 to="/admin"
@@ -140,7 +143,7 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
           </button>
 
           {/* Logout if Admin */}
-          {isAdmin && (
+          {showAdminControls && (
             <button onClick={handleLogout} className="action-btn logout-btn" title="تسجيل الخروج">
               <LogOut size={20} />
             </button>
