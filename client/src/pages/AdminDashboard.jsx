@@ -1092,8 +1092,26 @@ const NewsTab = ({ token }) => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.success) setNews(data.data);
-      });
+        if (data && data.success && Array.isArray(data.data)) {
+          const list = [];
+          data.data.forEach(item => {
+            let hasKeys = false;
+            if (item && typeof item === 'object') {
+              Object.keys(item).forEach(k => {
+                if (!isNaN(k) && item[k] && typeof item[k] === 'object' && item[k].title) {
+                  hasKeys = true;
+                  list.push({ _id: `${item._id}_${k}`, ...item[k] });
+                }
+              });
+            }
+            if (!hasKeys && item && item.title) {
+              list.push(item);
+            }
+          });
+          setNews(list);
+        }
+      })
+      .catch(err => console.error(err));
   };
 
   useEffect(() => {

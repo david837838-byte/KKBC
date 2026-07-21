@@ -25,7 +25,35 @@ exports.getAllNews = async (req, res) => {
     if (category) {
       query.category = category;
     }
-    const news = await News.find(query).sort({ date: -1 });
+    const rawNews = await News.find(query).sort({ date: -1 });
+
+    const news = [];
+    rawNews.forEach(doc => {
+      const item = doc.toObject ? doc.toObject() : doc;
+      let hasNumericKeys = false;
+
+      Object.keys(item).forEach(key => {
+        if (!isNaN(key) && item[key] && typeof item[key] === 'object' && item[key].title) {
+          hasNumericKeys = true;
+          if (!category || item[key].category === category) {
+            news.push({
+              _id: `${item._id}_${key}`,
+              title: item[key].title || '',
+              content: item[key].content || '',
+              category: item[key].category || 'news',
+              imageUrl: item[key].imageUrl || '',
+              date: item[key].date || item.createdAt || new Date(),
+              ...item[key]
+            });
+          }
+        }
+      });
+
+      if (!hasNumericKeys && item.title) {
+        news.push(item);
+      }
+    });
+
     res.status(200).json({ success: true, count: news.length, data: news });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
