@@ -1332,20 +1332,28 @@ const NewsTab = ({ token }) => {
               </tr>
             </thead>
             <tbody>
-              {news.map((item) => (
-                <tr key={item._id}>
-                  <td>{formatDateSafe(item.date || item.createdAt, isAr)}</td>
-                  <td><strong>{translateText(item.title, item.titleEn)}</strong></td>
-                  <td>{item.category === 'event' ? (isAr ? 'فعالية' : 'Event') : item.category === 'announcement' ? (isAr ? 'إعلان' : 'Announcement') : (isAr ? 'خبر' : 'News')}</td>
-                  <td>{item.imageUrl ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نعم' : 'Yes'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="admin-btn-action" onClick={() => handleEdit(item)}><Edit2 size={14} /></button>
-                      <button className="admin-btn-action admin-btn-delete" onClick={() => handleDelete(item._id)}><Trash2 size={14} /></button>
-                    </div>
+              {news.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-light)' }}>
+                    {isAr ? 'لا توجد أخبار أو إعلانات مسجلة حالياً.' : 'No news or announcements recorded yet.'}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                news.map((item) => (
+                  <tr key={item._id}>
+                    <td>{formatDateSafe(item.date || item.createdAt, isAr)}</td>
+                    <td><strong>{translateText(item.title, item.titleEn)}</strong></td>
+                    <td>{item.category === 'event' ? (isAr ? 'فعالية' : 'Event') : item.category === 'announcement' ? (isAr ? 'إعلان' : 'Announcement') : (isAr ? 'خبر' : 'News')}</td>
+                    <td>{item.imageUrl ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نعم' : 'Yes'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="admin-btn-action" onClick={() => handleEdit(item)}><Edit2 size={14} /></button>
+                        <button className="admin-btn-action admin-btn-delete" onClick={() => handleDelete(item._id)}><Trash2 size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
