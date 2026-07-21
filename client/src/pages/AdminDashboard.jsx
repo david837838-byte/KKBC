@@ -1087,7 +1087,7 @@ const NewsTab = ({ token }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchNews = () => {
-    fetch('/api/news/admin', {
+    fetch('/api/news', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
