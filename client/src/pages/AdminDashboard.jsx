@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Radio, Calendar, BookOpen, Music, Image, HeartHandshake, Settings, Users, 
   Trash2, Plus, Edit2, Check, Bell, Upload, LogOut, CheckCircle, Info, BarChart3,
-  ShieldAlert, Bot, AlertCircle, FileText, Database, Download
+  ShieldAlert, Bot, AlertCircle, FileText, Database, Download, Cloud, RefreshCw
 } from 'lucide-react';
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
@@ -157,6 +157,12 @@ const AdminDashboard = () => {
                   <Users size={18} />
                   <span>{isAr ? 'إدارة المدراء' : 'User Management'}</span>
                 </li>
+                <li className={activeTab === 'backups' ? 'active' : ''} onClick={() => setActiveTab('backups')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
+                    <Cloud size={18} />
+                    <span>{isAr ? 'النسخ الاحتياطي السحابي' : 'Cloud Backups'}</span>
+                  </div>
+                </li>
               </>
             )}
             {(userProfile?.role === 'admin' || userProfile?.canManageExpenses) && (
@@ -191,6 +197,7 @@ const AdminDashboard = () => {
           {activeTab === 'settings' && <SettingsTab token={token} />}
           {activeTab === 'daily-verses' && <DailyVersesTab token={token} />}
           {activeTab === 'users' && userProfile?.role === 'admin' && <UsersTab token={token} />}
+          {activeTab === 'backups' && userProfile?.role === 'admin' && <BackupsTab token={token} />}
           {activeTab === 'expenses' && (userProfile?.role === 'admin' || userProfile?.canManageExpenses) && <ExpensesTab token={token} />}
         </main>
       </div>
@@ -4581,6 +4588,241 @@ const DailyVersesTab = ({ token }) => {
                   </tr>
                 ))
               )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* =========================================================================
+   TAB: Cloud Backups & Google Drive Management (Super-admin access only)
+   ========================================================================= */
+const BackupsTab = ({ token }) => {
+  const [backups, setBackups] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [restoring, setRestoring] = useState(null);
+  const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
+  const { language, translateText } = useLanguage();
+  const isAr = language === 'ar';
+
+  const showAlert = (message, type = 'success') => {
+    setAlert({ show: true, message, type });
+    setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 5000);
+  };
+
+  const fetchBackups = () => {
+    setLoading(true);
+    fetch('/api/backups/list', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setLoading(false);
+        if (data.success) {
+          setBackups(data.data || []);
+        }
+      })
+      .catch(err => {
+        setLoading(false);
+        console.error(err);
+      });
+  };
+
+  useEffect(() => {
+    fetchBackups();
+  }, []);
+
+  const handleCreateBackup = () => {
+    setCreating(true);
+    showAlert(isAr ? 'جاري إنشاء النسخة الاحتياطية وتجهيز الملفات والسيرفر...' : 'Creating backup archive and syncing...', 'info');
+
+    fetch('/api/backups/create', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setCreating(false);
+        if (data.success) {
+          showAlert(isAr ? 'تم إنشاء النسخة الاحتياطية بنجاح وترحيلها سحابياً!' : 'Backup created and synced successfully!', 'success');
+          fetchBackups();
+        } else {
+          showAlert(data.message || (isAr ? 'فشلت عملية إنشاء النسخة.' : 'Backup creation failed.'), 'error');
+        }
+      })
+      .catch(err => {
+        setCreating(false);
+        showAlert(isAr ? 'حدث خطأ في الاتصال بالخادم.' : 'Server connection error.', 'error');
+      });
+  };
+
+  const handleRestore = (filename) => {
+    if (!window.confirm(isAr ? '⚠️ تحذير مهم جداً:\nهل أنت متأكد من استعادة هذه النسخة الاحتياطية؟ سيتم استبدال قاعدة البيانات والبيانات الحالية بالبيانات المحفوظة في هذه النسخة.' : '⚠️ Warning: Are you sure you want to restore this backup? Current data will be replaced.')) {
+      return;
+    }
+
+    setRestoring(filename);
+    fetch(`/api/backups/restore/${encodeURIComponent(filename)}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setRestoring(null);
+        if (data.success) {
+          showAlert(isAr ? 'تمت استعادة الموقع بالكامل بنجاح! جاري تحديث الصفحة...' : 'Site restored successfully! Reloading page...', 'success');
+          setTimeout(() => window.location.reload(), 2500);
+        } else {
+          showAlert(data.message || (isAr ? 'فشلت استعادة النسخة.' : 'Restore failed.'), 'error');
+        }
+      })
+      .catch(err => {
+        setRestoring(null);
+        showAlert(isAr ? 'حدث خطأ أثناء استعادة البيانات.' : 'Error during restore.', 'error');
+      });
+  };
+
+  const handleDelete = (filename) => {
+    if (!window.confirm(isAr ? 'هل أنت متأكد من حذف هذه النسخة الاحتياطية؟' : 'Are you sure you want to delete this backup archive?')) {
+      return;
+    }
+
+    fetch(`/api/backups/${encodeURIComponent(filename)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showAlert(isAr ? 'تم حذف النسخة الاحتياطية بنجاح.' : 'Backup deleted successfully.', 'success');
+          fetchBackups();
+        } else {
+          showAlert(data.message || (isAr ? 'فشل الحذف.' : 'Delete failed.'), 'error');
+        }
+      })
+      .catch(err => showAlert(isAr ? 'حدث خطأ أثناء الحذف.' : 'Error deleting backup.', 'error'));
+  };
+
+  return (
+    <div className="tab-pane">
+      <div className="tab-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h2>{isAr ? 'النسخ الاحتياطي السحابي (Google Drive) ☁️' : 'Cloud Backups (Google Drive) ☁️'}</h2>
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
+            {isAr ? 'قسم مستقِل وخاص بإدارة النسخ الاحتياطية التلقائية واستعادة كامل بيانات الموقع والملفات في أي وقت بكفاءة عالية.' : 'Dedicated independent module for automated site backups and instant full-site restoration.'}
+          </p>
+        </div>
+        <button 
+          className="btn btn-primary" 
+          onClick={handleCreateBackup} 
+          disabled={creating}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem' }}
+        >
+          <Cloud size={18} />
+          <span>{creating ? (isAr ? 'جاري إنشاء النسخة...' : 'Creating Backup...') : (isAr ? 'إنشاء نسخة احتياطية سحابية جديدة ☁️' : 'Create New Cloud Backup ☁️')}</span>
+        </button>
+      </div>
+
+      {alert.show && (
+        <div className={`alert-toast ${alert.type}`} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem', borderRadius: '8px', background: alert.type === 'success' ? 'rgba(76, 175, 80, 0.15)' : alert.type === 'info' ? 'rgba(33, 150, 243, 0.15)' : 'rgba(244, 67, 54, 0.15)', color: alert.type === 'success' ? '#4caf50' : alert.type === 'info' ? '#2196f3' : '#f44336', border: `1px solid ${alert.type === 'success' ? 'rgba(76, 175, 80, 0.3)' : alert.type === 'info' ? 'rgba(33, 150, 243, 0.3)' : 'rgba(244, 67, 54, 0.3)'}` }}>
+          {alert.type === 'success' ? <CheckCircle size={18} /> : <Info size={18} />}
+          <span>{alert.message}</span>
+        </div>
+      )}
+
+      {/* Cloud & Auto-Backup Status Box */}
+      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '2rem', borderRight: isAr ? '5px solid #2196f3' : 'none', borderLeft: isAr ? 'none' : '5px solid #2196f3' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(33, 150, 243, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2196f3' }}>
+            <Database size={24} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{isAr ? 'حالة المزامنة والحفظ التلقائي' : 'Auto-Sync & Cloud Storage Status'}</h4>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              {isAr ? 'يتم حفظ النسخ احتياطياً محلياً وبشكل تلقائي، ويمكن مزامنتها مع مجلد Google Drive (KKBC_Church_Backups) على حسابك.' : 'Backups are safely archived locally and synced to your Google Drive account.'}
+            </p>
+          </div>
+          <div style={{ textAlign: isAr ? 'left' : 'right' }}>
+            <span className="role-tag" style={{ backgroundColor: 'rgba(76, 175, 80, 0.15)', color: '#4caf50', fontWeight: 'bold' }}>
+              {isAr ? 'نظام الحماية: نشط 🟢' : 'Protection System: Active 🟢'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Backups List Table */}
+      <h3>{isAr ? 'أرشيف النسخ الاحتياطية المسجلة' : 'Backup Archives History'}</h3>
+      <hr style={{ borderColor: 'var(--border-color)', margin: '0.75rem 0 1.5rem' }} />
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '3rem' }}>
+          <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
+          <p>{isAr ? 'جارٍ تحميل قائمة النسخ الاحتياطية...' : 'Loading backups list...'}</p>
+        </div>
+      ) : backups.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-light)' }}>
+          <Cloud size={48} style={{ opacity: 0.5, marginBottom: '1rem' }} />
+          <p>{isAr ? 'لا توجد نسخ احتياطية مسجلة حالياً. اضغط على زر "إنشاء نسخة احتياطية" لحفظ بيانات الموقع.' : 'No recorded backup archives yet. Click "Create New Cloud Backup" to store a backup.'}</p>
+        </div>
+      ) : (
+        <div className="table-container">
+          <table className="custom-table">
+            <thead>
+              <tr>
+                <th>{isAr ? 'تاريخ ووقت النسخة' : 'Backup Date & Time'}</th>
+                <th>{isAr ? 'اسم الملف' : 'Filename'}</th>
+                <th>{isAr ? 'حجم الملف' : 'Size (MB)'}</th>
+                <th>{isAr ? 'حالة التخزين' : 'Storage'}</th>
+                <th>{isAr ? 'الإجراءات' : 'Actions'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {backups.map((b) => (
+                <tr key={b.filename}>
+                  <td>{new Date(b.createdAt).toLocaleString(isAr ? 'ar-LB' : 'en-US')}</td>
+                  <td><code style={{ fontSize: '0.88rem', color: 'var(--primary-color)' }}>{b.filename}</code></td>
+                  <td><strong>{b.sizeMB} MB</strong></td>
+                  <td>
+                    <span className="role-tag" style={{ backgroundColor: 'rgba(33, 150, 243, 0.15)', color: '#2196f3', fontSize: '0.75rem' }}>
+                      {isAr ? 'محفوظ وآمن ☁️' : 'Stored & Secured ☁️'}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <a 
+                        href={`/api/backups/download/${b.filename}`} 
+                        download 
+                        className="admin-btn-action" 
+                        title={isAr ? 'تنزيل على جهازك' : 'Download file'}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#2196f3', textDecoration: 'none', padding: '0.25rem 0.6rem' }}
+                      >
+                        <Download size={14} />
+                        <span>{isAr ? 'تنزيل' : 'Download'}</span>
+                      </a>
+                      <button 
+                        className="admin-btn-action" 
+                        onClick={() => handleRestore(b.filename)}
+                        disabled={restoring === b.filename}
+                        title={isAr ? 'استعادة كامل بيانات الموقع من هذه النسخة' : 'Restore site data from this backup'}
+                        style={{ color: '#4caf50', border: '1px solid rgba(76, 175, 80, 0.3)', padding: '0.25rem 0.6rem', height: 'auto', fontSize: '0.8rem' }}
+                      >
+                        <RefreshCw size={14} className={restoring === b.filename ? 'spin' : ''} />
+                        <span>{restoring === b.filename ? (isAr ? 'جاري الاستعادة...' : 'Restoring...') : (isAr ? 'استعادة 🔄' : 'Restore 🔄')}</span>
+                      </button>
+                      <button 
+                        className="admin-btn-action admin-btn-delete" 
+                        onClick={() => handleDelete(b.filename)} 
+                        title={isAr ? 'حذف النسخة' : 'Delete backup'}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
