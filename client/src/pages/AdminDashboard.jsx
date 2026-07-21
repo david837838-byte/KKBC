@@ -15,7 +15,7 @@ const formatDateSafe = (dateVal, isAr) => {
   return d.toLocaleDateString(isAr ? 'ar-LB' : 'en-US');
 };
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ setIsAdmin }) => {
   const [activeTab, setActiveTab] = useState('livestream');
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [userProfile, setUserProfile] = useState(null);
@@ -38,6 +38,7 @@ const AdminDashboard = () => {
   // Authentication check
   useEffect(() => {
     if (!token) {
+      if (setIsAdmin) setIsAdmin(false);
       navigate('/login');
       return;
     }
@@ -49,6 +50,7 @@ const AdminDashboard = () => {
       .then(res => {
         if (res.status === 401) {
           localStorage.removeItem('token');
+          if (setIsAdmin) setIsAdmin(false);
           navigate('/login');
           return null;
         }
@@ -60,7 +62,7 @@ const AdminDashboard = () => {
         }
       })
       .catch(err => console.error(err));
-  }, [token, navigate]);
+  }, [token, navigate, setIsAdmin]);
 
   // Socket.io for new prayer alerts
   useEffect(() => {
@@ -77,6 +79,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    if (setIsAdmin) setIsAdmin(false);
     navigate('/');
   };
 

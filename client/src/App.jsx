@@ -91,7 +91,7 @@ const AppContent = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
           {/* Protected Route for Admin Dashboard */}
           <Route 
             path="/admin" 
-            element={isAdmin ? <AdminDashboard /> : <Navigate to="/login" replace />} 
+            element={isAdmin ? <AdminDashboard setIsAdmin={setIsAdmin} /> : <Navigate to="/login" replace />} 
           />
 
           {/* Fallback routing */}

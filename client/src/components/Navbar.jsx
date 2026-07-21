@@ -13,6 +13,13 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
   const { language, toggleLanguage, t } = useLanguage();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token && isAdmin) {
+      setIsAdmin(false);
+    }
+  }, [location.pathname, isAdmin, setIsAdmin]);
+
+  useEffect(() => {
     // Fetch current live status
     fetch('/api/livestream')
       .then(res => res.json())
