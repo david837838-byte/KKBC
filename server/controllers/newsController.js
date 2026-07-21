@@ -87,12 +87,14 @@ exports.createNews = async (req, res) => {
       imageUrl = `/uploads/news/${req.file.filename}`;
     }
 
+    const newsDate = (date && typeof date === 'string' && date.trim() !== '') ? new Date(date) : new Date();
+
     const news = await News.create({
       title,
       content,
-      category,
+      category: category || 'news',
       imageUrl,
-      date,
+      date: isNaN(newsDate.getTime()) ? new Date() : newsDate,
     });
 
     res.status(201).json({ success: true, data: news });
@@ -113,6 +115,11 @@ exports.updateNews = async (req, res) => {
     }
 
     const updateData = { ...req.body };
+
+    if (updateData.date) {
+      const parsedDate = new Date(updateData.date);
+      updateData.date = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+    }
 
     if (req.file) {
       deleteLocalFile(news.imageUrl);

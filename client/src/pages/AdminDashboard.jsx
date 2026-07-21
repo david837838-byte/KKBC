@@ -8,6 +8,13 @@ import {
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
 
+const formatDateSafe = (dateVal, isAr) => {
+  if (!dateVal) return new Date().toLocaleDateString(isAr ? 'ar-LB' : 'en-US');
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return new Date().toLocaleDateString(isAr ? 'ar-LB' : 'en-US');
+  return d.toLocaleDateString(isAr ? 'ar-LB' : 'en-US');
+};
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('livestream');
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -1327,7 +1334,7 @@ const NewsTab = ({ token }) => {
             <tbody>
               {news.map((item) => (
                 <tr key={item._id}>
-                  <td>{new Date(item.date).toLocaleDateString(isAr ? 'ar-LB' : 'en-US')}</td>
+                  <td>{formatDateSafe(item.date || item.createdAt, isAr)}</td>
                   <td><strong>{translateText(item.title, item.titleEn)}</strong></td>
                   <td>{item.category === 'event' ? (isAr ? 'فعالية' : 'Event') : item.category === 'announcement' ? (isAr ? 'إعلان' : 'Announcement') : (isAr ? 'خبر' : 'News')}</td>
                   <td>{item.imageUrl ? <span style={{ color: 'var(--success-color)' }}>{isAr ? 'نعم' : 'Yes'}</span> : <span style={{ color: 'var(--text-light)' }}>{isAr ? 'لا' : 'No'}</span>}</td>
