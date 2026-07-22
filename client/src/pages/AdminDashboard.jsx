@@ -173,6 +173,12 @@ const AdminDashboard = ({ setIsAdmin }) => {
                     <span>{isAr ? 'النسخ الاحتياطي السحابي' : 'Cloud Backups'}</span>
                   </div>
                 </li>
+                <li className={activeTab === 'notifications' ? 'active' : ''} onClick={() => setActiveTab('notifications')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
+                    <Bell size={18} />
+                    <span>{isAr ? 'التنبيهات المباشرة' : 'Live Notifications'}</span>
+                  </div>
+                </li>
               </>
             )}
             {(userProfile?.role === 'admin' || userProfile?.canManageExpenses) && (
@@ -208,6 +214,7 @@ const AdminDashboard = ({ setIsAdmin }) => {
           {activeTab === 'daily-verses' && <DailyVersesTab token={token} />}
           {activeTab === 'users' && userProfile?.role === 'admin' && <UsersTab token={token} />}
           {activeTab === 'backups' && userProfile?.role === 'admin' && <BackupsTab token={token} />}
+          {activeTab === 'notifications' && userProfile?.role === 'admin' && <NotificationsTab token={token} />}
           {activeTab === 'expenses' && (userProfile?.role === 'admin' || userProfile?.canManageExpenses) && <ExpensesTab token={token} />}
         </main>
       </div>
@@ -4863,6 +4870,233 @@ const BackupsTab = ({ token }) => {
           </table>
         </div>
       )}
+    </div>
+  );
+};
+
+/* =========================================================================
+   TAB: Push Notifications Broadcast (Super-admin access only)
+   ========================================================================= */
+const NotificationsTab = ({ token }) => {
+  const [subscribersCount, setSubscribersCount] = useState(0);
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
+  const [url, setUrl] = useState('/');
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
+
+  const showAlert = (msg, type = 'success') => {
+    setAlert({ show: true, message: msg, type });
+    setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 5000);
+  };
+
+  const fetchCount = () => {
+    fetch('/api/notifications/count', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setSubscribersCount(data.count || 0);
+      })
+      .catch(err => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchCount();
+  }, []);
+
+  const handleSendNotification = (customPayload = null) => {
+    const payloadToSend = customPayload || { title, message, url };
+
+    if (!payloadToSend.title || !payloadToSend.message) {
+      showAlert(isAr ? 'يرجى إدخال عنوان التنبيه ونص الرسالة' : 'Please enter title and message', 'error');
+      return;
+    }
+
+    setLoading(true);
+    fetch('/api/notifications/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payloadToSend)
+    })
+      .then(res => res.json())
+      .then(data => {
+        setLoading(false);
+        if (data.success) {
+          showAlert(data.message || (isAr ? 'تم إرسال التنبيه الفوري بنجاح!' : 'Notification sent successfully!'), 'success');
+          if (!customPayload) {
+            setTitle('');
+            setMessage('');
+            setUrl('/');
+          }
+        } else {
+          showAlert(data.message || (isAr ? 'فشل إرسال التنبيه' : 'Failed to send notification'), 'error');
+        }
+      })
+      .catch(err => {
+        setLoading(false);
+        showAlert(isAr ? 'حدث خطأ في الاتصال بالخادم' : 'Server connection error', 'error');
+      });
+  };
+
+  return (
+    <div className="tab-pane">
+      <div className="tab-header" style={{ marginBottom: '1.5rem' }}>
+        <h2>{isAr ? 'إدارة التنبيهات الفورية المباشرة 🔔' : 'Live Push Notifications Broadcast 🔔'}</h2>
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
+          {isAr ? 'نظام تنبيهات فوري غير معطل يسمح بإرسال إشعارات سريعة وتنبيهات البث المباشر لجميع الأجهزة المتابعة لموقع الكنيسة.' : 'Send instant live notifications and broadcast updates to all subscribed church visitors.'}
+        </p>
+      </div>
+
+      {alert.show && (
+        <div className={`alert-toast ${alert.type}`} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem', borderRadius: '8px', background: alert.type === 'success' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(244, 67, 54, 0.15)', color: alert.type === 'success' ? '#4caf50' : '#f44336', border: `1px solid ${alert.type === 'success' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}` }}>
+          {alert.type === 'success' ? <CheckCircle size={18} /> : <Info size={18} />}
+          <span>{alert.message}</span>
+        </div>
+      )}
+
+      {/* Subscribed Devices Counter Box */}
+      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '2rem', borderRight: isAr ? '5px solid #d4af37' : 'none', borderLeft: isAr ? 'none' : '5px solid #d4af37' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d4af37' }}>
+            <Bell size={24} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{isAr ? 'عدد الأجهزة المتابعة والمشتركة بالتنبيهات' : 'Subscribed Devices Count'}</h4>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              {isAr ? 'جميع الأجهزة المتصلة ستستلم التنبيهات الفورية عند إرسال أي إشعار جديد.' : 'All subscribed devices will receive instant push notifications.'}
+            </p>
+          </div>
+          <div>
+            <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{subscribersCount}</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-light)', display: 'block' }}>{isAr ? 'جهاز مسجل' : 'device(s)'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Action Broadcast Buttons */}
+      <h3>{isAr ? 'إرسال تنبيه عاجل بضغطة زر واحدة' : 'Quick Broadcast Actions'}</h3>
+      <hr style={{ borderColor: 'var(--border-color)', margin: '0.75rem 0 1.5rem' }} />
+
+      <div className="grid-3" style={{ gap: '1rem', marginBottom: '2.5rem' }}>
+        <div className="glass-card" style={{ padding: '1.25rem', textAlign: 'center' }}>
+          <Radio size={32} style={{ color: '#f44336', marginBottom: '0.5rem' }} className="live-icon-blink" />
+          <h4 style={{ margin: '0 0 0.5rem' }}>{isAr ? 'تنبيه بدء البث المباشر 🔴' : 'Live Stream Alert 🔴'}</h4>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+            {isAr ? 'إشعار فوري للجميع بأن خدمة البث المباشر قد بدأت الآن.' : 'Notify all visitors that live service stream has started.'}
+          </p>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => handleSendNotification({
+              title: isAr ? 'بدء البث المباشر الآن 🔴' : 'Live Service Broadcast Now 🔴',
+              message: isAr ? 'انضم إلينا الآن لمتابعة الاجتماع والبث المباشر لكنيسة خربة قنافار.' : 'Join us now for the live service stream of Khirbet Qanafar Church.',
+              url: '/live'
+            })}
+            disabled={loading}
+            style={{ width: '100%', backgroundColor: '#f44336', borderColor: '#f44336' }}
+          >
+            <span>{isAr ? 'إرسال تنبيه البث 🔴' : 'Send Live Alert 🔴'}</span>
+          </button>
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.25rem', textAlign: 'center' }}>
+          <BookOpen size={32} style={{ color: '#d4af37', marginBottom: '0.5rem' }} />
+          <h4 style={{ margin: '0 0 0.5rem' }}>{isAr ? 'تنبيه آية اليوم 📖' : 'Daily Verse Alert 📖'}</h4>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+            {isAr ? 'إشعار الزوار بوجود آية وتأمل كتابي جديد على الموقع.' : 'Notify visitors of new Bible verse & reflection.'}
+          </p>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => handleSendNotification({
+              title: isAr ? 'كلمة الله اليومية 📖' : 'Daily Scripture Verse 📖',
+              message: isAr ? 'آية جديدة وتأمل روحي مبارك متاح الآن على موقع الكنيسة.' : 'New Bible verse and spiritual reflection available on church site.',
+              url: '/'
+            })}
+            disabled={loading}
+            style={{ width: '100%', backgroundColor: '#d4af37', borderColor: '#d4af37' }}
+          >
+            <span>{isAr ? 'إرسال تنبيه الآية 📖' : 'Send Verse Alert 📖'}</span>
+          </button>
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.25rem', textAlign: 'center' }}>
+          <FileText size={32} style={{ color: '#2196f3', marginBottom: '0.5rem' }} />
+          <h4 style={{ margin: '0 0 0.5rem' }}>{isAr ? 'تنبيه إعلان كنسي 📰' : 'News Announcement Alert 📰'}</h4>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+            {isAr ? 'تنبيه بمتابعة أحدث الإعلانات والنشاطات الكنسية.' : 'Notify subscribers of new church news or event.'}
+          </p>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => handleSendNotification({
+              title: isAr ? 'إعلان جديد من الكنيسة 📰' : 'New Church Announcement 📰',
+              message: isAr ? 'تابع أحدث أخبار وإعلانات كنيسة خربة قنافار الإنجيلية.' : 'Check out the latest updates and announcements from the church.',
+              url: '/news'
+            })}
+            disabled={loading}
+            style={{ width: '100%', backgroundColor: '#2196f3', borderColor: '#2196f3' }}
+          >
+            <span>{isAr ? 'إرسال تنبيه الإعلانات 📰' : 'Send News Alert 📰'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Custom Broadcast Form */}
+      <h3>{isAr ? 'إرسال تنبيه مخصص مخصّص' : 'Send Custom Push Broadcast'}</h3>
+      <hr style={{ borderColor: 'var(--border-color)', margin: '0.75rem 0 1.5rem' }} />
+
+      <div className="glass-card" style={{ padding: '1.5rem' }}>
+        <form onSubmit={(e) => { e.preventDefault(); handleSendNotification(); }}>
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label style={{ fontWeight: 'bold' }}>{isAr ? 'عنوان التنبيه' : 'Notification Title'}</label>
+            <input 
+              type="text" 
+              value={title} 
+              onChange={(e) => setTitle(e.target.value)} 
+              required 
+              className="form-control" 
+              placeholder={isAr ? 'مثال: اجتماع صلاة خاص مساء اليوم' : 'e.g. Special Prayer Meeting Tonight'}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label style={{ fontWeight: 'bold' }}>{isAr ? 'نص التنبيه الفوري' : 'Notification Message'}</label>
+            <textarea 
+              value={message} 
+              onChange={(e) => setMessage(e.target.value)} 
+              required 
+              rows="3" 
+              className="form-control"
+              placeholder={isAr ? 'اكتب الرسالة الموجزة التي ستظهر على شاشات الزوار...' : 'Type the message payload...'}
+            ></textarea>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label style={{ fontWeight: 'bold' }}>{isAr ? 'الرابط الموجه (عند النقر على التنبيه)' : 'Destination URL Link'}</label>
+            <input 
+              type="text" 
+              value={url} 
+              onChange={(e) => setUrl(e.target.value)} 
+              className="form-control" 
+              placeholder="/live, /news, /sermons..."
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={loading}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }}
+          >
+            <Bell size={18} />
+            <span>{loading ? (isAr ? 'جاري إرسال التنبيه...' : 'Sending Broadcast...') : (isAr ? '🚀 إرسال التنبيه الفوري لجميع المتابعين' : '🚀 Send Push Broadcast to All')}</span>
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

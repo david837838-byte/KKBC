@@ -111,6 +111,7 @@ app.use('/api/counseling', apiLimiter, require('./routes/counseling'));
 app.use('/api/expenses', apiLimiter, require('./routes/expenses'));
 app.use('/api/daily-verses', apiLimiter, require('./routes/dailyVerses'));
 app.use('/api/backups', apiLimiter, require('./routes/backups'));
+app.use('/api/notifications', apiLimiter, require('./routes/notifications'));
 
 // Serve Frontend in Production (If build files exist in public)
 const publicPath = path.join(__dirname, 'public');

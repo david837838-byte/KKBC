@@ -18,6 +18,7 @@ import News from './pages/News';
 import Articles from './pages/Articles';
 import DownloadApp from './pages/DownloadApp';
 import InstallBanner from './components/InstallBanner';
+import NotificationBanner from './components/NotificationBanner';
 import Counseling from './pages/Counseling';
 import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
@@ -107,6 +108,9 @@ const AppContent = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
 
       {/* Smart PWA Install Prompt Banner */}
       {!isPresentation && <InstallBanner />}
+
+      {/* Push Notification Banner & Toasts */}
+      {!isPresentation && <NotificationBanner />}
     </div>
   );
 };

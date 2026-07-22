@@ -1,0 +1,188 @@
+import React, { useState, useEffect } from 'react';
+import { Bell, X, Check, Volume2, Radio } from 'lucide-react';
+import io from 'socket.io-client';
+import { useLanguage } from '../context/LanguageContext';
+
+const NotificationBanner = () => {
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const [toast, setToast] = useState(null);
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
+
+  useEffect(() => {
+    // 1. Check if browser supports notifications
+    if (!('Notification' in window)) return;
+
+    // 2. Check if user already dismissed or granted permission
+    const isDismissed = localStorage.getItem('kkbc_notifications_dismissed') === 'true';
+    if (Notification.permission === 'granted') {
+      setSubscribed(true);
+    } else if (Notification.permission === 'default' && !isDismissed) {
+      // Show prompt banner after 4 seconds for better user experience
+      const timer = setTimeout(() => setShowPrompt(true), 4000);
+      return () => clearTimeout(timer);
+    }
+
+    // Register Service Worker for background push if supported
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Registration optional:', err));
+    }
+
+    // 3. Connect to Socket.io for real-time live push broadcasts while browsing
+    const socket = io('/', { path: '/socket.io' });
+    socket.on('pushNotificationBroadcast', (data) => {
+      setToast(data);
+      setTimeout(() => setToast(null), 8000);
+
+      // Play subtle chime sound if possible
+      try {
+        const audio = new Audio('/assets/notification.mp3');
+        audio.play().catch(() => {});
+      } catch (e) {}
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const handleSubscribe = async () => {
+    try {
+      if (!('Notification' in window)) return;
+
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        setSubscribed(true);
+        setShowPrompt(false);
+
+        let endpoint = `web_sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        
+        // Save subscription endpoint to backend
+        fetch('/api/notifications/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint,
+            keys: {}
+          })
+        }).catch(err => console.log(err));
+
+        setToast({
+          title: isAr ? 'تم تفعيل التنبيهات المباشرة 🔔' : 'Notifications Enabled 🔔',
+          message: isAr ? 'شكراً لك! ستصلك التنبيهات الفورية عند بدء البث المباشر والإعلانات الكنسية.' : 'Thank you! You will receive instant notifications for live streams and updates.'
+        });
+        setTimeout(() => setToast(null), 5000);
+      } else {
+        setShowPrompt(false);
+        localStorage.setItem('kkbc_notifications_dismissed', 'true');
+      }
+    } catch (error) {
+      console.error('Permission request error:', error);
+      setShowPrompt(false);
+    }
+  };
+
+  const handleDismiss = () => {
+    setShowPrompt(false);
+    localStorage.setItem('kkbc_notifications_dismissed', 'true');
+  };
+
+  return (
+    <>
+      {/* Real-time Broadcast Floating Toast Notification */}
+      {toast && (
+        <div 
+          className="glass-card" 
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            right: isAr ? '20px' : 'auto',
+            left: isAr ? 'auto' : '20px',
+            zIndex: 9999,
+            maxWidth: '360px',
+            padding: '1.25rem',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            borderRight: isAr ? '5px solid #2196f3' : 'none',
+            borderLeft: isAr ? 'none' : '5px solid #2196f3',
+            animation: 'fadeInUp 0.4s ease-out'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+            <div style={{ backgroundColor: 'rgba(33, 150, 243, 0.2)', padding: '0.5rem', borderRadius: '50%', color: '#2196f3' }}>
+              <Radio size={20} className="live-icon-blink" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 'bold' }}>{toast.title}</h4>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{toast.message}</p>
+            </div>
+            <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', padding: 0 }}>
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Subscription Banner Prompt */}
+      {showPrompt && !subscribed && (
+        <div 
+          className="glass-card"
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '20px',
+            right: '20px',
+            maxWidth: '480px',
+            margin: '0 auto',
+            zIndex: 9990,
+            padding: '1.25rem',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.25)',
+            backdropFilter: 'blur(16px)',
+            animation: 'fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+            <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.18)', color: '#d4af37', padding: '0.65rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bell size={24} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>
+                {isAr ? 'تفعيل التنبيهات المباشرة للكنيسة 🔔' : 'Enable Church Live Alerts 🔔'}
+              </h4>
+              <p style={{ margin: '0.35rem 0 0.85rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                {isAr 
+                  ? 'احصل على تنبيهات فورية عند بدء البث المباشر، نشر العظات الجديدة، والإعلانات الكنسية الهامة.' 
+                  : 'Receive instant notifications for live streams, new sermons, and important updates.'}
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={handleSubscribe} 
+                  style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                >
+                  <Check size={14} />
+                  <span>{isAr ? 'تفعيل التنبيهات 🔔' : 'Enable Notifications'}</span>
+                </button>
+                <button 
+                  className="btn btn-outline" 
+                  onClick={handleDismiss} 
+                  style={{ padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
+                >
+                  <span>{isAr ? 'ليس الآن' : 'Not Now'}</span>
+                </button>
+              </div>
+            </div>
+            <button onClick={handleDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', padding: 0 }}>
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default NotificationBanner;
