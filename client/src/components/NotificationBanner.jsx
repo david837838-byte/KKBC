@@ -11,16 +11,15 @@ const NotificationBanner = () => {
   const isAr = language === 'ar';
 
   useEffect(() => {
-    // 1. Check if browser supports notifications
-    if (!('Notification' in window)) return;
-
-    // 2. Check if user already dismissed or granted permission
+    // 1. Check if user already subscribed or dismissed
+    const isSubscribedLocal = localStorage.getItem('kkbc_subscribed') === 'true';
     const isDismissed = localStorage.getItem('kkbc_notifications_dismissed') === 'true';
-    if (Notification.permission === 'granted') {
+
+    if (isSubscribedLocal || (window.Notification && Notification.permission === 'granted')) {
       setSubscribed(true);
-    } else if (Notification.permission === 'default' && !isDismissed) {
-      // Show prompt banner after 4 seconds for better user experience
-      const timer = setTimeout(() => setShowPrompt(true), 4000);
+    } else if (!isDismissed) {
+      // Show prompt banner after 2 seconds for all mobile & desktop visitors
+      const timer = setTimeout(() => setShowPrompt(true), 2000);
       return () => clearTimeout(timer);
     }
 
@@ -29,11 +28,18 @@ const NotificationBanner = () => {
       navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Registration optional:', err));
     }
 
-    // 3. Connect to Socket.io for real-time live push broadcasts while browsing
+    // 2. Connect to Socket.io for real-time live push broadcasts
     const socket = io('/', { path: '/socket.io' });
     socket.on('pushNotificationBroadcast', (data) => {
       setToast(data);
-      setTimeout(() => setToast(null), 8000);
+      setTimeout(() => setToast(null), 10000);
+
+      // Trigger native notification if granted and supported
+      if (window.Notification && Notification.permission === 'granted') {
+        try {
+          new Notification(data.title, { body: data.message, icon: data.icon || '/favicon.svg' });
+        } catch (e) {}
+      }
 
       // Play subtle chime sound if possible
       try {
@@ -49,34 +55,31 @@ const NotificationBanner = () => {
 
   const handleSubscribe = async () => {
     try {
-      if (!('Notification' in window)) return;
+      setSubscribed(true);
+      setShowPrompt(false);
+      localStorage.setItem('kkbc_subscribed', 'true');
 
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setSubscribed(true);
-        setShowPrompt(false);
-
-        let endpoint = `web_sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-        
-        // Save subscription endpoint to backend
-        fetch('/api/notifications/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            endpoint,
-            keys: {}
-          })
-        }).catch(err => console.log(err));
-
-        setToast({
-          title: isAr ? 'تم تفعيل التنبيهات المباشرة 🔔' : 'Notifications Enabled 🔔',
-          message: isAr ? 'شكراً لك! ستصلك التنبيهات الفورية عند بدء البث المباشر والإعلانات الكنسية.' : 'Thank you! You will receive instant notifications for live streams and updates.'
-        });
-        setTimeout(() => setToast(null), 5000);
-      } else {
-        setShowPrompt(false);
-        localStorage.setItem('kkbc_notifications_dismissed', 'true');
+      if (window.Notification && typeof Notification.requestPermission === 'function') {
+        Notification.requestPermission().catch(() => {});
       }
+
+      let endpoint = `web_sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Save subscription endpoint to backend
+      fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint,
+          keys: {}
+        })
+      }).catch(err => console.log(err));
+
+      setToast({
+        title: isAr ? 'تم تفعيل التنبيهات المباشرة 🔔' : 'Notifications Enabled 🔔',
+        message: isAr ? 'شكراً لك! ستصلك التنبيهات الفورية عند بدء البث المباشر والإعلانات الكنسية.' : 'Thank you! You will receive instant notifications for live streams and updates.'
+      });
+      setTimeout(() => setToast(null), 6000);
     } catch (error) {
       console.error('Permission request error:', error);
       setShowPrompt(false);
