@@ -3,6 +3,32 @@ import { Bell, X, Check, Volume2, Radio } from 'lucide-react';
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
 
+const playChimeSound = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const playNote = (freq, delay, duration) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + duration);
+    };
+    // Play 3 pleasant bell chime notes
+    playNote(587.33, 0, 0.2); // D5
+    playNote(880, 0.15, 0.25); // A5
+    playNote(1174.66, 0.35, 0.4); // D6
+  } catch (e) {
+    console.log('Audio chime synthesis:', e);
+  }
+};
+
 const NotificationBanner = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
@@ -31,8 +57,17 @@ const NotificationBanner = () => {
     // 2. Connect to Socket.io for real-time live push broadcasts
     const socket = io('/', { path: '/socket.io' });
     socket.on('pushNotificationBroadcast', (data) => {
+      console.log('📢 Received Live Push Notification:', data);
       setToast(data);
-      setTimeout(() => setToast(null), 10000);
+      setTimeout(() => setToast(null), 12000);
+
+      // Trigger phone vibration
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate([200, 100, 200]); } catch (e) {}
+      }
+
+      // Play 3-note bell chime sound
+      playChimeSound();
 
       // Trigger native notification if granted and supported
       if (window.Notification && Notification.permission === 'granted') {
@@ -40,12 +75,6 @@ const NotificationBanner = () => {
           new Notification(data.title, { body: data.message, icon: data.icon || '/favicon.svg' });
         } catch (e) {}
       }
-
-      // Play subtle chime sound if possible
-      try {
-        const audio = new Audio('/assets/notification.mp3');
-        audio.play().catch(() => {});
-      } catch (e) {}
     });
 
     return () => {
@@ -99,17 +128,20 @@ const NotificationBanner = () => {
           className="glass-card" 
           style={{
             position: 'fixed',
-            bottom: '80px',
-            right: isAr ? '20px' : 'auto',
-            left: isAr ? 'auto' : '20px',
-            zIndex: 9999,
-            maxWidth: '360px',
+            top: '20px',
+            right: '20px',
+            left: '20px',
+            maxWidth: '420px',
+            margin: '0 auto',
+            zIndex: 999999,
             padding: '1.25rem',
             borderRadius: '16px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.4)',
             borderRight: isAr ? '5px solid #2196f3' : 'none',
             borderLeft: isAr ? 'none' : '5px solid #2196f3',
-            animation: 'fadeInUp 0.4s ease-out'
+            backdropFilter: 'blur(16px)',
+            animation: 'fadeInDown 0.4s ease-out',
+            background: 'var(--card-bg, rgba(20, 25, 40, 0.95))'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
