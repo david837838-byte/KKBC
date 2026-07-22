@@ -136,24 +136,25 @@ const NotificationBanner = () => {
             zIndex: 999999,
             padding: '1.25rem',
             borderRadius: '16px',
-            boxShadow: '0 12px 36px rgba(0,0,0,0.4)',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.5)',
             borderRight: isAr ? '5px solid #2196f3' : 'none',
             borderLeft: isAr ? 'none' : '5px solid #2196f3',
             backdropFilter: 'blur(16px)',
             animation: 'fadeInDown 0.4s ease-out',
-            background: 'var(--card-bg, rgba(20, 25, 40, 0.95))'
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            color: '#ffffff'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-            <div style={{ backgroundColor: 'rgba(33, 150, 243, 0.2)', padding: '0.5rem', borderRadius: '50%', color: '#2196f3' }}>
+            <div style={{ backgroundColor: 'rgba(33, 150, 243, 0.25)', padding: '0.5rem', borderRadius: '50%', color: '#60a5fa' }}>
               <Radio size={20} className="live-icon-blink" />
             </div>
             <div style={{ flex: 1 }}>
-              <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 'bold' }}>{toast.title}</h4>
-              <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{toast.message}</p>
+              <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 'bold', color: '#ffffff' }}>{toast.title}</h4>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.88rem', color: 'rgba(255, 255, 255, 0.88)', lineHeight: '1.4' }}>{toast.message}</p>
             </div>
-            <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', padding: 0 }}>
-              <X size={16} />
+            <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255, 255, 255, 0.7)', padding: 0 }}>
+              <X size={18} />
             </button>
           </div>
         </div>
