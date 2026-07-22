@@ -85,9 +85,12 @@ exports.sendNotification = async (req, res) => {
     };
 
     // Broadcast via Socket.io real-time web sockets
-    const io = req.app.get('io');
+    const io = req.io || req.app.get('io');
     if (io) {
+      console.log('📢 Broadcasting notification to all connected clients:', payload.title);
       io.emit('pushNotificationBroadcast', payload);
+    } else {
+      console.warn('⚠️ Socket.io instance not found on request');
     }
 
     // Try optional web-push broadcast if web-push package is present

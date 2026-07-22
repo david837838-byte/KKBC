@@ -50,6 +50,7 @@ const io = socketIo(server, {
 });
 
 // Attach socket.io instance to request so controllers can use it
+app.set('io', io);
 app.use((req, res, next) => {
   req.io = io;
   next();
