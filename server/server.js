@@ -3,7 +3,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
-const { apiLimiter, chatbotLimiter } = require('./middleware/rateLimiters');
+const { apiLimiter, authLimiter, chatbotLimiter } = require('./middleware/rateLimiters');
+const sanitizeInputs = require('./middleware/sanitizer');
 const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
@@ -19,6 +20,7 @@ if (!process.env.JWT_SECRET) {
 connectDB();
 
 const app = express();
+app.disable('x-powered-by'); // SECURITY: Conceal server framework identification
 const server = http.createServer(app);
 
 // ===== SECURITY: CORS Origins configuration =====
@@ -60,7 +62,10 @@ app.use((req, res, next) => {
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow serving uploaded files
   contentSecurityPolicy: false, // Disabled for SPA (React injects inline scripts)
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' } // Allows YouTube embeds to receive Referer header
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }, // Allows YouTube embeds to receive Referer header
+  xFrameOptions: { action: 'sameorigin' },
+  xContentTypeOptions: true,
+  xXssFilter: true
 }));
 
 // ===== SECURITY: CORS - Restricted Origins =====
@@ -84,18 +89,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ===== SECURITY: Rate Limiting =====
-// Rate limiters are imported from middleware/rateLimiters.js
-
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ===== SECURITY: NoSQL Injection & XSS Input Sanitization =====
+app.use(sanitizeInputs);
 
 // Serve Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Mount API Routes (with appropriate rate limiters)
-app.use('/api/auth', apiLimiter, require('./routes/auth'));
+app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/sermons', apiLimiter, require('./routes/sermons'));
 app.use('/api/news', apiLimiter, require('./routes/news'));
 app.use('/api/meetings', apiLimiter, require('./routes/meetings'));

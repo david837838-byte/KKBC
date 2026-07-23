@@ -11,11 +11,11 @@ const apiLimiter = rateLimit({
   skip: (req) => req.headers.authorization && req.headers.authorization.startsWith('Bearer '),
 });
 
-// Strict rate limit for authentication: 30 attempts per 15 minutes
+// Strict rate limit for authentication: 10 attempts per 15 minutes (Brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
-  message: { success: false, message: 'محاولات تسجيل دخول كثيرة جداً. يرجى الانتظار 15 دقيقة.' },
+  max: 10,
+  message: { success: false, message: 'محاولات تسجيل دخول كثيرة جداً لحماية الحساب. يرجى الانتظار 15 دقيقة.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
