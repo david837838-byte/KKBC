@@ -58,14 +58,30 @@ app.use((req, res, next) => {
   next();
 });
 
-// ===== SECURITY: Helmet - HTTP Security Headers =====
+// ===== SECURITY: Helmet - HTTP Security Headers & Advanced CSP =====
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow serving uploaded files
-  contentSecurityPolicy: false, // Disabled for SPA (React injects inline scripts)
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }, // Allows YouTube embeds to receive Referer header
   xFrameOptions: { action: 'sameorigin' },
   xContentTypeOptions: true,
-  xXssFilter: true
+  xXssFilter: true,
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https:', 'http:'],
+      mediaSrc: ["'self'", 'data:', 'blob:', 'https:', 'http:'],
+      connectSrc: ["'self'", 'ws:', 'wss:', 'http:', 'https:', 'https://generativelanguage.googleapis.com'],
+      frameSrc: ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'self'"]
+    }
+  }
 }));
 
 // ===== SECURITY: CORS - Restricted Origins =====
