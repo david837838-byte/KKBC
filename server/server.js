@@ -75,7 +75,7 @@ app.use(helmet({
       imgSrc: ["'self'", 'data:', 'blob:', 'https:', 'http:'],
       mediaSrc: ["'self'", 'data:', 'blob:', 'https:', 'http:'],
       connectSrc: ["'self'", 'ws:', 'wss:', 'http:', 'https:', 'https://generativelanguage.googleapis.com'],
-      frameSrc: ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
+      frameSrc: ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://www.google.com', 'https://maps.google.com', 'https://*.google.com'],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
