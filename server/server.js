@@ -143,6 +143,25 @@ app.use('/api/notifications', apiLimiter, require('./routes/notifications'));
 const publicPath = path.join(__dirname, 'public');
 app.use(express.static(publicPath));
 
+// Explicit route handlers for sitemap.xml and robots.txt
+app.get('/sitemap.xml', (req, res) => {
+  const sitemapPath = path.join(publicPath, 'sitemap.xml');
+  if (fs.existsSync(sitemapPath)) {
+    res.header('Content-Type', 'application/xml');
+    return res.sendFile(sitemapPath);
+  }
+  res.status(404).send('Sitemap not found');
+});
+
+app.get('/robots.txt', (req, res) => {
+  const robotsPath = path.join(publicPath, 'robots.txt');
+  if (fs.existsSync(robotsPath)) {
+    res.header('Content-Type', 'text/plain');
+    return res.sendFile(robotsPath);
+  }
+  res.status(404).send('Robots.txt not found');
+});
+
 // Dynamic SEO / Open Graph tags fallback helper
 const Article = require('./models/Article');
 const Sermon = require('./models/Sermon');
