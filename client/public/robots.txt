@@ -1,0 +1,10 @@
+# www.robotstxt.org/
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+
+# Host & Sitemap
+Host: https://kherbetbaptistchurch.org
+Sitemap: https://kherbetbaptistchurch.org/sitemap.xml

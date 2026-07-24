@@ -19,6 +19,7 @@ import Articles from './pages/Articles';
 import DownloadApp from './pages/DownloadApp';
 import InstallBanner from './components/InstallBanner';
 import NotificationBanner from './components/NotificationBanner';
+import SEOHead from './components/SEOHead';
 import Counseling from './pages/Counseling';
 import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
@@ -59,6 +60,9 @@ const AppContent = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Dynamic SEO Head Manager */}
+      <SEOHead />
+
       {/* Navbar */}
       {!isPresentation && (
         <Navbar 
