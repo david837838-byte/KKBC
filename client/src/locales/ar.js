@@ -149,7 +149,7 @@ const ar = {
 
   // Bible Page
   bible: {
-    title: 'الكتاب المقدس الإلكتروني',
+    title: 'الكتاب المقدس',
     subtitle: 'اقرأ وتعمق في أسفار العهدين القديم والجديد',
     oldTestament: 'العهد القديم',
     newTestament: 'العهد الجديد',

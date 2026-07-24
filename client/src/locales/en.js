@@ -149,7 +149,7 @@ const en = {
 
   // Bible Page
   bible: {
-    title: 'Holy Bible Online',
+    title: 'Holy Bible',
     subtitle: 'Read and meditate on the books of the Old and New Testaments',
     oldTestament: 'Old Testament',
     newTestament: 'New Testament',
