@@ -27,7 +27,7 @@ const Logo = ({ className = "h-12 w-12", showText = true }) => {
           <span style={{ 
             fontWeight: '800', 
             fontSize: '1.05rem', 
-            color: 'var(--primary-color)',
+            color: 'var(--text-primary)',
             fontFamily: 'var(--font-family)'
           }}>
             {isAr ? 'الكنيسة المعمدانية الإنجيلية' : 'Evangelical Baptist Church'}

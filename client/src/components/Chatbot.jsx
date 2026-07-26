@@ -281,6 +281,7 @@ const Chatbot = () => {
           margin: 0;
           font-size: 1rem;
           font-weight: bold;
+          color: #ffffff !important;
         }
 
         .chatbot-status {
