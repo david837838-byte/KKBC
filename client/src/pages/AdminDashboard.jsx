@@ -1406,6 +1406,35 @@ const HymnsTab = ({ token }) => {
   const [bulkSuccessMsg, setBulkSuccessMsg] = useState('');
   const [bulkErrorMsg, setBulkErrorMsg] = useState('');
   const [overwriteExisting, setOverwriteExisting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const fetchWithProgress = (url, method, body, headers = {}) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, url, true);
+      Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
+      
+      if (xhr.upload) {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+      }
+      
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          resolve({ success: data.success, count: data.count, message: data.message, hymns: data.hymns });
+        } catch (err) {
+          resolve({ success: false, message: 'Invalid response from server' });
+        }
+      };
+      
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send(body);
+    });
+  };
 
   const handleImportScannedHymns = async (e) => {
     e.preventDefault();
@@ -1428,14 +1457,11 @@ const HymnsTab = ({ token }) => {
         formData.append('hymnImages', scannedImages[i]);
       }
 
-      const res = await fetch('/api/hymns/import-scanned', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData
-      });
+      setUploadProgress(0);
+      const data = await fetchWithProgress('/api/hymns/import-scanned', 'POST', formData, { Authorization: `Bearer ${token}` });
 
-      const data = await res.json();
       if (data.success) {
+        setUploadProgress(100);
         setSuccess(isAr ? `تم ربط وزرع ${data.count} ترنيمة مصورة بنجاح في الموقع! 🎉` : `Successfully imported ${data.count} image hymns! 🎉`);
         setShowBulkModal(false);
         setScannedImages([]);
@@ -1464,28 +1490,21 @@ const HymnsTab = ({ token }) => {
     setBulkSuccessMsg('');
 
     try {
-      let res, data;
+      setUploadProgress(0);
+      let data;
       if (bulkFile) {
         const formData = new FormData();
         formData.append('hymnsFile', bulkFile);
-        res = await fetch('/api/hymns/parse-file', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData
-        });
+        data = await fetchWithProgress('/api/hymns/parse-file', 'POST', formData, { Authorization: `Bearer ${token}` });
       } else {
-        res = await fetch('/api/hymns/parse-file', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
-          },
-          body: JSON.stringify({ rawText: bulkRawText })
+        data = await fetchWithProgress('/api/hymns/parse-file', 'POST', JSON.stringify({ rawText: bulkRawText }), { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
         });
       }
 
-      data = await res.json();
       if (data.success && Array.isArray(data.hymns)) {
+        setUploadProgress(100);
         setParsedHymns(data.hymns);
         setBulkSuccessMsg(isAr ? `تم اكتشاف واستخراج ${data.hymns.length} ترنيمة بنجاح!` : `Successfully parsed ${data.hymns.length} hymns!`);
       } else {
@@ -1507,20 +1526,17 @@ const HymnsTab = ({ token }) => {
     setBulkSuccessMsg('');
 
     try {
-      const res = await fetch('/api/hymns/bulk-import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          hymns: parsedHymns,
-          overwrite: overwriteExisting
-        })
+      setUploadProgress(0);
+      const data = await fetchWithProgress('/api/hymns/bulk-import', 'POST', JSON.stringify({
+        hymns: parsedHymns,
+        overwrite: overwriteExisting
+      }), {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
       });
 
-      const data = await res.json();
       if (data.success) {
+        setUploadProgress(100);
         setSuccess(isAr ? `تمت إضافة وزرع ${data.count} ترنيمة بنجاح في قاعدة البيانات! 🎉` : `Successfully imported ${data.count} hymns! 🎉`);
         setShowBulkModal(false);
         setParsedHymns([]);
@@ -2077,6 +2093,17 @@ const HymnsTab = ({ token }) => {
                   </label>
                 </div>
 
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontWeight: 'bold' }}>
+                      <span>{isAr ? 'جاري التحميل... ⏳' : 'Uploading... ⏳'}</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div style={{ width: '100%', backgroundColor: 'var(--border-color)', borderRadius: '6px', height: '10px', overflow: 'hidden' }}>
+                      <div style={{ width: `${uploadProgress}%`, backgroundColor: '#8b5cf6', height: '100%', transition: 'width 0.2s ease' }} />
+                    </div>
+                  </div>
+                )}
                 <button 
                   type="submit" 
                   disabled={isImporting} 
@@ -2130,6 +2157,17 @@ const HymnsTab = ({ token }) => {
                   />
                 </div>
 
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontWeight: 'bold' }}>
+                      <span>{isAr ? 'جاري التحميل... ⏳' : 'Uploading... ⏳'}</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div style={{ width: '100%', backgroundColor: 'var(--border-color)', borderRadius: '6px', height: '10px', overflow: 'hidden' }}>
+                      <div style={{ width: `${uploadProgress}%`, backgroundColor: '#8b5cf6', height: '100%', transition: 'width 0.2s ease' }} />
+                    </div>
+                  </div>
+                )}
                 <button 
                   type="submit" 
                   disabled={isParsing} 
