@@ -1395,6 +1395,9 @@ const HymnsTab = ({ token }) => {
 
   // Bulk Import State
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [importMode, setImportMode] = useState('scanned'); // 'scanned' or 'text'
+  const [scannedImages, setScannedImages] = useState([]);
+  const [scannedIndexText, setScannedIndexText] = useState('');
   const [bulkFile, setBulkFile] = useState(null);
   const [bulkRawText, setBulkRawText] = useState('');
   const [parsedHymns, setParsedHymns] = useState([]);
@@ -1403,6 +1406,51 @@ const HymnsTab = ({ token }) => {
   const [bulkSuccessMsg, setBulkSuccessMsg] = useState('');
   const [bulkErrorMsg, setBulkErrorMsg] = useState('');
   const [overwriteExisting, setOverwriteExisting] = useState(false);
+
+  const handleImportScannedHymns = async (e) => {
+    e.preventDefault();
+    if (scannedImages.length === 0 && !scannedIndexText.trim()) {
+      setBulkErrorMsg(isAr ? 'يرجى اختيار صور الترانيم أو إدخال الفهرس' : 'Please select hymn images or enter the index');
+      return;
+    }
+
+    setIsImporting(true);
+    setBulkErrorMsg('');
+    setBulkSuccessMsg('');
+
+    try {
+      const formData = new FormData();
+      formData.append('indexText', scannedIndexText);
+      formData.append('overwrite', overwriteExisting);
+      formData.append('category', 'كتاب الترانيم المصور');
+
+      for (let i = 0; i < scannedImages.length; i++) {
+        formData.append('hymnImages', scannedImages[i]);
+      }
+
+      const res = await fetch('/api/hymns/import-scanned', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSuccess(isAr ? `تم ربط وزرع ${data.count} ترنيمة مصورة بنجاح في الموقع! 🎉` : `Successfully imported ${data.count} image hymns! 🎉`);
+        setShowBulkModal(false);
+        setScannedImages([]);
+        setScannedIndexText('');
+        fetchHymns();
+      } else {
+        setBulkErrorMsg(data.message || (isAr ? 'فشل استيراد الترانيم المصورة' : 'Failed to import scanned hymns'));
+      }
+    } catch (err) {
+      console.error(err);
+      setBulkErrorMsg(isAr ? 'حدث خطأ أثناء رفع الترانيم المصورة' : 'Error uploading scanned hymns');
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleParseFile = async (e) => {
     e.preventDefault();
@@ -1955,59 +2003,145 @@ const HymnsTab = ({ token }) => {
               <button className="btn btn-outline" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setShowBulkModal(false)}>✕</button>
             </div>
 
+            {/* Mode Switching Tabs */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+              <button
+                type="button"
+                className={`btn ${importMode === 'scanned' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setImportMode('scanned')}
+                style={{ flex: 1, fontSize: '0.9rem', padding: '0.5rem', fontWeight: 'bold' }}
+              >
+                🖼️ {isAr ? 'كتاب ترانيم مصور (صور / PDF مصور + فهرس)' : 'Scanned Hymnal (Images + Index)'}
+              </button>
+              <button
+                type="button"
+                className={`btn ${importMode === 'text' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setImportMode('text')}
+                style={{ flex: 1, fontSize: '0.9rem', padding: '0.5rem', fontWeight: 'bold' }}
+              >
+                📝 {isAr ? 'ملف نصي / PDF رقمي' : 'Digital Text / PDF'}
+              </button>
+            </div>
+
             {bulkSuccessMsg && <div className="alert alert-success" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '8px' }}>{bulkSuccessMsg}</div>}
             {bulkErrorMsg && <div className="alert alert-danger" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '8px' }}>{bulkErrorMsg}</div>}
 
-            {/* Step 1: Upload / Input Form */}
-            <form onSubmit={handleParseFile} style={{ marginBottom: '1.5rem' }}>
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                  {isAr ? '1. اختر ملف PDF أو TXT يضم الترانيم (حتى 500 ترنيمة):' : '1. Upload PDF or TXT file containing hymns:'}
-                </label>
-                <input 
-                  type="file" 
-                  accept=".pdf,.txt,.json,.csv"
-                  onChange={(e) => {
-                    setBulkFile(e.target.files[0] || null);
-                    setBulkRawText('');
-                  }}
-                  className="form-control"
-                  style={{ padding: '0.6rem' }}
-                />
-              </div>
+            {/* TAB 1: Scanned Hymns (Images + Index Titles) */}
+            {importMode === 'scanned' && (
+              <form onSubmit={handleImportScannedHymns} style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.35rem' }}>
+                    {isAr ? '1. اختر ملف PDF المصور أو صور صفحات الترانيم (حتى 600 صورة):' : '1. Upload Scanned PDF or Hymn Page Images:'}
+                  </label>
+                  <input 
+                    type="file" 
+                    multiple
+                    accept="image/*,.pdf"
+                    onChange={(e) => setScannedImages(Array.from(e.target.files))}
+                    className="form-control"
+                    style={{ padding: '0.6rem' }}
+                  />
+                  {scannedImages.length > 0 && (
+                    <div style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold', marginTop: '0.25rem' }}>
+                      ✓ {isAr ? `تم اختيار ${scannedImages.length} صورة/صفحة` : `Selected ${scannedImages.length} images`}
+                    </div>
+                  )}
+                </div>
 
-              <div style={{ textAlign: 'center', margin: '0.75rem 0', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                --- {isAr ? 'أو' : 'OR'} ---
-              </div>
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.35rem' }}>
+                    {isAr ? '2. الصق فهرس الترانيم الـ 500 (اسم كل ترنيمة في سطر):' : '2. Paste Table of Contents Index (One title per line):'}
+                  </label>
+                  <textarea
+                    rows={6}
+                    value={scannedIndexText}
+                    onChange={(e) => setScannedIndexText(e.target.value)}
+                    placeholder={isAr ? "مثال:\n1. يسوع أنت كل حبي\n2. ما أحلى السجود أمامك\n3. عظيمة هي أعمالك\n...\n500. ترنيمة النصرة" : "Example:\n1. Title of Hymn 1\n2. Title of Hymn 2\n..."}
+                    className="form-control"
+                    style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem', padding: '0.75rem' }}
+                  />
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                    💡 {isAr ? 'سيقوم النظام فورياً بربط الصفحة رقم 1 بالعنوان رقم 1 في الفهرس تلقائياً!' : 'System will automatically match Page #1 with Title #1 from index!'}
+                  </div>
+                </div>
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                  {isAr ? '2. أو الصق نص الترانيم والكلمات مباشرة هنا:' : '2. Or paste all hymns text directly here:'}
-                </label>
-                <textarea
-                  rows={5}
-                  value={bulkRawText}
-                  onChange={(e) => {
-                    setBulkRawText(e.target.value);
-                    setBulkFile(null);
-                  }}
-                  placeholder={isAr ? "مثال:\nترنيمة 1\nاسم الترنيمة الأولى\nكلمات الترنيمة...\n\nترنيمة 2\nاسم الترنيمة الثانية..." : "Example:\nHymn 1\nFirst Hymn Title\nLyrics...\n\nHymn 2\nSecond Hymn Title..."}
-                  className="form-control"
-                  style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem', padding: '0.75rem' }}
-                />
-              </div>
+                <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    id="overwriteScanned"
+                    checked={overwriteExisting} 
+                    onChange={(e) => setOverwriteExisting(e.target.checked)} 
+                  />
+                  <label htmlFor="overwriteScanned" style={{ color: 'var(--error-color)', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    {isAr ? 'مسح الترانيم القديمة قبل استيراد الكتيب الجديد (Overwrite)' : 'Overwrite existing hymns'}
+                  </label>
+                </div>
 
-              <button 
-                type="submit" 
-                disabled={isParsing} 
-                className="btn btn-primary" 
-                style={{ width: '100%', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', padding: '0.75rem', fontSize: '1rem', fontWeight: 'bold' }}
-              >
-                {isParsing 
-                  ? (isAr ? 'جاري قراءة واستخراج الترانيم من الملف... ⏳' : 'Parsing file... ⏳') 
-                  : (isAr ? '🔍 استخراج وفحص الترانيم من الملف' : '🔍 Parse Hymns from File')}
-              </button>
-            </form>
+                <button 
+                  type="submit" 
+                  disabled={isImporting} 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', padding: '0.75rem', fontSize: '1rem', fontWeight: 'bold' }}
+                >
+                  {isImporting 
+                    ? (isAr ? 'جاري رفع وربط الـ 500 ترنيمة مصورة... ⏳' : 'Uploading and matching scanned hymns... ⏳') 
+                    : (isAr ? '🚀 ربط واستيراد كتاب الترانيم المصور بالكامل' : '🚀 Import All Scanned Hymns & Match Index')}
+                </button>
+              </form>
+            )}
+
+            {/* TAB 2: Digital PDF / Text Input Form */}
+            {importMode === 'text' && (
+              <form onSubmit={handleParseFile} style={{ marginBottom: '1.5rem' }}>
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    {isAr ? '1. اختر ملف PDF رقمي أو TXT:' : '1. Upload Digital PDF or TXT file:'}
+                  </label>
+                  <input 
+                    type="file" 
+                    accept=".pdf,.txt,.json,.csv"
+                    onChange={(e) => {
+                      setBulkFile(e.target.files[0] || null);
+                      setBulkRawText('');
+                    }}
+                    className="form-control"
+                    style={{ padding: '0.6rem' }}
+                  />
+                </div>
+
+                <div style={{ textAlign: 'center', margin: '0.75rem 0', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                  --- {isAr ? 'أو' : 'OR'} ---
+                </div>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    {isAr ? '2. أو الصق نص الترانيم المكتوبة مباشرة هنا:' : '2. Or paste all hymns text directly here:'}
+                  </label>
+                  <textarea
+                    rows={5}
+                    value={bulkRawText}
+                    onChange={(e) => {
+                      setBulkRawText(e.target.value);
+                      setBulkFile(null);
+                    }}
+                    placeholder={isAr ? "مثال:\nترنيمة 1\nاسم الترنيمة الأولى\nكلمات الترنيمة...\n\nترنيمة 2\nاسم الترنيمة الثانية..." : "Example:\nHymn 1\nFirst Hymn Title\nLyrics...\n\nHymn 2\nSecond Hymn Title..."}
+                    className="form-control"
+                    style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem', padding: '0.75rem' }}
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={isParsing} 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', padding: '0.75rem', fontSize: '1rem', fontWeight: 'bold' }}
+                >
+                  {isParsing 
+                    ? (isAr ? 'جاري قراءة واستخراج الترانيم من الملف... ⏳' : 'Parsing file... ⏳') 
+                    : (isAr ? '🔍 استخراج وفحص الترانيم من الملف' : '🔍 Parse Hymns from File')}
+                </button>
+              </form>
+            )}
 
             {/* Step 2: Parsed Hymns Preview */}
             {parsedHymns.length > 0 && (

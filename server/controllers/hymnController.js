@@ -314,38 +314,68 @@ exports.parseHymnsFile = async (req, res) => {
   }
 };
 
-// @desc    Bulk Import array of hymns into MongoDB
-// @route   POST /api/hymns/bulk-import
+// @desc    Import scanned hymn images & match with Index titles
+// @route   POST /api/hymns/import-scanned
 // @access  Private
-exports.bulkImportHymns = async (req, res) => {
+exports.importScannedHymns = async (req, res) => {
   try {
-    const { hymns, overwrite } = req.body;
-    if (!Array.isArray(hymns) || hymns.length === 0) {
-      return res.status(400).json({ success: false, message: 'قائمة الترانيم فارغة' });
+    const { indexText, category, overwrite } = req.body;
+    
+    // Parse indexText into list of titles
+    let titles = [];
+    if (indexText && typeof indexText === 'string') {
+      titles = indexText
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => line.replace(/^(?:ترنيمة\s*\d*[:\s-]*|\d+[\.\-]\s*|#\d+\s*)/i, '').trim())
+        .filter(t => t.length > 0);
     }
 
-    if (overwrite) {
+    const files = req.files || [];
+    if (files.length === 0 && titles.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'يرجى رفع صور الترانيم أو إدخال الفهرس' 
+      });
+    }
+
+    if (overwrite === 'true' || overwrite === true) {
       await Hymn.deleteMany({});
     }
 
-    const formattedHymns = hymns.map(h => ({
-      title: h.title ? h.title.trim() : 'ترنيمة بدون عنوان',
-      lyrics: h.lyrics ? h.lyrics.trim() : '',
-      category: h.category || 'عامة',
-      audioUrl: h.audioUrl || '',
-      videoUrl: h.videoUrl || '',
-      imageUrl: h.imageUrl || ''
-    })).filter(h => h.title.length > 0);
+    const hymnsToInsert = [];
+    const count = Math.max(files.length, titles.length);
 
-    const inserted = await Hymn.insertMany(formattedHymns);
+    for (let i = 0; i < count; i++) {
+      const file = files[i];
+      const titleFromIndex = titles[i];
+      
+      const hymnTitle = titleFromIndex || (file ? `ترنيمة ${i + 1}` : `ترنيمة ${i + 1}`);
+      const imageUrl = file ? `/uploads/hymns/${file.filename}` : '';
+
+      hymnsToInsert.push({
+        title: hymnTitle.substring(0, 150),
+        lyrics: `ترنيمة رقم ${i + 1} - ${hymnTitle}`,
+        category: category || 'كتاب الترانيم المصور',
+        imageUrl: imageUrl,
+        audioUrl: '',
+        videoUrl: ''
+      });
+    }
+
+    const inserted = await Hymn.insertMany(hymnsToInsert);
 
     res.status(201).json({
       success: true,
-      message: `تم استيراد ${inserted.length} ترنيمة بنجاح!`,
+      message: `تم ربط واستيراد ${inserted.length} ترنيمة مصورة بنجاح!`,
       count: inserted.length,
       data: inserted
     });
   } catch (error) {
+    if (req.files) {
+      req.files.forEach(f => deleteLocalFile(`/uploads/hymns/${f.filename}`));
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
