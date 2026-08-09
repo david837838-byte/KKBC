@@ -1393,6 +1393,103 @@ const HymnsTab = ({ token }) => {
   const [activePresenterHymn, setActivePresenterHymn] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Bulk Import State
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkRawText, setBulkRawText] = useState('');
+  const [parsedHymns, setParsedHymns] = useState([]);
+  const [isParsing, setIsParsing] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [bulkSuccessMsg, setBulkSuccessMsg] = useState('');
+  const [bulkErrorMsg, setBulkErrorMsg] = useState('');
+  const [overwriteExisting, setOverwriteExisting] = useState(false);
+
+  const handleParseFile = async (e) => {
+    e.preventDefault();
+    if (!bulkFile && !bulkRawText.trim()) {
+      setBulkErrorMsg(isAr ? 'يرجى اختيار ملف PDF / TXT أو إدخال النص' : 'Please select a PDF/TXT file or enter raw text');
+      return;
+    }
+
+    setIsParsing(true);
+    setBulkErrorMsg('');
+    setBulkSuccessMsg('');
+
+    try {
+      let res, data;
+      if (bulkFile) {
+        const formData = new FormData();
+        formData.append('hymnsFile', bulkFile);
+        res = await fetch('/api/hymns/parse-file', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+      } else {
+        res = await fetch('/api/hymns/parse-file', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          },
+          body: JSON.stringify({ rawText: bulkRawText })
+        });
+      }
+
+      data = await res.json();
+      if (data.success && Array.isArray(data.hymns)) {
+        setParsedHymns(data.hymns);
+        setBulkSuccessMsg(isAr ? `تم اكتشاف واستخراج ${data.hymns.length} ترنيمة بنجاح!` : `Successfully parsed ${data.hymns.length} hymns!`);
+      } else {
+        setBulkErrorMsg(data.message || (isAr ? 'فشل استخراج الترانيم من الملف' : 'Failed to parse hymns file'));
+      }
+    } catch (err) {
+      console.error(err);
+      setBulkErrorMsg(isAr ? 'حدث خطأ أثناء معالجة الملف' : 'Error parsing hymns file');
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
+  const handleConfirmBulkImport = async () => {
+    if (parsedHymns.length === 0) return;
+
+    setIsImporting(true);
+    setBulkErrorMsg('');
+    setBulkSuccessMsg('');
+
+    try {
+      const res = await fetch('/api/hymns/bulk-import', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          hymns: parsedHymns,
+          overwrite: overwriteExisting
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSuccess(isAr ? `تمت إضافة وزرع ${data.count} ترنيمة بنجاح في قاعدة البيانات! 🎉` : `Successfully imported ${data.count} hymns! 🎉`);
+        setShowBulkModal(false);
+        setParsedHymns([]);
+        setBulkFile(null);
+        setBulkRawText('');
+        fetchHymns();
+      } else {
+        setBulkErrorMsg(data.message || (isAr ? 'فشل حفظ الترانيم في قاعدة البيانات' : 'Failed to save hymns'));
+      }
+    } catch (err) {
+      console.error(err);
+      setBulkErrorMsg(isAr ? 'حدث خطأ أثناء حفظ الترانيم' : 'Error saving hymns');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const fetchHymns = () => {
     fetch('/api/hymns')
       .then(res => res.json())
@@ -1588,6 +1685,22 @@ const HymnsTab = ({ token }) => {
       <div className="tab-header">
         <h2>إدارة الترانيم والعبادة</h2>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowBulkModal(true)}
+            style={{
+              backgroundColor: '#8b5cf6',
+              borderColor: '#8b5cf6',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.5rem 0.85rem'
+            }}
+          >
+            <Upload size={16} />
+            <span>{isAr ? 'رفع واستيراد كتاب الترانيم (PDF) 📥' : 'Upload Hymnal File (PDF) 📥'}</span>
+          </button>
           <button
             className="btn btn-outline"
             onClick={() => generateHymnsPDF(hymns)}
@@ -1806,6 +1919,167 @@ const HymnsTab = ({ token }) => {
             </table>
           </div>
         </>
+      )}
+
+      {/* Bulk Import Modal */}
+      {showBulkModal && (
+        <div className="modal-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '1rem'
+        }}>
+          <div className="glass-card" style={{
+            width: '100%',
+            maxWidth: '750px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            borderRadius: '16px',
+            padding: '1.75rem',
+            backgroundColor: 'var(--bg-primary, #ffffff)',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
+                <Upload size={22} style={{ color: '#8b5cf6' }} />
+                <span>{isAr ? 'رفع واستيراد كتاب الترانيم (PDF / TXT)' : 'Bulk Hymns Import (PDF / TXT)'}</span>
+              </h3>
+              <button className="btn btn-outline" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setShowBulkModal(false)}>✕</button>
+            </div>
+
+            {bulkSuccessMsg && <div className="alert alert-success" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '8px' }}>{bulkSuccessMsg}</div>}
+            {bulkErrorMsg && <div className="alert alert-danger" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '8px' }}>{bulkErrorMsg}</div>}
+
+            {/* Step 1: Upload / Input Form */}
+            <form onSubmit={handleParseFile} style={{ marginBottom: '1.5rem' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                  {isAr ? '1. اختر ملف PDF أو TXT يضم الترانيم (حتى 500 ترنيمة):' : '1. Upload PDF or TXT file containing hymns:'}
+                </label>
+                <input 
+                  type="file" 
+                  accept=".pdf,.txt,.json,.csv"
+                  onChange={(e) => {
+                    setBulkFile(e.target.files[0] || null);
+                    setBulkRawText('');
+                  }}
+                  className="form-control"
+                  style={{ padding: '0.6rem' }}
+                />
+              </div>
+
+              <div style={{ textAlign: 'center', margin: '0.75rem 0', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                --- {isAr ? 'أو' : 'OR'} ---
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                  {isAr ? '2. أو الصق نص الترانيم والكلمات مباشرة هنا:' : '2. Or paste all hymns text directly here:'}
+                </label>
+                <textarea
+                  rows={5}
+                  value={bulkRawText}
+                  onChange={(e) => {
+                    setBulkRawText(e.target.value);
+                    setBulkFile(null);
+                  }}
+                  placeholder={isAr ? "مثال:\nترنيمة 1\nاسم الترنيمة الأولى\nكلمات الترنيمة...\n\nترنيمة 2\nاسم الترنيمة الثانية..." : "Example:\nHymn 1\nFirst Hymn Title\nLyrics...\n\nHymn 2\nSecond Hymn Title..."}
+                  className="form-control"
+                  style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem', padding: '0.75rem' }}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={isParsing} 
+                className="btn btn-primary" 
+                style={{ width: '100%', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', padding: '0.75rem', fontSize: '1rem', fontWeight: 'bold' }}
+              >
+                {isParsing 
+                  ? (isAr ? 'جاري قراءة واستخراج الترانيم من الملف... ⏳' : 'Parsing file... ⏳') 
+                  : (isAr ? '🔍 استخراج وفحص الترانيم من الملف' : '🔍 Parse Hymns from File')}
+              </button>
+            </form>
+
+            {/* Step 2: Parsed Hymns Preview */}
+            {parsedHymns.length > 0 && (
+              <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <h4 style={{ margin: 0, color: '#10b981', fontWeight: 'bold' }}>
+                    {isAr ? `🎉 تم اكتشاف واستخراج ${parsedHymns.length} ترنيمة بنجاح!` : `🎉 Parsed ${parsedHymns.length} hymns!`}
+                  </h4>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={overwriteExisting} 
+                      onChange={(e) => setOverwriteExisting(e.target.checked)} 
+                    />
+                    <span style={{ color: 'var(--error-color)', fontWeight: 'bold' }}>
+                      {isAr ? 'مسح الترانيم القديمة قبل الحفظ (Overwrite)' : 'Overwrite existing hymns'}
+                    </span>
+                  </label>
+                </div>
+
+                <div style={{ maxHeight: '240px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.5rem', marginBottom: '1.25rem', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                  <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                        <th style={{ padding: '6px', textAlign: 'right' }}>#</th>
+                        <th style={{ padding: '6px', textAlign: 'right' }}>{isAr ? 'اسم الترنيمة' : 'Title'}</th>
+                        <th style={{ padding: '6px', textAlign: 'right' }}>{isAr ? 'معاينة الكلمات' : 'Lyrics Preview'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {parsedHymns.slice(0, 50).map((h, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '6px', fontWeight: 'bold' }}>{idx + 1}</td>
+                          <td style={{ padding: '6px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{h.title}</td>
+                          <td style={{ padding: '6px', color: 'var(--text-secondary)' }}>{h.lyrics ? h.lyrics.substring(0, 60) + '...' : 'بدون كلمات'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {parsedHymns.length > 50 && (
+                    <div style={{ textAlign: 'center', padding: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                      {isAr ? `... و ${parsedHymns.length - 50} ترنيمة أخرى جاهزة للحفظ` : `... and ${parsedHymns.length - 50} more hymns ready`}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    onClick={handleConfirmBulkImport}
+                    disabled={isImporting}
+                    className="btn btn-primary"
+                    style={{ flex: 1, backgroundColor: '#10b981', borderColor: '#10b981', padding: '0.75rem', fontWeight: 'bold', fontSize: '1rem' }}
+                  >
+                    {isImporting
+                      ? (isAr ? 'جاري حفظ الترانيم في قاعدة البيانات... ⏳' : 'Saving hymns... ⏳')
+                      : (isAr ? `🚀 حفظ واستيراد الـ ${parsedHymns.length} ترنيمة إلى الموقع` : `🚀 Save all ${parsedHymns.length} hymns to database`)}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setParsedHymns([]);
+                      setBulkFile(null);
+                      setBulkRawText('');
+                    }}
+                    className="btn btn-outline"
+                  >
+                    {isAr ? 'إلغاء المعاينة' : 'Cancel'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

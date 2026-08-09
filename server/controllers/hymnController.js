@@ -166,3 +166,186 @@ exports.setActivePresentationHymn = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Helper to parse raw hymns text into structured JSON array
+const parseRawHymnsText = (text) => {
+  if (!text) return [];
+
+  // Step 1: Separate Index/Table of Contents if present at the end
+  const indexKeywords = [/فهرس/i, /جدول الترانيم/i, /محتويات/i, /index/i, /table of contents/i];
+  let mainBody = text;
+
+  for (const keyword of indexKeywords) {
+    const match = text.match(keyword);
+    if (match && match.index > text.length * 0.5) {
+      mainBody = text.substring(0, match.index);
+      break;
+    }
+  }
+
+  // Step 2: Split text into lines and parse numbered/titled hymns
+  const lines = mainBody.split(/\r?\n/);
+  const hymns = [];
+  let currentHymn = null;
+
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Header Regex: "ترنيمة 1", "ترنيمة (1)", "1.", "1-", "1 -", "#1"
+    const headerMatch = trimmed.match(/^(?:ترنيمة\s*\(?(\d+)\)?[:\s-]*|(\d+)[\.\-]\s*|#(\d+)\s*)(.*)$/i);
+
+    if (headerMatch) {
+      const hymnNum = headerMatch[1] || headerMatch[2] || headerMatch[3];
+      const inlineTitle = headerMatch[4] ? headerMatch[4].trim() : '';
+
+      if (currentHymn && (currentHymn.title || currentHymn.lyrics)) {
+        hymns.push(currentHymn);
+      }
+
+      currentHymn = {
+        number: hymnNum ? parseInt(hymnNum) : hymns.length + 1,
+        title: inlineTitle,
+        lyrics: '',
+        category: 'عامة'
+      };
+    } else {
+      if (!currentHymn) {
+        currentHymn = {
+          number: 1,
+          title: trimmed,
+          lyrics: '',
+          category: 'عامة'
+        };
+      } else if (!currentHymn.title) {
+        currentHymn.title = trimmed;
+      } else {
+        currentHymn.lyrics += (currentHymn.lyrics ? '\n' : '') + trimmed;
+      }
+    }
+  }
+
+  if (currentHymn && (currentHymn.title || currentHymn.lyrics)) {
+    hymns.push(currentHymn);
+  }
+
+  // Fallback if no explicit headers found: split by double blank lines
+  if (hymns.length <= 1) {
+    const blocks = mainBody.split(/\n\s*\n+/);
+    if (blocks.length > 1) {
+      hymns.length = 0;
+      blocks.forEach((block, idx) => {
+        const blockLines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (blockLines.length > 0) {
+          hymns.push({
+            number: idx + 1,
+            title: blockLines[0].replace(/^[\d\.\-\s]+/, ''),
+            lyrics: blockLines.slice(1).join('\n'),
+            category: 'عامة'
+          });
+        }
+      });
+    }
+  }
+
+  return hymns.map(h => ({
+    title: (h.title || `ترنيمة ${h.number}`).substring(0, 150),
+    lyrics: (h.lyrics || '').trim(),
+    category: h.category || 'عامة'
+  })).filter(h => h.title.length > 0);
+};
+
+// @desc    Parse uploaded Hymns document (PDF, TXT, JSON) or pasted text
+// @route   POST /api/hymns/parse-file
+// @access  Private
+exports.parseHymnsFile = async (req, res) => {
+  try {
+    let extractedText = '';
+
+    if (req.body && req.body.rawText) {
+      extractedText = req.body.rawText;
+    } else if (req.file) {
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      if (ext === '.pdf') {
+        let pdfParse;
+        try {
+          pdfParse = require('pdf-parse');
+          const dataBuffer = fs.readFileSync(req.file.path);
+          const pdfData = await pdfParse(dataBuffer);
+          extractedText = pdfData.text;
+        } catch (e) {
+          console.error('PDF parsing error, falling back:', e);
+          const dataBuffer = fs.readFileSync(req.file.path);
+          extractedText = dataBuffer.toString('utf8');
+        }
+      } else if (ext === '.json') {
+        const fileData = fs.readFileSync(req.file.path, 'utf8');
+        try {
+          const parsedJson = JSON.parse(fileData);
+          if (Array.isArray(parsedJson)) {
+            if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            return res.status(200).json({ success: true, count: parsedJson.length, hymns: parsedJson });
+          }
+        } catch (e) {}
+        extractedText = fileData;
+      } else {
+        extractedText = fs.readFileSync(req.file.path, 'utf8');
+      }
+
+      if (req.file.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+    } else {
+      return res.status(400).json({ success: false, message: 'يرجى تقديم ملف أو نص الترانيم' });
+    }
+
+    const hymnsList = parseRawHymnsText(extractedText);
+    res.status(200).json({ 
+      success: true, 
+      count: hymnsList.length, 
+      hymns: hymnsList,
+      rawPreviewLength: extractedText.length 
+    });
+  } catch (error) {
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Bulk Import array of hymns into MongoDB
+// @route   POST /api/hymns/bulk-import
+// @access  Private
+exports.bulkImportHymns = async (req, res) => {
+  try {
+    const { hymns, overwrite } = req.body;
+    if (!Array.isArray(hymns) || hymns.length === 0) {
+      return res.status(400).json({ success: false, message: 'قائمة الترانيم فارغة' });
+    }
+
+    if (overwrite) {
+      await Hymn.deleteMany({});
+    }
+
+    const formattedHymns = hymns.map(h => ({
+      title: h.title ? h.title.trim() : 'ترنيمة بدون عنوان',
+      lyrics: h.lyrics ? h.lyrics.trim() : '',
+      category: h.category || 'عامة',
+      audioUrl: h.audioUrl || '',
+      videoUrl: h.videoUrl || '',
+      imageUrl: h.imageUrl || ''
+    })).filter(h => h.title.length > 0);
+
+    const inserted = await Hymn.insertMany(formattedHymns);
+
+    res.status(201).json({
+      success: true,
+      message: `تم استيراد ${inserted.length} ترنيمة بنجاح!`,
+      count: inserted.length,
+      data: inserted
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
