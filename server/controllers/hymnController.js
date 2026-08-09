@@ -357,7 +357,8 @@ exports.bulkImportHymns = async (req, res) => {
 // @access  Private
 exports.importScannedHymns = async (req, res) => {
   try {
-    const { indexText, category, overwrite } = req.body;
+    const { indexText, category, overwrite, pageOffset } = req.body;
+    const offset = parseInt(pageOffset) || 1;
     
     // Parse indexText into list of titles
     let titles = [];
@@ -394,8 +395,9 @@ exports.importScannedHymns = async (req, res) => {
       
       if (isSinglePDF) {
         file = files[0];
-        // For a single PDF, link to the specific page (assuming page 1 = hymn 1)
-        imageUrl = `/uploads/hymns/${file.filename}#page=${i + 1}`;
+        // For a single PDF, link to the specific page using offset
+        // If offset is 5, hymn 1 (i=0) is page 5. hymn 2 is page 6.
+        imageUrl = `/uploads/hymns/${file.filename}#page=${i + offset}`;
       } else {
         file = files[i];
         imageUrl = file ? `/uploads/hymns/${file.filename}` : '';

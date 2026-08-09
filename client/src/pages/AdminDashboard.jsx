@@ -1398,6 +1398,7 @@ const HymnsTab = ({ token }) => {
   const [importMode, setImportMode] = useState('scanned'); // 'scanned' or 'text'
   const [scannedImages, setScannedImages] = useState([]);
   const [scannedIndexText, setScannedIndexText] = useState('');
+  const [pdfPageOffset, setPdfPageOffset] = useState(1);
   const [bulkFile, setBulkFile] = useState(null);
   const [bulkRawText, setBulkRawText] = useState('');
   const [parsedHymns, setParsedHymns] = useState([]);
@@ -1452,6 +1453,7 @@ const HymnsTab = ({ token }) => {
       formData.append('indexText', scannedIndexText);
       formData.append('overwrite', overwriteExisting);
       formData.append('category', 'كتاب الترانيم المصور');
+      formData.append('pageOffset', pdfPageOffset);
 
       for (let i = 0; i < scannedImages.length; i++) {
         formData.append('hymnImages', scannedImages[i]);
@@ -2092,6 +2094,25 @@ const HymnsTab = ({ token }) => {
                     {isAr ? 'مسح الترانيم القديمة قبل استيراد الكتيب الجديد (Overwrite)' : 'Overwrite existing hymns'}
                   </label>
                 </div>
+
+                {scannedImages.length === 1 && scannedImages[0].type === 'application/pdf' && (
+                  <div style={{ marginBottom: '1.25rem', backgroundColor: 'rgba(139, 92, 246, 0.1)', padding: '1rem', borderRadius: '8px' }}>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: '#8b5cf6' }}>
+                      {isAr ? '3. الترنيمة رقم 1 تبدأ في أي صفحة من الـ PDF؟' : '3. First hymn starts on which PDF page?'}
+                    </label>
+                    <input 
+                      type="number" 
+                      min="1"
+                      className="form-control"
+                      value={pdfPageOffset}
+                      onChange={(e) => setPdfPageOffset(parseInt(e.target.value) || 1)}
+                      style={{ width: '100px' }}
+                    />
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+                      {isAr ? 'إذا كانت الترنيمة رقم 1 تبدأ في الصفحة 5 من الـ PDF (بعد الفهرس أو الغلاف)، اكتب 5 هنا لكي تتطابق الصفحات.' : 'If hymn 1 starts on page 5, enter 5 to offset correctly.'}
+                    </div>
+                  </div>
+                )}
 
                 {uploadProgress > 0 && uploadProgress < 100 && (
                   <div style={{ marginBottom: '1rem' }}>
