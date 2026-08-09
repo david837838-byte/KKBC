@@ -250,6 +250,10 @@ io.on('connection', (socket) => {
   });
 });
 
+// Initialize Background Jobs
+const { initYouTubeSyncCron } = require('./jobs/youtubeSync');
+initYouTubeSyncCron();
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
