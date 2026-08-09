@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
+import { generateHymnsPDF } from '../utils/hymnalPdfGenerator';
 
 const formatDateSafe = (dateVal, isAr) => {
   if (!dateVal) return new Date().toLocaleDateString(isAr ? 'ar-LB' : 'en-US');
@@ -1586,7 +1587,22 @@ const HymnsTab = ({ token }) => {
     <div>
       <div className="tab-header">
         <h2>إدارة الترانيم والعبادة</h2>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            className="btn btn-outline"
+            onClick={() => generateHymnsPDF(hymns)}
+            style={{
+              borderColor: '#10b981',
+              color: '#10b981',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.5rem 0.85rem'
+            }}
+          >
+            <Download size={16} />
+            <span>{isAr ? 'تحميل كتاب الترانيم (PDF) 📄' : 'Download Hymnal PDF 📄'}</span>
+          </button>
           <a 
             href="/hymns/present" 
             target="_blank" 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Music, Play, Video, ChevronDown, ChevronUp, ExternalLink, Library } from 'lucide-react';
+import { Search, Music, Play, Video, ChevronDown, ChevronUp, ExternalLink, Library, Download } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { generateHymnsPDF } from '../utils/hymnalPdfGenerator';
 
 const ARABIC_LETTERS = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
 
@@ -97,20 +98,41 @@ const Hymns = () => {
       </p>
 
           {/* Navigation Tabs */}
-          <div className="hymns-tabs">
-            <button 
-              onClick={() => setActiveTab('lyrics')}
-              className={`tab-btn ${activeTab === 'lyrics' ? 'active' : ''}`}
+          <div className="hymns-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                onClick={() => setActiveTab('lyrics')}
+                className={`tab-btn ${activeTab === 'lyrics' ? 'active' : ''}`}
+              >
+                <Music size={18} />
+                <span>{t('hymns.lyrics')}</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab('video')}
+                className={`tab-btn ${activeTab === 'video' ? 'active' : ''}`}
+              >
+                <Video size={18} />
+                <span>{t('hymns.watchVideo')}</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => generateHymnsPDF(hymns)}
+              className="btn btn-outline"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                borderColor: '#10b981',
+                color: '#10b981',
+                padding: '0.5rem 1rem',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                borderRadius: '8px'
+              }}
             >
-              <Music size={18} />
-              <span>{t('hymns.lyrics')}</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab('video')}
-              className={`tab-btn ${activeTab === 'video' ? 'active' : ''}`}
-            >
-              <Video size={18} />
-              <span>{t('hymns.watchVideo')}</span>
+              <Download size={18} />
+              <span>{language === 'ar' ? 'تحميل كتاب الترانيم كامل (PDF) 📄' : 'Download Hymnal PDF 📄'}</span>
             </button>
           </div>
 
