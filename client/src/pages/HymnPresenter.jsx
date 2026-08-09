@@ -56,17 +56,6 @@ const HymnPresenter = () => {
           gap: '2rem',
           animation: 'fadeIn 0.6s ease-in-out'
         }}>
-          {/* Hymn Title */}
-          <h1 style={{
-            fontSize: '3.2rem',
-            color: 'var(--accent-color, #c5a880)',
-            margin: 0,
-            textShadow: '0 4px 12px rgba(197, 168, 128, 0.2)',
-            fontWeight: '800'
-          }}>
-            {activeHymn.title}
-          </h1>
-
           {/* Hymn Content (Image or Lyrics) */}
           {activeHymn.imageUrl ? (
             <div style={{
@@ -74,15 +63,14 @@ const HymnPresenter = () => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              marginTop: '1rem'
             }}>
               {activeHymn.imageUrl.toLowerCase().includes('.pdf') ? (
                 <iframe 
                   src={`${activeHymn.imageUrl}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                   title={activeHymn.title}
                   style={{
-                    height: '75vh',
-                    width: '90vw',
+                    height: '95vh',
+                    width: '100vw',
                     border: 'none',
                     borderRadius: '12px',
                     boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
@@ -93,29 +81,41 @@ const HymnPresenter = () => {
                   src={activeHymn.imageUrl} 
                   alt={activeHymn.title} 
                   style={{
-                    maxHeight: '75vh',
-                    maxWidth: '90vw',
+                    maxHeight: '95vh',
+                    maxWidth: '100vw',
                     objectFit: 'contain',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
-                    border: '1px solid rgba(255,255,255,0.08)'
                   }}
                 />
               )}
             </div>
           ) : (
-            <div style={{
-              fontSize: '2.5rem',
-              lineHeight: '1.7',
-              whiteSpace: 'pre-line',
-              color: '#f1f5f9',
-              fontWeight: '600',
-              marginTop: '1.5rem',
-              maxWidth: '1000px',
-              letterSpacing: '0.5px'
-            }}>
-              {activeHymn.lyrics}
-            </div>
+            <>
+              {/* Hymn Title (Only for text lyrics) */}
+              <h1 style={{
+                fontSize: '3.5rem',
+                color: 'var(--accent-color, #c5a880)',
+                margin: 0,
+                textShadow: '0 4px 12px rgba(197, 168, 128, 0.2)',
+                fontWeight: '800'
+              }}>
+                {activeHymn.title}
+              </h1>
+              
+              <div style={{
+                fontSize: '3rem',
+                lineHeight: '1.7',
+                whiteSpace: 'pre-line',
+                color: '#f1f5f9',
+                fontWeight: '600',
+                marginTop: '1.5rem',
+                maxWidth: '1200px',
+                letterSpacing: '0.5px'
+              }}>
+                {activeHymn.lyrics}
+              </div>
+            </>
           )}
         </div>
       ) : (
