@@ -227,10 +227,31 @@ const Hymns = () => {
                         </div>
 
                         {/* Media attachments */}
-                        {(hymn.audioUrl || hymn.videoUrl) && (
+                        {(hymn.audioUrl || hymn.videoUrl || hymn.imageUrl) && (
                           <div className="hymn-media-section">
-                            <h4>الوسائط المرفقة للتدريب أو الاستماع</h4>
-                            <div className="hymn-media-grid">
+                            <h4>الوسائط والمرفقات للتدريب أو الاستماع</h4>
+                            <div className="hymn-media-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+                              
+                              {hymn.imageUrl && (
+                                <div className="hymn-image" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                  <p>{language === 'ar' ? 'صورة / ملف الترنيمة:' : 'Hymn Image/File:'}</p>
+                                  {hymn.imageUrl.toLowerCase().includes('.pdf') ? (
+                                    <a 
+                                      href={hymn.imageUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="btn btn-primary"
+                                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', width: '100%', justifyContent: 'center', padding: '1rem', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6' }}
+                                    >
+                                      <Library size={20} />
+                                      {language === 'ar' ? 'عرض النوتة / ملف الترنيمة (PDF)' : 'View Hymn Sheet (PDF)'}
+                                    </a>
+                                  ) : (
+                                    <img src={hymn.imageUrl} alt={hymn.title} style={{ maxWidth: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }} />
+                                  )}
+                                </div>
+                              )}
+
                               {hymn.videoUrl && (
                                 <div className="hymn-video">
                                   <iframe

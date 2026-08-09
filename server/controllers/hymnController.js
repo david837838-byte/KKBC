@@ -382,15 +382,27 @@ exports.importScannedHymns = async (req, res) => {
       await Hymn.deleteMany({});
     }
 
-    const hymnsToInsert = [];
-    const count = Math.max(files.length, titles.length);
+    const isSinglePDF = files.length === 1 && files[0].mimetype === 'application/pdf';
+    const count = isSinglePDF ? titles.length : Math.max(files.length, titles.length);
+
+    if (count === 0) {
+      return res.status(400).json({ success: false, message: 'لا توجد عناوين في الفهرس أو ملفات مرفوعة' });
+    }
 
     for (let i = 0; i < count; i++) {
-      const file = files[i];
-      const titleFromIndex = titles[i];
+      let file, imageUrl = '';
       
-      const hymnTitle = titleFromIndex || (file ? `ترنيمة ${i + 1}` : `ترنيمة ${i + 1}`);
-      const imageUrl = file ? `/uploads/hymns/${file.filename}` : '';
+      if (isSinglePDF) {
+        file = files[0];
+        // For a single PDF, link to the specific page (assuming page 1 = hymn 1)
+        imageUrl = `/uploads/hymns/${file.filename}#page=${i + 1}`;
+      } else {
+        file = files[i];
+        imageUrl = file ? `/uploads/hymns/${file.filename}` : '';
+      }
+      
+      const titleFromIndex = titles[i];
+      const hymnTitle = titleFromIndex || (file && !isSinglePDF ? `ترنيمة ${i + 1}` : `ترنيمة ${i + 1}`);
 
       hymnsToInsert.push({
         title: hymnTitle.substring(0, 150),
