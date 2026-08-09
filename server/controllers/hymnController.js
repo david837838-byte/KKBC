@@ -57,7 +57,7 @@ exports.getHymn = async (req, res) => {
 exports.createHymn = async (req, res) => {
   try {
     const hymnData = { ...req.body };
-    
+
     if (req.file) {
       hymnData.imageUrl = `/uploads/hymns/${req.file.filename}`;
     }
@@ -82,7 +82,7 @@ exports.updateHymn = async (req, res) => {
     }
 
     const updateData = { ...req.body };
-    
+
     if (req.file) {
       // Delete old file if existed
       if (hymn.imageUrl) {
@@ -157,10 +157,10 @@ exports.getActivePresentationHymn = async (req, res) => {
 exports.setActivePresentationHymn = async (req, res) => {
   try {
     activePresentationHymn = req.body.hymn; // expect whole hymn object or null
-    
+
     // Broadcast active presentation hymn to all connected sockets
     req.io.emit('hymnPresentationUpdate', activePresentationHymn);
-    
+
     res.status(200).json({ success: true, data: activePresentationHymn });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -288,7 +288,7 @@ exports.parseHymnsFile = async (req, res) => {
             if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
             return res.status(200).json({ success: true, count: parsedJson.length, hymns: parsedJson });
           }
-        } catch (e) {}
+        } catch (e) { }
         extractedText = fileData;
       } else {
         extractedText = fs.readFileSync(req.file.path, 'utf8');
@@ -302,11 +302,11 @@ exports.parseHymnsFile = async (req, res) => {
     }
 
     const hymnsList = parseRawHymnsText(extractedText);
-    res.status(200).json({ 
-      success: true, 
-      count: hymnsList.length, 
+    res.status(200).json({
+      success: true,
+      count: hymnsList.length,
       hymns: hymnsList,
-      rawPreviewLength: extractedText.length 
+      rawPreviewLength: extractedText.length
     });
   } catch (error) {
     if (req.file && req.file.path && fs.existsSync(req.file.path)) {
@@ -358,24 +358,32 @@ exports.bulkImportHymns = async (req, res) => {
 exports.importScannedHymns = async (req, res) => {
   try {
     const { indexText, category, overwrite, pageOffset } = req.body;
-    const offset = parseInt(pageOffset) || 1;
-    
-    // Parse indexText into list of titles
+    const offset = parseInt(pageOffset) || 0; // use offset only if fallback is needed, though we will parse it directly now
+
+    // Parse indexText into list of titles and page numbers
     let titles = [];
+    let parsedPages = [];
     if (indexText && typeof indexText === 'string') {
-      titles = indexText
-        .split(/\r?\n/)
-        .map(line => line.trim())
-        .filter(Boolean)
-        .map(line => line.replace(/^(?:ترنيمة\s*\d*[:\s-]*|\d+[\.\-]\s*|#\d+\s*)/i, '').trim())
-        .filter(t => t.length > 0);
+      const lines = indexText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      for (const line of lines) {
+        // match title and the trailing number (e.g. "أبانا الذي في السما 1")
+        const match = line.match(/^(.*?)(?:[\.\-\s_]+)(\d+)\s*$/);
+        if (match) {
+            titles.push(match[1].trim());
+            parsedPages.push(parseInt(match[2], 10));
+        } else {
+            // fallback if no number at the end
+            titles.push(line.replace(/^(?:ترنيمة\s*\d*[:\s-]*|\d+[\.\-]\s*|#\d+\s*)/i, '').trim());
+            parsedPages.push(null);
+        }
+      }
     }
 
     const files = req.files || [];
     if (files.length === 0 && titles.length === 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'يرجى رفع صور الترانيم أو إدخال الفهرس' 
+      return res.status(400).json({
+        success: false,
+        message: 'يرجى رفع صور الترانيم أو إدخال الفهرس'
       });
     }
 
@@ -390,25 +398,26 @@ exports.importScannedHymns = async (req, res) => {
       return res.status(400).json({ success: false, message: 'لا توجد عناوين في الفهرس أو ملفات مرفوعة' });
     }
 
+    let hymnsToInsert = []; // Fix: Declare array!
+
     for (let i = 0; i < count; i++) {
       let file, imageUrl = '';
-      
+
       if (isSinglePDF) {
         file = files[0];
-        // For a single PDF, link to the specific page using offset
-        // If offset is 5, hymn 1 (i=0) is page 5. hymn 2 is page 6.
-        imageUrl = `/uploads/hymns/${file.filename}#page=${i + offset}`;
+        // Use parsed page number or fallback to index + offset + 1
+        const pageNum = parsedPages[i] !== null ? parsedPages[i] : (i + offset + 1);
+        imageUrl = `/uploads/hymns/${file.filename}#page=${pageNum}`;
       } else {
         file = files[i];
         imageUrl = file ? `/uploads/hymns/${file.filename}` : '';
       }
-      
-      const titleFromIndex = titles[i];
-      const hymnTitle = titleFromIndex || (file && !isSinglePDF ? `ترنيمة ${i + 1}` : `ترنيمة ${i + 1}`);
+
+      const hymnTitle = titles[i] || `ترنيمة ${i + 1}`;
 
       hymnsToInsert.push({
         title: hymnTitle.substring(0, 150),
-        lyrics: `ترنيمة رقم ${i + 1} - ${hymnTitle}`,
+        lyrics: `ترنيمة - ${hymnTitle}`,
         category: category || 'كتاب الترانيم المصور',
         imageUrl: imageUrl,
         audioUrl: '',
