@@ -267,16 +267,18 @@ exports.parseHymnsFile = async (req, res) => {
     } else if (req.file) {
       const ext = path.extname(req.file.originalname).toLowerCase();
       if (ext === '.pdf') {
-        let pdfParse;
         try {
-          pdfParse = require('pdf-parse');
+          const pdfParse = require('pdf-parse');
           const dataBuffer = fs.readFileSync(req.file.path);
-          const pdfData = await pdfParse(dataBuffer);
-          extractedText = pdfData.text;
+          if (typeof pdfParse === 'function') {
+            const pdfData = await pdfParse(dataBuffer);
+            extractedText = pdfData.text || '';
+          } else {
+            extractedText = dataBuffer.toString('utf8');
+          }
         } catch (e) {
           console.error('PDF parsing error, falling back:', e);
-          const dataBuffer = fs.readFileSync(req.file.path);
-          extractedText = dataBuffer.toString('utf8');
+          extractedText = '';
         }
       } else if (ext === '.json') {
         const fileData = fs.readFileSync(req.file.path, 'utf8');
