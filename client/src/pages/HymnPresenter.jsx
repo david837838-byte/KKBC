@@ -76,18 +76,32 @@ const HymnPresenter = () => {
               alignItems: 'center',
               marginTop: '1rem'
             }}>
-              <img 
-                src={activeHymn.imageUrl} 
-                alt={activeHymn.title} 
-                style={{
-                  maxHeight: '75vh',
-                  maxWidth: '90vw',
-                  objectFit: 'contain',
-                  borderRadius: '12px',
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
-                  border: '1px solid rgba(255,255,255,0.08)'
-                }}
-              />
+              {activeHymn.imageUrl.toLowerCase().includes('.pdf') ? (
+                <iframe 
+                  src={`${activeHymn.imageUrl}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                  title={activeHymn.title}
+                  style={{
+                    height: '75vh',
+                    width: '90vw',
+                    border: 'none',
+                    borderRadius: '12px',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+                  }}
+                />
+              ) : (
+                <img 
+                  src={activeHymn.imageUrl} 
+                  alt={activeHymn.title} 
+                  style={{
+                    maxHeight: '75vh',
+                    maxWidth: '90vw',
+                    objectFit: 'contain',
+                    borderRadius: '12px',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+                    border: '1px solid rgba(255,255,255,0.08)'
+                  }}
+                />
+              )}
             </div>
           ) : (
             <div style={{
