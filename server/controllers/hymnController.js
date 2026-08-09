@@ -316,6 +316,42 @@ exports.parseHymnsFile = async (req, res) => {
   }
 };
 
+// @desc    Bulk Import array of hymns into MongoDB
+// @route   POST /api/hymns/bulk-import
+// @access  Private
+exports.bulkImportHymns = async (req, res) => {
+  try {
+    const { hymns, overwrite } = req.body;
+    if (!Array.isArray(hymns) || hymns.length === 0) {
+      return res.status(400).json({ success: false, message: 'قائمة الترانيم فارغة' });
+    }
+
+    if (overwrite) {
+      await Hymn.deleteMany({});
+    }
+
+    const formattedHymns = hymns.map(h => ({
+      title: h.title ? h.title.trim() : 'ترنيمة بدون عنوان',
+      lyrics: h.lyrics ? h.lyrics.trim() : '',
+      category: h.category || 'عامة',
+      audioUrl: h.audioUrl || '',
+      videoUrl: h.videoUrl || '',
+      imageUrl: h.imageUrl || ''
+    })).filter(h => h.title.length > 0);
+
+    const inserted = await Hymn.insertMany(formattedHymns);
+
+    res.status(201).json({
+      success: true,
+      message: `تم استيراد ${inserted.length} ترنيمة بنجاح!`,
+      count: inserted.length,
+      data: inserted
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Import scanned hymn images & match with Index titles
 // @route   POST /api/hymns/import-scanned
 // @access  Private
