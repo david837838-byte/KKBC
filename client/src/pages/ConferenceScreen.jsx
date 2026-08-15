@@ -24,7 +24,6 @@ const ConferenceScreen = () => {
     const socket = io('/', { path: '/socket.io' });
 
     socket.on('conferenceUpdate', (updatedSettings) => {
-      // If timer changes, allow sound to play again
       setSettings(prev => {
         if (prev && updatedSettings.conferenceTimerEndTime !== prev.conferenceTimerEndTime) {
           setHasPlayedSound(false);
@@ -51,7 +50,7 @@ const ConferenceScreen = () => {
       const distance = end - now;
 
       if (distance <= 0) {
-        setTimeLeft('00:00:00');
+        setTimeLeft('00:00');
         
         // Play sound exactly once when it hits zero
         if (!hasPlayedSound && settings.conferenceTimerSound && audioRef.current) {
@@ -61,18 +60,22 @@ const ConferenceScreen = () => {
         return;
       }
 
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const hours = Math.floor(distance / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      setTimeLeft(
-        (hours > 0 ? (hours < 10 ? '0' + hours : hours) + ':' : '') +
-        (minutes < 10 ? '0' + minutes : minutes) + ':' +
-        (seconds < 10 ? '0' + seconds : seconds)
-      );
+      if (hours > 0) {
+        setTimeLeft(
+          `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`
+        );
+      } else {
+        setTimeLeft(
+          `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`
+        );
+      }
     };
 
-    updateTimer(); // Initial call
+    updateTimer();
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
@@ -81,7 +84,7 @@ const ConferenceScreen = () => {
   if (!settings) {
     return (
       <div style={styles.container}>
-        <div style={styles.loading}>جاري التحميل... / Loading...</div>
+        <div style={styles.loading}>جاري التحميل...</div>
       </div>
     );
   }
@@ -90,91 +93,154 @@ const ConferenceScreen = () => {
     return (
       <div style={styles.container}>
         <div style={styles.idleState}>
-          <span style={{ fontSize: '5rem' }}>🛑</span>
-          <h2>وضع المؤتمر متوقف حالياً</h2>
-          <p>Conference mode is currently disabled.</p>
+          <span style={{ fontSize: '4rem' }}>🛑</span>
+          <h2 style={{ fontSize: '2rem', margin: '1rem 0 0.5rem' }}>وضع المؤتمر متوقف حالياً</h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.2rem' }}>Conference mode is currently disabled.</p>
         </div>
       </div>
     );
   }
 
-  const hasTimer = !!settings.conferenceTimerEndTime;
-  const hasSpeakers = settings.conferenceCurrentSpeaker || settings.conferenceNextSpeaker;
+  const hasTimer = !!settings.conferenceTimerEndTime && !!timeLeft;
+  const hasCurrentSpeaker = !!settings.conferenceCurrentSpeaker;
+  const hasNextSpeaker = !!settings.conferenceNextSpeaker;
+  const hasVerse = !!settings.conferenceVerse;
 
-  // Handle relative logo URL
-  const logoUrl = settings.logo ? (settings.logo.startsWith('http') ? settings.logo : window.location.origin + settings.logo) : '';
+  // Resolve Logo URL
+  const logoUrl = settings.logo || '/logo.png';
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} dir="rtl">
       
+      {/* Background Ambient Glows */}
+      <div style={styles.glowTop}></div>
+      <div style={styles.glowBottom}></div>
+
       {/* Hidden audio element for the alarm */}
       {settings.conferenceTimerSound && (
         <audio ref={audioRef} src={settings.conferenceTimerSound} preload="auto" />
       )}
 
-      {/* Top Corner Logo */}
-      {logoUrl && (
-        <img src={logoUrl} alt="Church Logo" style={styles.logo} onError={(e) => e.target.style.display = 'none'} />
-      )}
+      {/* ================= HEADER BAR ================= */}
+      <header style={styles.header}>
+        {/* Right side: Church Logo & Name */}
+        <div style={styles.brandBox}>
+          <img 
+            src={logoUrl} 
+            alt="Church Logo" 
+            style={styles.logoImg} 
+            onError={(e) => { e.target.src = '/logo.png'; }}
+          />
+          <div style={styles.brandText}>
+            <span style={styles.churchName}>الكنيسة المعمدانية الإنجيلية</span>
+            <span style={styles.churchLocation}>خربة قنافار — البقاع الغربي</span>
+          </div>
+        </div>
 
-      {/* Center Content (Timer & Verse) */}
-      <div style={styles.centerContent}>
+        {/* Left side: Live Conference Badge */}
+        <div style={styles.liveBadge}>
+          <span style={styles.liveDot}></span>
+          <span>مؤتمر الكنيسة العام</span>
+        </div>
+      </header>
+
+      {/* ================= MAIN CONTENT (CENTER) ================= */}
+      <main style={styles.mainCenter}>
+        
+        {/* Timer Card */}
         {hasTimer && (
-          <div style={styles.timerSection}>
-            <div style={styles.timerLabel}>{settings.conferenceTimerLabel}</div>
-            <div style={styles.timerValue} className={timeLeft === '00:00:00' ? 'flash' : ''}>
+          <div style={styles.timerCard}>
+            <div style={styles.timerHeader}>
+              <span style={styles.timerIcon}>⏱️</span>
+              <span style={styles.timerLabel}>{settings.conferenceTimerLabel || 'الوقت المتبقي'}</span>
+            </div>
+            <div style={styles.timerDisplay} className={timeLeft === '00:00' ? 'timer-flash' : ''}>
               {timeLeft}
             </div>
           </div>
         )}
 
-        {settings.conferenceVerse && (
-          <div style={styles.verseCard}>
-            "{settings.conferenceVerse}"
+        {/* Verse Card */}
+        {hasVerse && (
+          <div style={styles.verseContainer}>
+            <div style={styles.verseQuoteMarkStart}>“</div>
+            <p style={styles.verseText}>
+              {settings.conferenceVerse}
+            </p>
+            <div style={styles.verseQuoteMarkEnd}>”</div>
           </div>
         )}
-      </div>
 
-      {/* Bottom Speakers Section */}
-      {hasSpeakers && (
-        <div style={styles.bottomSection}>
-          {/* Right Side (Current Speaker) */}
-          <div style={styles.speakerBox}>
-            {settings.conferenceCurrentSpeaker && (
-              <>
-                <div style={styles.speakerLabel}>المتكلم الحالي</div>
-                <div style={styles.speakerName}>{settings.conferenceCurrentSpeaker}</div>
-              </>
-            )}
-          </div>
+      </main>
 
-          {/* Left Side (Next Speaker) */}
-          <div style={{ ...styles.speakerBox, textAlign: 'left', alignItems: 'flex-end' }}>
-            {settings.conferenceNextSpeaker && (
-              <>
-                <div style={styles.nextSpeakerLabel}>يتبعه</div>
-                <div style={styles.nextSpeakerName}>{settings.conferenceNextSpeaker}</div>
-              </>
-            )}
-          </div>
+      {/* ================= FOOTER BAR (SPEAKERS) ================= */}
+      <footer style={styles.footer}>
+        
+        {/* Right side: Current Speaker */}
+        <div style={styles.speakerCardCurrent}>
+          {hasCurrentSpeaker ? (
+            <>
+              <div style={styles.speakerBadgeCurrent}>
+                <span style={styles.speakerPulse}></span>
+                🎙️ المتكلم الحالي
+              </div>
+              <div style={styles.speakerNameCurrent}>
+                {settings.conferenceCurrentSpeaker}
+              </div>
+            </>
+          ) : (
+            <div style={styles.emptySpeakerPlaceholder}>
+              <span style={{ opacity: 0.4 }}>— مرحباً بكم في بيت الرب —</span>
+            </div>
+          )}
         </div>
-      )}
 
+        {/* Left side: Next Speaker */}
+        <div style={styles.speakerCardNext}>
+          {hasNextSpeaker ? (
+            <>
+              <div style={styles.speakerBadgeNext}>
+                ⏳ يتبعه في البرنامج
+              </div>
+              <div style={styles.speakerNameNext}>
+                {settings.conferenceNextSpeaker}
+              </div>
+            </>
+          ) : (
+            <div style={{ visibility: 'hidden' }}>Next</div>
+          )}
+        </div>
+
+      </footer>
+
+      {/* Embedded Styles & Animations */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Amiri:ital@0;1&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
         
-        @keyframes flash {
-          0%, 100% { color: #f8fafc; }
-          50% { color: #ef4444; }
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
         }
-        .flash {
-          animation: flash 2s infinite;
+
+        body, html {
+          overflow: hidden;
+          width: 100%;
+          height: 100%;
         }
-        
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
+
+        @keyframes pulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(1.2); }
+        }
+
+        @keyframes timerAlert {
+          0%, 100% { color: #ffffff; text-shadow: 0 0 30px rgba(239, 68, 68, 0.8); }
+          50% { color: #ef4444; text-shadow: 0 0 50px rgba(239, 68, 68, 1); }
+        }
+
+        .timer-flash {
+          animation: timerAlert 1.5s infinite;
         }
       `}</style>
     </div>
@@ -184,141 +250,317 @@ const ConferenceScreen = () => {
 const styles = {
   container: {
     width: '100vw',
-    minHeight: '100vh',
+    height: '100vh',
+    maxHeight: '100vh',
     position: 'relative',
-    backgroundColor: '#070f2b', // Very dark rich blue
-    backgroundImage: 'linear-gradient(135deg, #070f2b 0%, #1b1a55 50%, #535c91 100%)',
-    color: '#f8fafc',
+    backgroundColor: '#070b19',
+    backgroundImage: 'radial-gradient(ellipse at 50% 15%, #18224b 0%, #0d142d 55%, #050814 100%)',
+    color: '#ffffff',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     fontFamily: "'Cairo', sans-serif",
-    boxSizing: 'border-box',
     overflow: 'hidden',
+    padding: '1.5rem 3rem',
   },
-  logo: {
+
+  // Ambient glows
+  glowTop: {
     position: 'absolute',
-    top: '2rem',
-    right: '3rem',
-    height: '120px',
-    objectFit: 'contain',
-    filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.5))',
-    zIndex: 10,
-    animation: 'float 6s ease-in-out infinite'
+    top: '-20%',
+    left: '25%',
+    width: '50vw',
+    height: '40vh',
+    background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0,0,0,0) 70%)',
+    pointerEvents: 'none',
+    zIndex: 1
   },
+  glowBottom: {
+    position: 'absolute',
+    bottom: '-15%',
+    right: '15%',
+    width: '45vw',
+    height: '35vh',
+    background: 'radial-gradient(circle, rgba(217, 119, 6, 0.1) 0%, rgba(0,0,0,0) 70%)',
+    pointerEvents: 'none',
+    zIndex: 1
+  },
+
   loading: {
     fontSize: '2rem',
-    color: '#9290c3',
-    margin: 'auto',
-    fontFamily: "'Cairo', sans-serif"
+    color: '#93c5fd',
+    margin: 'auto'
   },
   idleState: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '1rem',
-    opacity: 0.6,
+    justifyContent: 'center',
     margin: 'auto',
-    fontFamily: "'Cairo', sans-serif"
+    opacity: 0.8
   },
-  centerContent: {
+
+  // ================= HEADER =================
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    padding: '0.75rem 1.5rem',
+    background: 'rgba(15, 23, 42, 0.65)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    borderRadius: '20px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+    zIndex: 10,
+    flexShrink: 0
+  },
+  brandBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1.25rem'
+  },
+  logoImg: {
+    width: '58px',
+    height: '58px',
+    objectFit: 'contain',
+    borderRadius: '50%',
+    background: '#ffffff',
+    padding: '3px',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)',
+    border: '2px solid #d4af37'
+  },
+  brandText: {
+    display: 'flex',
+    flexDirection: 'column',
+    lineHeight: '1.3'
+  },
+  churchName: {
+    fontSize: '1.35rem',
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: '0.5px'
+  },
+  churchLocation: {
+    fontSize: '0.95rem',
+    color: '#d4af37',
+    fontWeight: '600'
+  },
+  liveBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.6rem',
+    padding: '0.6rem 1.25rem',
+    background: 'rgba(239, 68, 68, 0.15)',
+    border: '1px solid rgba(239, 68, 68, 0.4)',
+    borderRadius: '30px',
+    fontSize: '1.05rem',
+    fontWeight: '700',
+    color: '#fca5a5'
+  },
+  liveDot: {
+    width: '12px',
+    height: '12px',
+    borderRadius: '50%',
+    backgroundColor: '#ef4444',
+    boxShadow: '0 0 10px #ef4444',
+    animation: 'pulseDot 2s infinite'
+  },
+
+  // ================= MAIN CENTER =================
+  mainCenter: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '4rem',
+    flex: '1',
     width: '100%',
-    maxWidth: '1600px',
-    padding: '0 2rem',
-    zIndex: 2,
-    marginTop: '-5rem' // Adjust slightly upwards to balance the bottom speakers
+    maxWidth: '1500px',
+    margin: '0 auto',
+    padding: '1rem 0',
+    gap: '1.75rem',
+    zIndex: 10,
+    overflow: 'hidden'
   },
-  timerSection: {
+
+  // Timer Card
+  timerCard: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '1rem',
-    backgroundColor: 'rgba(7, 15, 43, 0.4)',
-    padding: '2.5rem 6rem',
-    borderRadius: '30px',
-    boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.7)',
-    border: '1px solid rgba(146, 144, 195, 0.2)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)'
+    background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    padding: '1.25rem 4.5rem',
+    borderRadius: '28px',
+    border: '1px solid rgba(147, 197, 253, 0.25)',
+    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    flexShrink: 0
+  },
+  timerHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    marginBottom: '0.25rem'
+  },
+  timerIcon: {
+    fontSize: '1.4rem'
   },
   timerLabel: {
-    fontSize: '2.8rem',
-    color: '#9290c3',
-    fontWeight: '600',
-    letterSpacing: '2px',
-    textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+    fontSize: '1.4rem',
+    fontWeight: '700',
+    color: '#93c5fd',
+    letterSpacing: '1px'
   },
-  timerValue: {
-    fontSize: '12rem',
-    fontWeight: '800',
+  timerDisplay: {
+    fontSize: '5.8rem',
+    fontWeight: '900',
     color: '#ffffff',
     fontVariantNumeric: 'tabular-nums',
-    lineHeight: '1',
-    textShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 40px rgba(146, 144, 195, 0.4)'
+    lineHeight: '1.05',
+    textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(59, 130, 246, 0.5)',
+    letterSpacing: '3px'
   },
-  verseCard: {
-    fontSize: '4.5rem',
-    fontFamily: "'Amiri', serif",
-    color: '#e2d3a3', // Elegant gold/beige
-    maxWidth: '1400px',
-    lineHeight: '1.6',
-    textShadow: '0 5px 15px rgba(0,0,0,0.8)',
+
+  // Verse Container
+  verseContainer: {
+    position: 'relative',
+    background: 'rgba(255, 255, 255, 0.04)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    borderRadius: '24px',
+    border: '1px solid rgba(212, 175, 55, 0.3)',
+    boxShadow: '0 15px 40px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(212, 175, 55, 0.05)',
+    padding: '1.5rem 3.5rem',
+    maxWidth: '92%',
     textAlign: 'center',
-    padding: '0 2rem'
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 1,
+    overflow: 'hidden'
   },
-  bottomSection: {
+  verseQuoteMarkStart: {
     position: 'absolute',
-    bottom: '3rem',
-    left: '0',
-    width: '100%',
+    top: '-15px',
+    right: '25px',
+    fontSize: '5rem',
+    color: 'rgba(212, 175, 55, 0.35)',
+    fontFamily: "'Amiri', serif",
+    lineHeight: 1
+  },
+  verseQuoteMarkEnd: {
+    position: 'absolute',
+    bottom: '-35px',
+    left: '25px',
+    fontSize: '5rem',
+    color: 'rgba(212, 175, 55, 0.35)',
+    fontFamily: "'Amiri', serif",
+    lineHeight: 1
+  },
+  verseText: {
+    fontSize: '2.5rem',
+    fontFamily: "'Amiri', serif",
+    fontWeight: '700',
+    color: '#fbf0b9', // Luxury warm gold
+    lineHeight: '1.65',
+    textShadow: '0 3px 10px rgba(0, 0, 0, 0.9)',
+    zIndex: 2,
+    margin: 0
+  },
+
+  // ================= FOOTER (SPEAKERS) =================
+  footer: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    padding: '0 4rem',
-    boxSizing: 'border-box',
-    zIndex: 5
+    alignItems: 'center',
+    width: '100%',
+    padding: '1rem 2rem',
+    background: 'rgba(15, 23, 42, 0.75)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    borderRadius: '20px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.4)',
+    zIndex: 10,
+    flexShrink: 0
   },
-  speakerBox: {
+
+  // Current Speaker (Right)
+  speakerCardCurrent: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
+    gap: '0.35rem',
+    maxWidth: '55%'
+  },
+  speakerBadgeCurrent: {
+    display: 'inline-flex',
+    alignItems: 'center',
     gap: '0.5rem',
-    maxWidth: '45%'
-  },
-  speakerLabel: {
-    fontSize: '1.8rem',
-    color: '#9290c3',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '2px',
-    textShadow: '0 2px 5px rgba(0,0,0,0.8)'
-  },
-  speakerName: {
-    fontSize: '4rem',
-    fontWeight: '800',
-    color: '#ffffff',
-    textShadow: '0 5px 15px rgba(0,0,0,0.8)',
-    lineHeight: '1.2'
-  },
-  nextSpeakerLabel: {
-    fontSize: '1.5rem',
-    color: '#535c91',
-    fontWeight: '600',
-    letterSpacing: '2px',
-    textShadow: '0 2px 5px rgba(0,0,0,0.8)'
-  },
-  nextSpeakerName: {
-    fontSize: '2.8rem',
+    padding: '0.35rem 0.9rem',
+    background: 'linear-gradient(90deg, rgba(217, 119, 6, 0.25) 0%, rgba(245, 158, 11, 0.1) 100%)',
+    border: '1px solid rgba(245, 158, 11, 0.4)',
+    borderRadius: '12px',
+    fontSize: '1.05rem',
     fontWeight: '700',
-    color: '#9290c3',
-    textShadow: '0 4px 10px rgba(0,0,0,0.8)',
-    lineHeight: '1.2'
+    color: '#fbbf24'
+  },
+  speakerPulse: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: '#fbbf24',
+    boxShadow: '0 0 8px #fbbf24'
+  },
+  speakerNameCurrent: {
+    fontSize: '2.4rem',
+    fontWeight: '900',
+    color: '#ffffff',
+    textShadow: '0 3px 12px rgba(0, 0, 0, 0.8)',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%'
+  },
+
+  // Next Speaker (Left)
+  speakerCardNext: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: '0.35rem',
+    maxWidth: '40%',
+    textAlign: 'left'
+  },
+  speakerBadgeNext: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+    padding: '0.35rem 0.9rem',
+    background: 'rgba(100, 116, 139, 0.2)',
+    border: '1px solid rgba(148, 163, 184, 0.3)',
+    borderRadius: '12px',
+    fontSize: '1rem',
+    fontWeight: '700',
+    color: '#cbd5e1'
+  },
+  speakerNameNext: {
+    fontSize: '1.9rem',
+    fontWeight: '800',
+    color: '#93c5fd',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%'
+  },
+
+  emptySpeakerPlaceholder: {
+    fontSize: '1.2rem',
+    color: '#64748b',
+    fontWeight: '600'
   }
 };
 
