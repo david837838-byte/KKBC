@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Music, Play, Video, ChevronDown, ChevronUp, ExternalLink, Library, Download } from 'lucide-react';
+import { Search, Music, Play, Video, ChevronDown, ChevronUp, ExternalLink, Library, Download, Globe, Copy, Check, Sparkles, Maximize2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { generateHymnsPDF } from '../utils/hymnalPdfGenerator';
 
@@ -10,9 +10,18 @@ const Hymns = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeHymnId, setActiveHymnId] = useState(null);
-  const [activeTab, setActiveTab] = useState('lyrics'); // 'lyrics' or 'video'
+  const [activeTab, setActiveTab] = useState('lyrics'); // 'lyrics', 'external', or 'video'
   const [selectedLetter, setSelectedLetter] = useState('الكل');
+  
+  // External lyrics state (Completely isolated)
+  const [externalSearch, setExternalSearch] = useState('');
+  const [externalResults, setExternalResults] = useState([]);
+  const [loadingExternal, setLoadingExternal] = useState(false);
+  const [activeExternalId, setActiveExternalId] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+
   const { t, language, translateText } = useLanguage();
+  const isAr = language === 'ar';
 
   const fetchHymns = () => {
     setLoading(true);
@@ -39,11 +48,63 @@ const Hymns = () => {
     fetchHymns();
   };
 
+  const fetchExternalLyrics = (queryToSearch) => {
+    const q = queryToSearch !== undefined ? queryToSearch : externalSearch;
+    if (!q || !q.trim()) return;
+    setLoadingExternal(true);
+    fetch(`/api/external-lyrics/search?q=${encodeURIComponent(q.trim())}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setExternalResults(data.data);
+          if (data.data.length > 0) {
+            setActiveExternalId(data.data[0].id);
+          }
+        }
+        setLoadingExternal(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoadingExternal(false);
+      });
+  };
+
+  const loadCommonHymns = () => {
+    if (externalResults.length > 0) return;
+    setLoadingExternal(true);
+    fetch('/api/external-lyrics/common')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setExternalResults(data.data);
+        }
+        setLoadingExternal(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoadingExternal(false);
+      });
+  };
+
+  const copyLyricsToClipboard = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2500);
+  };
+
   const toggleHymn = (id) => {
     if (activeHymnId === id) {
       setActiveHymnId(null);
     } else {
       setActiveHymnId(id);
+    }
+  };
+
+  const toggleExternalHymn = (id) => {
+    if (activeExternalId === id) {
+      setActiveExternalId(null);
+    } else {
+      setActiveExternalId(id);
     }
   };
 
@@ -99,13 +160,23 @@ const Hymns = () => {
 
           {/* Navigation Tabs */}
           <div className="hymns-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button 
                 onClick={() => setActiveTab('lyrics')}
                 className={`tab-btn ${activeTab === 'lyrics' ? 'active' : ''}`}
               >
                 <Music size={18} />
-                <span>{t('hymns.lyrics')}</span>
+                <span>{isAr ? 'كتاب ترانيم الكنيسة' : 'Church Hymnal'}</span>
+              </button>
+              <button 
+                onClick={() => {
+                  setActiveTab('external');
+                  loadCommonHymns();
+                }}
+                className={`tab-btn ${activeTab === 'external' ? 'active' : ''}`}
+              >
+                <Globe size={18} />
+                <span>{isAr ? '🌐 المكتبة الشاملة للترانيم' : '🌐 All Hymns Library'}</span>
               </button>
               <button 
                 onClick={() => setActiveTab('video')}
@@ -115,10 +186,9 @@ const Hymns = () => {
                 <span>{t('hymns.watchVideo')}</span>
               </button>
             </div>
-
           </div>
 
-          {/* Search form (Only for Lyrics tab) */}
+          {/* Search form for Church Hymnal */}
           {activeTab === 'lyrics' && (
             <div className="search-wrapper glass-card">
               <form onSubmit={handleSearchSubmit} className="search-form">
@@ -139,50 +209,161 @@ const Hymns = () => {
             </div>
           )}
 
-          {/* Alphabetical Filter Bar */}
-          <div className="alpha-filter-section glass-card">
-            <div className="alpha-filter-label">
-              <span>🔤 {language === 'ar' ? 'تصفح حسب الحرف:' : 'Browse by Letter:'}</span>
-            </div>
-            <div className="alpha-filter-bar">
-              <button
-                className={`alpha-btn ${selectedLetter === 'الكل' || selectedLetter === 'All' ? 'active' : ''}`}
-                onClick={() => setSelectedLetter('الكل')}
-              >
-                {t('common.all')}
-                <span className="alpha-count">{hymns.length}</span>
-              </button>
-              {ARABIC_LETTERS.map(letter => {
-                const count = getLetterCount(letter);
-                return (
-                  <button
-                    key={letter}
-                    className={`alpha-btn ${selectedLetter === letter ? 'active' : ''} ${count === 0 ? 'empty' : ''}`}
-                    onClick={() => setSelectedLetter(letter)}
-                    disabled={count === 0}
-                  >
-                    {letter}
-                    {count > 0 && <span className="alpha-count">{count}</span>}
-                  </button>
-                );
-              })}
-            </div>
-            {selectedLetter !== 'الكل' && selectedLetter !== 'All' && (
-              <div className="alpha-result-info">
-                {language === 'ar' ? 'يعرض الترانيم التي تبدأ بحرف:' : 'Showing hymns starting with:'} <strong>{selectedLetter}</strong>
-                {filteredHymns.length === 0 && (language === 'ar' ? ' — لا توجد ترانيم بهذا الحرف' : ' — No hymns for this letter')}
+          {/* Search form for External Comprehensive Library */}
+          {activeTab === 'external' && (
+            <div className="search-wrapper glass-card" style={{ border: '1px solid var(--accent-color)' }}>
+              <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-color)' }}>
+                <Sparkles size={18} />
+                <span style={{ fontWeight: '700' }}>
+                  {isAr ? 'البحث الذكي في آلاف الترانيم العربية الإنجيلية والتسبيح' : 'Smart Search in Arabic Christian Hymns'}
+                </span>
               </div>
-            )}
-          </div>
+              <form onSubmit={(e) => { e.preventDefault(); fetchExternalLyrics(); }} className="search-form">
+                <div className="search-input-group">
+                  <input 
+                    type="text" 
+                    placeholder={isAr ? 'اكتب اسم أي ترنيمة أو جزء من كلماتها (مثال: يسوع أنت ترنيمتي، يا صاحب الحنان...)' : 'Type any hymn title or lyrics...'} 
+                    value={externalSearch}
+                    onChange={(e) => setExternalSearch(e.target.value)}
+                    className="form-control"
+                  />
+                  <button type="submit" className="btn btn-primary search-btn" disabled={loadingExternal}>
+                    <Search size={18} />
+                    <span>{loadingExternal ? (isAr ? 'جاري البحث...' : 'Searching...') : (isAr ? 'بحث فوري' : 'Search')}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Alphabetical Filter Bar (Only for Local Church Hymns) */}
+          {activeTab === 'lyrics' && (
+            <div className="alpha-filter-section glass-card">
+              <div className="alpha-filter-label">
+                <span>🔤 {language === 'ar' ? 'تصفح حسب الحرف:' : 'Browse by Letter:'}</span>
+              </div>
+              <div className="alpha-filter-bar">
+                <button
+                  className={`alpha-btn ${selectedLetter === 'الكل' || selectedLetter === 'All' ? 'active' : ''}`}
+                  onClick={() => setSelectedLetter('الكل')}
+                >
+                  {t('common.all')}
+                  <span className="alpha-count">{hymns.length}</span>
+                </button>
+                {ARABIC_LETTERS.map(letter => {
+                  const count = getLetterCount(letter);
+                  return (
+                    <button
+                      key={letter}
+                      className={`alpha-btn ${selectedLetter === letter ? 'active' : ''} ${count === 0 ? 'empty' : ''}`}
+                      onClick={() => setSelectedLetter(letter)}
+                      disabled={count === 0}
+                    >
+                      {letter}
+                      {count > 0 && <span className="alpha-count">{count}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedLetter !== 'الكل' && selectedLetter !== 'All' && (
+                <div className="alpha-result-info">
+                  {language === 'ar' ? 'يعرض الترانيم التي تبدأ بحرف:' : 'Showing hymns starting with:'} <strong>{selectedLetter}</strong>
+                  {filteredHymns.length === 0 && (language === 'ar' ? ' — لا توجد ترانيم بهذا الحرف' : ' — No hymns for this letter')}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Hymns Render Area */}
           {loading ? (
             <div className="flex-center" style={{ minHeight: '200px' }}>
               <div className="loading-spinner"></div>
             </div>
+          ) : activeTab === 'external' ? (
+            /* ================= EXTERNAL COMPREHENSIVE HYMNS VIEW ================= */
+            <div className="external-hymns-section">
+              {loadingExternal ? (
+                <div className="flex-center" style={{ minHeight: '200px', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="loading-spinner"></div>
+                  <p style={{ color: 'var(--text-secondary)' }}>{isAr ? 'جاري جلب كلمات الترنيمة وتنسيقها...' : 'Fetching hymn lyrics...'}</p>
+                </div>
+              ) : externalResults.length === 0 ? (
+                <div className="no-data-card glass-card">
+                  <p className="no-data">{isAr ? 'لم نتمكن من العثور على ترنيمة بهذا الاسم. جرّب كتابة كلمات أخرى أو مطلع الترنيمة.' : 'No hymns found.'}</p>
+                </div>
+              ) : (
+                <div className="hymns-list">
+                  <div style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                    {isAr ? `تم العثور على (${externalResults.length}) ترنيمة:` : `Found (${externalResults.length}) hymns:`}
+                  </div>
+                  {externalResults.map((item) => {
+                    const isOpen = activeExternalId === item.id;
+                    return (
+                      <div className={`hymn-accordion-card glass-card ${isOpen ? 'open' : ''}`} key={item.id} style={{ borderLeft: '4px solid var(--accent-color)' }}>
+                        <div className="accordion-header" onClick={() => toggleExternalHymn(item.id)}>
+                          <div className="header-title-wrapper">
+                            <Sparkles className="music-icon" size={20} style={{ color: 'var(--accent-color)' }} />
+                            <h3>{item.title}</h3>
+                            {item.category && <span className="hymn-cat-badge">{item.category}</span>}
+                            {item.source && (
+                              <span style={{ fontSize: '0.75rem', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '0.15rem 0.6rem', borderRadius: '12px', fontWeight: 'bold' }}>
+                                {item.source}
+                              </span>
+                            )}
+                          </div>
+                          <div className="header-toggle-icon">
+                            {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                          </div>
+                        </div>
+
+                        {isOpen && (
+                          <div className="accordion-content">
+                            <div className="lyrics-display" style={{ fontSize: '1.25rem', lineHeight: '2', whiteSpace: 'pre-wrap' }}>
+                              {item.lyrics}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                              <button 
+                                type="button" 
+                                className="btn btn-outline"
+                                onClick={() => copyLyricsToClipboard(item.lyrics, item.id)}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
+                              >
+                                {copiedId === item.id ? <Check size={16} color="#4caf50" /> : <Copy size={16} />}
+                                <span>{copiedId === item.id ? (isAr ? 'تم نسخ الكلمات!' : 'Copied!') : (isAr ? 'نسخ الكلمات' : 'Copy Lyrics')}</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           ) : filteredHymns.length === 0 ? (
             <div className="no-data-card glass-card">
               <p className="no-data">{t('common.noData')}</p>
+              {search && (
+                <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '12px', border: '1px dashed var(--accent-color)', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 1rem', fontSize: '1rem', color: 'var(--text-secondary)' }}>
+                    {isAr ? `لم يتم العثور على "${search}" في كتاب ترانيم الكنيسة المحلي.` : `Not found in church hymnal.`}
+                  </p>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setActiveTab('external');
+                      setExternalSearch(search);
+                      fetchExternalLyrics(search);
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    <Globe size={16} />
+                    <span>{isAr ? 'البحث عن كلمات الترنيمة في المكتبة السحابية الشاملة' : 'Search External Full Library'}</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : activeTab === 'lyrics' ? (
             /* Lyrics Accordion View */

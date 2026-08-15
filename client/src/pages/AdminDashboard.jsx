@@ -1888,7 +1888,44 @@ const HymnsTab = ({ token }) => {
           <div className="grid-2">
             <div className="form-group">
               <label>عنوان الترنيمة</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="form-control" />
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="form-control" />
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => {
+                    if (!title.trim()) {
+                      alert('الرجاء كتابة اسم الترنيمة أولاً');
+                      return;
+                    }
+                    setLoading(true);
+                    fetch(`/api/external-lyrics/search?q=${encodeURIComponent(title.trim())}`)
+                      .then(res => res.json())
+                      .then(data => {
+                        setLoading(false);
+                        if (data.success && data.data && data.data.length > 0) {
+                          const fetched = data.data[0];
+                          setLyrics(fetched.lyrics);
+                          if (fetched.category && !category) setCategory(fetched.category);
+                          setSuccess(`تم جلب كلمات الترنيمة بنجاح من (${fetched.source || 'المكتبة الشاملة'})! 🎉`);
+                          setTimeout(() => setSuccess(''), 4000);
+                        } else {
+                          setError('لم نتمكن من العثور على كلمات لهذه الترنيمة تلقائياً. يمكنك كتابتها يدوياً.');
+                          setTimeout(() => setError(''), 4000);
+                        }
+                      })
+                      .catch(err => {
+                        setLoading(false);
+                        setError('حدث خطأ أثناء جلب الكلمات.');
+                        setTimeout(() => setError(''), 3000);
+                      });
+                  }}
+                  style={{ whiteSpace: 'nowrap', fontSize: '0.85rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
+                  title="البحث عن كلمات الترنيمة وتعبئتها تلقائياً"
+                >
+                  ⚡ جلب الكلمات تلقائياً
+                </button>
+              </div>
             </div>
 
             <div className="form-group">
