@@ -2352,6 +2352,9 @@ const HymnsTab = ({ token }) => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
       {/* External Hymns Search & Direct Projector Modal */}
       {showExternalModal && (
         <div style={{
