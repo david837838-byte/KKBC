@@ -13,6 +13,7 @@ router.put(
   upload.fields([
     { name: 'logo', maxCount: 1 },
     { name: 'heroImage', maxCount: 1 },
+    { name: 'conferenceTimerSound', maxCount: 1 },
   ]),
   updateSettings
 );

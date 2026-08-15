@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
 const ConferenceScreen = () => {
   const [settings, setSettings] = useState(null);
   const [timeLeft, setTimeLeft] = useState('');
+  const [hasPlayedSound, setHasPlayedSound] = useState(false);
+  const audioRef = useRef(null);
 
   // 1. Fetch initial settings
   useEffect(() => {
@@ -22,7 +24,13 @@ const ConferenceScreen = () => {
     const socket = io('/', { path: '/socket.io' });
 
     socket.on('conferenceUpdate', (updatedSettings) => {
-      setSettings(updatedSettings);
+      // If timer changes, allow sound to play again
+      setSettings(prev => {
+        if (prev && updatedSettings.conferenceTimerEndTime !== prev.conferenceTimerEndTime) {
+          setHasPlayedSound(false);
+        }
+        return updatedSettings;
+      });
     });
 
     return () => {
@@ -42,8 +50,14 @@ const ConferenceScreen = () => {
       const now = new Date().getTime();
       const distance = end - now;
 
-      if (distance < 0) {
+      if (distance <= 0) {
         setTimeLeft('00:00:00');
+        
+        // Play sound exactly once when it hits zero
+        if (!hasPlayedSound && settings.conferenceTimerSound && audioRef.current) {
+          audioRef.current.play().catch(e => console.log('Audio play failed:', e));
+          setHasPlayedSound(true);
+        }
         return;
       }
 
@@ -62,7 +76,7 @@ const ConferenceScreen = () => {
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [settings?.conferenceTimerEndTime]);
+  }, [settings?.conferenceTimerEndTime, hasPlayedSound, settings?.conferenceTimerSound]);
 
   if (!settings) {
     return (
@@ -84,39 +98,61 @@ const ConferenceScreen = () => {
     );
   }
 
+  const hasTimer = !!settings.conferenceTimerEndTime;
+  const hasSpeakers = settings.conferenceCurrentSpeaker || settings.conferenceNextSpeaker;
+  const isOnlyVerse = settings.conferenceVerse && !hasTimer && !hasSpeakers;
+
   return (
     <div style={styles.container}>
-      <div style={styles.content}>
+      
+      {/* Hidden audio element for the alarm */}
+      {settings.conferenceTimerSound && (
+        <audio ref={audioRef} src={settings.conferenceTimerSound} preload="auto" />
+      )}
+
+      {/* Top Logo */}
+      {settings.logo && (
+        <img src={settings.logo} alt="Church Logo" style={styles.logo} />
+      )}
+
+      <div style={{...styles.content, justifyContent: isOnlyVerse ? 'center' : 'flex-start', flex: 1}}>
         
-        {/* Timer Section */}
-        {settings.conferenceTimerEndTime && (
-          <div style={styles.timerSection}>
-            <div style={styles.timerLabel}>{settings.conferenceTimerLabel}</div>
-            <div style={styles.timerValue} className={timeLeft === '00:00:00' ? 'flash' : ''}>
-              {timeLeft}
+        <div style={styles.topSection}>
+          {/* Timer Section */}
+          {hasTimer && (
+            <div style={styles.timerSection}>
+              <div style={styles.timerLabel}>{settings.conferenceTimerLabel}</div>
+              <div style={styles.timerValue} className={timeLeft === '00:00:00' ? 'flash' : ''}>
+                {timeLeft}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Current Speaker */}
-        {settings.conferenceCurrentSpeaker && (
-          <div style={styles.speakerCard}>
-            <div style={styles.speakerLabel}>المتكلم الحالي | Current Speaker</div>
-            <div style={styles.speakerName}>{settings.conferenceCurrentSpeaker}</div>
-          </div>
-        )}
+          {/* Speakers Section */}
+          {hasSpeakers && (
+            <div style={styles.speakersWrapper}>
+              {/* Current Speaker */}
+              {settings.conferenceCurrentSpeaker && (
+                <div style={styles.speakerCard}>
+                  <div style={styles.speakerLabel}>المتكلم الحالي | Current Speaker</div>
+                  <div style={styles.speakerName}>{settings.conferenceCurrentSpeaker}</div>
+                </div>
+              )}
 
-        {/* Next Speaker */}
-        {settings.conferenceNextSpeaker && (
-          <div style={styles.nextSpeakerCard}>
-            <div style={styles.nextSpeakerLabel}>يتبعه | Next Speaker</div>
-            <div style={styles.nextSpeakerName}>{settings.conferenceNextSpeaker}</div>
-          </div>
-        )}
+              {/* Next Speaker */}
+              {settings.conferenceNextSpeaker && (
+                <div style={styles.nextSpeakerCard}>
+                  <div style={styles.nextSpeakerLabel}>يتبعه | Next Speaker</div>
+                  <div style={styles.nextSpeakerName}>{settings.conferenceNextSpeaker}</div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
-        {/* Verse Section */}
+        {/* Verse Section - Pushed to center if it's the only thing, or placed below */}
         {settings.conferenceVerse && (
-          <div style={styles.verseCard}>
+          <div style={{...styles.verseCard, margin: isOnlyVerse ? '0 auto' : 'auto auto 2rem auto'}}>
             "{settings.conferenceVerse}"
           </div>
         )}
@@ -144,7 +180,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
     padding: '2rem',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     boxSizing: 'border-box',
@@ -152,16 +187,25 @@ const styles = {
     overflow: 'hidden',
     backgroundImage: 'radial-gradient(circle at center, #1e293b 0%, #0f172a 100%)'
   },
+  logo: {
+    height: '100px',
+    objectFit: 'contain',
+    marginBottom: '2rem',
+    filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.5))',
+    zIndex: 10
+  },
   loading: {
     fontSize: '2rem',
-    color: '#94a3b8'
+    color: '#94a3b8',
+    margin: 'auto'
   },
   idleState: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '1rem',
-    opacity: 0.5
+    opacity: 0.5,
+    margin: 'auto'
   },
   content: {
     width: '100%',
@@ -169,7 +213,14 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '4rem'
+    gap: '4rem',
+  },
+  topSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4rem',
+    width: '100%'
   },
   timerSection: {
     display: 'flex',
@@ -195,6 +246,12 @@ const styles = {
     fontVariantNumeric: 'tabular-nums',
     lineHeight: '1',
     textShadow: '0 0 40px rgba(255,255,255,0.1)'
+  },
+  speakersWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '3rem'
   },
   speakerCard: {
     display: 'flex',
@@ -231,7 +288,6 @@ const styles = {
     color: '#cbd5e1'
   },
   verseCard: {
-    marginTop: '2rem',
     fontSize: '3rem',
     fontStyle: 'italic',
     color: '#c5a880',

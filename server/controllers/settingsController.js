@@ -93,6 +93,10 @@ exports.updateSettings = async (req, res) => {
         deleteLocalFile(settings.heroImageUrl);
         updateData.heroImageUrl = `/uploads/settings/${req.files.heroImage[0].filename}`;
       }
+      if (req.files.conferenceTimerSound && req.files.conferenceTimerSound[0]) {
+        deleteLocalFile(settings.conferenceTimerSound);
+        updateData.conferenceTimerSound = `/uploads/settings/${req.files.conferenceTimerSound[0].filename}`;
+      }
     }
 
     settings = await Settings.findByIdAndUpdate(settings._id, updateData, {
@@ -111,6 +115,7 @@ exports.updateSettings = async (req, res) => {
     if (req.files) {
       if (req.files.logo && req.files.logo[0]) deleteLocalFile(`/uploads/settings/${req.files.logo[0].filename}`);
       if (req.files.heroImage && req.files.heroImage[0]) deleteLocalFile(`/uploads/settings/${req.files.heroImage[0].filename}`);
+      if (req.files.conferenceTimerSound && req.files.conferenceTimerSound[0]) deleteLocalFile(`/uploads/settings/${req.files.conferenceTimerSound[0].filename}`);
     }
     res.status(500).json({ success: false, message: error.message });
   }

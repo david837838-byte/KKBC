@@ -5603,6 +5603,7 @@ const ConferenceTab = ({ token }) => {
     conferenceTimerLabel: 'وقت الاستراحة',
     conferenceTimerEndTime: ''
   });
+  const [soundFile, setSoundFile] = useState(null);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -5628,11 +5629,15 @@ const ConferenceTab = ({ token }) => {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    const { name, value, type, checked, files } = e.target;
+    if (type === 'file') {
+      setSoundFile(files[0]);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const handleSetTimer = (minutes, label) => {
@@ -5653,26 +5658,35 @@ const ConferenceTab = ({ token }) => {
     setSaving(true);
     
     try {
-      const dataToSubmit = { ...formData };
+      const dataToSubmit = new FormData();
       
-      // If the timer input is empty, send null, else convert local string back to UTC ISO
-      if (!dataToSubmit.conferenceTimerEndTime) {
-        dataToSubmit.conferenceTimerEndTime = null;
-      } else {
-        dataToSubmit.conferenceTimerEndTime = new Date(dataToSubmit.conferenceTimerEndTime).toISOString();
+      Object.keys(formData).forEach(key => {
+        if (key === 'conferenceTimerEndTime') {
+          if (formData[key]) {
+            dataToSubmit.append(key, new Date(formData[key]).toISOString());
+          } else {
+            dataToSubmit.append(key, '');
+          }
+        } else {
+          dataToSubmit.append(key, formData[key]);
+        }
+      });
+
+      if (soundFile) {
+        dataToSubmit.append('conferenceTimerSound', soundFile);
       }
 
       const res = await fetch('/api/settings', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(dataToSubmit)
+        body: dataToSubmit
       });
       const data = await res.json();
       if (data.success) {
         alert(isAr ? 'تم تحديث إعدادات المؤتمر بنجاح!' : 'Conference settings updated successfully!');
+        if (soundFile) setSoundFile(null); // Reset after upload
       } else {
         alert(data.message || 'Error updating settings');
       }
@@ -5782,6 +5796,28 @@ const ConferenceTab = ({ token }) => {
                 className="form-control" 
               />
             </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label>{isAr ? 'صوت التنبيه (عند انتهاء الوقت)' : 'Alarm Sound (When time is up)'}</label>
+            {settings?.conferenceTimerSound && (
+              <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <audio src={settings.conferenceTimerSound} controls style={{ height: '30px' }}></audio>
+                <span style={{ color: 'var(--text-light)', fontSize: '0.85rem' }}>
+                  {isAr ? 'الصوت الحالي المحفوظ' : 'Current saved sound'}
+                </span>
+              </div>
+            )}
+            <input 
+              type="file" 
+              name="conferenceTimerSound" 
+              accept="audio/*" 
+              onChange={handleChange} 
+              className="form-control" 
+            />
+            <small style={{ color: 'var(--text-light)', marginTop: '0.5rem', display: 'block' }}>
+              {isAr ? 'سيتم تشغيل هذا الصوت على الشاشة عندما يصل الوقت إلى 00:00:00. يمكنك رفع ملف MP3.' : 'This sound will play on the screen when the timer reaches 00:00:00. You can upload an MP3 file.'}
+            </small>
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>

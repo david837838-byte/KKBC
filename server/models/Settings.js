@@ -137,6 +137,10 @@ const settingsSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  conferenceTimerSound: {
+    type: String,
+    default: ''
+  },
   updatedAt: {
     type: Date,
     default: Date.now,
