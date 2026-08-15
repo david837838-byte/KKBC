@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Radio, Calendar, BookOpen, Music, Image, HeartHandshake, Settings, Users, 
   Trash2, Plus, Edit2, Check, Bell, Upload, LogOut, CheckCircle, Info, BarChart3,
-  ShieldAlert, Bot, AlertCircle, FileText, Database, Download, Cloud, RefreshCw
+  ShieldAlert, Bot, AlertCircle, FileText, Database, Download, Cloud, RefreshCw,
+  Globe, Sparkles, X
 } from 'lucide-react';
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
@@ -1398,6 +1399,13 @@ const HymnsTab = ({ token }) => {
   const [activePresenterHymn, setActivePresenterHymn] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // External Hymns Search & Projector State
+  const [showExternalModal, setShowExternalModal] = useState(false);
+  const [extSearch, setExtSearch] = useState('');
+  const [extResults, setExtResults] = useState([]);
+  const [extLoading, setExtLoading] = useState(false);
+  const [selectedExtHymn, setSelectedExtHymn] = useState(null);
+
   // Bulk Import State
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [importMode, setImportMode] = useState('scanned'); // 'scanned' or 'text'
@@ -1809,6 +1817,36 @@ const HymnsTab = ({ token }) => {
               {isAr ? 'إيقاف العرض الحي ✖️' : 'Stop Live Presentation ✖️'}
             </button>
           )}
+          <button
+            className="btn btn-outline"
+            onClick={() => {
+              setShowExternalModal(true);
+              if (extResults.length === 0) {
+                setExtLoading(true);
+                fetch('/api/external-lyrics/common')
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data.success && data.data) {
+                      setExtResults(data.data);
+                      if (data.data.length > 0) setSelectedExtHymn(data.data[0]);
+                    }
+                    setExtLoading(false);
+                  })
+                  .catch(err => setExtLoading(false));
+              }
+            }}
+            style={{
+              borderColor: '#3b82f6',
+              color: '#3b82f6',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.5rem 0.85rem'
+            }}
+          >
+            <Globe size={16} />
+            <span>{isAr ? '🌐 بحث خارجي + بث للبروجكتر 📺' : '🌐 External Hymns + Presenter 📺'}</span>
+          </button>
           {!showForm && (
             <button className="btn btn-primary" onClick={() => setShowForm(true)}>
               <Plus size={16} />
@@ -2311,6 +2349,210 @@ const HymnsTab = ({ token }) => {
                     {isAr ? 'إلغاء المعاينة' : 'Cancel'}
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+      {/* External Hymns Search & Direct Projector Modal */}
+      {showExternalModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.75)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '1rem',
+          backdropFilter: 'blur(6px)'
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '900px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            borderRadius: '16px',
+            padding: '1.75rem',
+            backgroundColor: 'var(--bg-primary, #ffffff)',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem'
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', color: 'var(--accent-color)' }}>
+                <Globe size={22} />
+                <span>{isAr ? 'البحث في المكتبة الشاملة وبث مباشر للبروجكتر 📺' : 'External Hymns & Direct Presenter'}</span>
+              </h3>
+              <button className="btn btn-outline" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setShowExternalModal(false)}>✕</button>
+            </div>
+
+            {/* Search Input Form */}
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (!extSearch.trim()) return;
+              setExtLoading(true);
+              fetch(`/api/external-lyrics/search?q=${encodeURIComponent(extSearch.trim())}`)
+                .then(res => res.json())
+                .then(data => {
+                  setExtLoading(false);
+                  if (data.success && data.data) {
+                    setExtResults(data.data);
+                    if (data.data.length > 0) setSelectedExtHymn(data.data[0]);
+                  }
+                })
+                .catch(err => {
+                  setExtLoading(false);
+                  setError('حدث خطأ أثناء البحث.');
+                });
+            }} style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder={isAr ? "ابحث عن أي ترنيمة عربية بالاسم أو مطلع الكلمات..." : "Search external hymns by title..."}
+                value={extSearch}
+                onChange={(e) => setExtSearch(e.target.value)}
+                className="form-control"
+                style={{ flex: 1, padding: '0.65rem 1rem', fontSize: '0.95rem' }}
+              />
+              <button type="submit" className="btn btn-primary" disabled={extLoading} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap' }}>
+                <Sparkles size={16} />
+                <span>{extLoading ? (isAr ? 'جاري البحث...' : 'Searching...') : (isAr ? 'بحث فوري' : 'Search')}</span>
+              </button>
+            </form>
+
+            {/* Modal Body: Results list + Preview Column */}
+            {extLoading ? (
+              <div style={{ padding: '3rem 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                <p>{isAr ? 'جاري جلب كلمات الترنيمة وتنسيقها...' : 'Fetching hymn lyrics...'}</p>
+              </div>
+            ) : extResults.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px dashed var(--border-color)' }}>
+                {isAr ? 'لم يتم العثور على ترانيم. اكتب اسم ترنيمة أخرى أو كلمات من مطلعها.' : 'No hymns found.'}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.25rem', minHeight: '350px' }}>
+                {/* Results Column */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '420px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                    {isAr ? `نتائج البحث (${extResults.length}):` : `Results (${extResults.length}):`}
+                  </div>
+                  {extResults.map((hymn) => {
+                    const isSelected = selectedExtHymn && (selectedExtHymn.id === hymn.id || selectedExtHymn.title === hymn.title);
+                    return (
+                      <div
+                        key={hymn.id || hymn.title}
+                        onClick={() => setSelectedExtHymn(hymn)}
+                        style={{
+                          padding: '0.75rem',
+                          borderRadius: '8px',
+                          border: `1px solid ${isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
+                          background: isSelected ? 'rgba(197, 168, 128, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: isSelected ? 'var(--accent-color)' : 'var(--text-primary)' }}>
+                          {hymn.title}
+                        </div>
+                        {hymn.category && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                            {hymn.category}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Preview & Action Column */}
+                {selectedExtHymn ? (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    padding: '1rem',
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.03)',
+                    border: '1px solid var(--border-color)',
+                    maxHeight: '420px'
+                  }}>
+                    <div style={{ overflowY: 'auto', paddingRight: '0.5rem', marginBottom: '1rem' }}>
+                      <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-color)', fontSize: '1.15rem' }}>
+                        {selectedExtHymn.title}
+                      </h4>
+                      <pre style={{
+                        fontFamily: 'inherit',
+                        fontSize: '0.95rem',
+                        lineHeight: '1.8',
+                        whiteSpace: 'pre-wrap',
+                        color: 'var(--text-primary)',
+                        margin: 0
+                      }}>
+                        {selectedExtHymn.lyrics}
+                      </pre>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => {
+                          handlePresent({
+                            title: selectedExtHymn.title,
+                            lyrics: selectedExtHymn.lyrics,
+                            category: selectedExtHymn.category || 'ترانيم عامة'
+                          });
+                          setShowExternalModal(false);
+                        }}
+                        style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontWeight: 'bold' }}
+                      >
+                        <span>📺 بث مباشر للبروجكتر</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={() => {
+                          fetch('/api/hymns', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                              title: selectedExtHymn.title,
+                              lyrics: selectedExtHymn.lyrics,
+                              category: selectedExtHymn.category || 'ترانيم عامة'
+                            })
+                          })
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data.success) {
+                                setSuccess(`تم حفظ الترنيمة "${selectedExtHymn.title}" في مكتبة الكنيسة بنجاح! 🎉`);
+                                setTimeout(() => setSuccess(''), 4000);
+                                fetchHymns();
+                              } else {
+                                setError(data.message || 'فشل الحفظ');
+                              }
+                            })
+                            .catch(err => setError('حدث خطأ أثناء الحفظ.'));
+                        }}
+                        style={{ borderColor: '#10b981', color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      >
+                        <span>➕ حفظ في ترانيم الكنيسة</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                    {isAr ? 'اختر ترنيمة من القائمة لمعاينتها والتحكم في بثها' : 'Select a hymn to preview'}
+                  </div>
+                )}
               </div>
             )}
           </div>
