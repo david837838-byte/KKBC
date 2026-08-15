@@ -116,24 +116,6 @@ const Hymns = () => {
               </button>
             </div>
 
-            <button
-              onClick={() => generateHymnsPDF(hymns)}
-              className="btn btn-outline"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                borderColor: '#10b981',
-                color: '#10b981',
-                padding: '0.5rem 1rem',
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                borderRadius: '8px'
-              }}
-            >
-              <Download size={18} />
-              <span>{language === 'ar' ? 'تحميل كتاب الترانيم كامل (PDF) 📄' : 'Download Hymnal PDF 📄'}</span>
-            </button>
           </div>
 
           {/* Search form (Only for Lyrics tab) */}
