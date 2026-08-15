@@ -127,6 +127,10 @@ const AdminDashboard = ({ setIsAdmin }) => {
               <Music size={18} />
               <span>{isAr ? 'الترانيم' : 'Hymns'}</span>
             </li>
+            <li className={activeTab === 'conference' ? 'active' : ''} onClick={() => setActiveTab('conference')}>
+              <Radio size={18} />
+              <span>{isAr ? 'إدارة المؤتمرات' : 'Conference Mode'}</span>
+            </li>
             <li className={activeTab === 'gallery' ? 'active' : ''} onClick={() => setActiveTab('gallery')}>
               <Image size={18} />
               <span>{isAr ? 'معرض الصور والفيديو' : 'Gallery'}</span>
@@ -205,6 +209,7 @@ const AdminDashboard = ({ setIsAdmin }) => {
           {activeTab === 'news' && <NewsTab token={token} />}
           {activeTab === 'articles' && <ArticlesTab token={token} />}
           {activeTab === 'hymns' && <HymnsTab token={token} />}
+          {activeTab === 'conference' && <ConferenceTab token={token} />}
           {activeTab === 'gallery' && <GalleryTab token={token} />}
           {activeTab === 'prayers' && <PrayersTab token={token} />}
           {activeTab === 'analytics' && <AnalyticsTab token={token} />}
@@ -5578,6 +5583,223 @@ const NotificationsTab = ({ token }) => {
             <Bell size={18} />
             <span>{loading ? (isAr ? 'جاري إرسال التنبيه...' : 'Sending Broadcast...') : (isAr ? '🚀 إرسال التنبيه الفوري لجميع المتابعين' : '🚀 Send Push Broadcast to All')}</span>
           </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+const ConferenceTab = ({ token }) => {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const { t, language } = useLanguage();
+  const isAr = language === 'ar';
+
+  const [formData, setFormData] = useState({
+    isConferenceMode: false,
+    conferenceCurrentSpeaker: '',
+    conferenceNextSpeaker: '',
+    conferenceVerse: '',
+    conferenceTimerLabel: 'وقت الاستراحة',
+    conferenceTimerEndTime: ''
+  });
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setSettings(data.data);
+          setFormData({
+            isConferenceMode: data.data.isConferenceMode || false,
+            conferenceCurrentSpeaker: data.data.conferenceCurrentSpeaker || '',
+            conferenceNextSpeaker: data.data.conferenceNextSpeaker || '',
+            conferenceVerse: data.data.conferenceVerse || '',
+            conferenceTimerLabel: data.data.conferenceTimerLabel || 'وقت الاستراحة',
+            conferenceTimerEndTime: data.data.conferenceTimerEndTime ? new Date(data.data.conferenceTimerEndTime).toISOString().slice(0, 16) : ''
+          });
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSetTimer = (minutes, label) => {
+    const endTime = new Date(Date.now() + minutes * 60000);
+    // Add timezone offset to display correctly in input type="datetime-local"
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(endTime - tzoffset)).toISOString().slice(0, 16);
+
+    setFormData(prev => ({
+      ...prev,
+      conferenceTimerLabel: label,
+      conferenceTimerEndTime: localISOTime
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    
+    try {
+      const dataToSubmit = { ...formData };
+      
+      // If the timer input is empty, send null, else convert local string back to UTC ISO
+      if (!dataToSubmit.conferenceTimerEndTime) {
+        dataToSubmit.conferenceTimerEndTime = null;
+      } else {
+        dataToSubmit.conferenceTimerEndTime = new Date(dataToSubmit.conferenceTimerEndTime).toISOString();
+      }
+
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(dataToSubmit)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(isAr ? 'تم تحديث إعدادات المؤتمر بنجاح!' : 'Conference settings updated successfully!');
+      } else {
+        alert(data.message || 'Error updating settings');
+      }
+    } catch (err) {
+      alert('Error updating settings');
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div className="loading-spinner"></div>;
+
+  return (
+    <div className="tab-pane active fade-in">
+      <div className="section-header">
+        <h2>{isAr ? 'إدارة وضع المؤتمرات' : 'Conference Mode Management'}</h2>
+        <a href="/conference" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Radio size={18} />
+          {isAr ? 'فتح شاشة العرض' : 'Open Display Screen'}
+        </a>
+      </div>
+
+      <div className="glass-card" style={{ padding: '2rem' }}>
+        <form onSubmit={handleSubmit}>
+          
+          <div className="form-group" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '12px' }}>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                name="isConferenceMode" 
+                checked={formData.isConferenceMode} 
+                onChange={handleChange} 
+              />
+              <span className="slider round"></span>
+            </label>
+            <div>
+              <h3 style={{ margin: 0 }}>{isAr ? 'تفعيل وضع المؤتمر' : 'Enable Conference Mode'}</h3>
+              <p style={{ margin: '0.5rem 0 0', color: 'var(--text-light)', fontSize: '0.9rem' }}>
+                {isAr 
+                  ? 'عند التفعيل، سيظهر شعار المؤتمر في الصفحة الرئيسية، وستعمل شاشة العرض (/conference) بشكل حي.' 
+                  : 'When enabled, the conference banner appears on the homepage and the live display works.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="form-group">
+              <label>{isAr ? 'المتكلم الحالي' : 'Current Speaker'}</label>
+              <input 
+                type="text" 
+                name="conferenceCurrentSpeaker" 
+                value={formData.conferenceCurrentSpeaker} 
+                onChange={handleChange} 
+                className="form-control" 
+                placeholder={isAr ? 'مثال: القس يوسف' : 'e.g. Pastor Youssef'}
+              />
+            </div>
+            <div className="form-group">
+              <label>{isAr ? 'المتكلم القادم' : 'Next Speaker'}</label>
+              <input 
+                type="text" 
+                name="conferenceNextSpeaker" 
+                value={formData.conferenceNextSpeaker} 
+                onChange={handleChange} 
+                className="form-control" 
+                placeholder={isAr ? 'مثال: الأخ سامر' : 'e.g. Brother Samer'}
+              />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label>{isAr ? 'الآية الكتابية' : 'Bible Verse'}</label>
+            <input 
+              type="text" 
+              name="conferenceVerse" 
+              value={formData.conferenceVerse} 
+              onChange={handleChange} 
+              className="form-control" 
+              placeholder={isAr ? 'اكتب الآية التي ستظهر على الشاشة...' : 'Enter the verse to display on screen...'}
+            />
+          </div>
+
+          <hr style={{ margin: '2rem 0', borderColor: 'var(--border-color)' }} />
+
+          <h3 style={{ marginBottom: '1rem' }}>{isAr ? 'العد التنازلي والمؤقت' : 'Live Countdown Timer'}</h3>
+          
+          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="form-group">
+              <label>{isAr ? 'عنوان المؤقت (ماذا يظهر فوق الوقت؟)' : 'Timer Label (What shows above the time?)'}</label>
+              <input 
+                type="text" 
+                name="conferenceTimerLabel" 
+                value={formData.conferenceTimerLabel} 
+                onChange={handleChange} 
+                className="form-control" 
+                placeholder={isAr ? 'مثال: وقت الاستراحة' : 'e.g. Break Time'}
+              />
+            </div>
+            <div className="form-group">
+              <label>{isAr ? 'وقت الانتهاء (متى ينتهي العد التنازلي؟)' : 'End Time (When does the countdown end?)'}</label>
+              <input 
+                type="datetime-local" 
+                name="conferenceTimerEndTime" 
+                value={formData.conferenceTimerEndTime} 
+                onChange={handleChange} 
+                className="form-control" 
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-outline" onClick={() => handleSetTimer(15, isAr ? 'وقت الاستراحة' : 'Break Time')}>
+              {isAr ? 'استراحة 15 دقيقة ☕' : '15m Break ☕'}
+            </button>
+            <button type="button" className="btn btn-outline" onClick={() => handleSetTimer(45, isAr ? 'الوقت المتبقي للمتكلم' : 'Speaker Time Remaining')}>
+              {isAr ? 'متكلم 45 دقيقة 🎙️' : '45m Speaker 🎙️'}
+            </button>
+            <button type="button" className="btn btn-outline" onClick={() => handleSetTimer(0, '')}>
+              {isAr ? 'إيقاف / إخفاء المؤقت 🛑' : 'Stop / Hide Timer 🛑'}
+            </button>
+          </div>
+
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ وإرسال للشاشة 📡' : 'Save & Broadcast to Screen 📡')}
+          </button>
+
         </form>
       </div>
     </div>

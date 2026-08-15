@@ -100,6 +100,11 @@ exports.updateSettings = async (req, res) => {
       runValidators: true,
     });
 
+    // Emit event if socket is available
+    if (req.app.get('io')) {
+      req.app.get('io').emit('conferenceUpdate', settings);
+    }
+
     res.status(200).json({ success: true, data: settings });
   } catch (error) {
     // Delete newly uploaded files on error

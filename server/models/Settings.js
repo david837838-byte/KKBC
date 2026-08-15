@@ -112,6 +112,31 @@ const settingsSchema = new mongoose.Schema({
     default: '+961 70 000 000'
   },
   // Note: geminiApiKey has been moved to .env for security (GEMINI_API_KEY)
+  // Conference Mode Settings
+  isConferenceMode: {
+    type: Boolean,
+    default: false
+  },
+  conferenceTimerEndTime: {
+    type: Date,
+    default: null
+  },
+  conferenceTimerLabel: {
+    type: String,
+    default: 'وقت الاستراحة'
+  },
+  conferenceCurrentSpeaker: {
+    type: String,
+    default: ''
+  },
+  conferenceNextSpeaker: {
+    type: String,
+    default: ''
+  },
+  conferenceVerse: {
+    type: String,
+    default: ''
+  },
   updatedAt: {
     type: Date,
     default: Date.now,

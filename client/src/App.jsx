@@ -27,6 +27,7 @@ import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import Bible from './pages/Bible';
 import HymnPresenter from './pages/HymnPresenter';
+import ConferenceScreen from './pages/ConferenceScreen';
 
 // Helper component to track page views and live stream views
 const AnalyticsTracker = () => {
@@ -56,7 +57,7 @@ const AnalyticsTracker = () => {
 // Component to handle conditional layouts and routing
 const AppContent = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
   const location = useLocation();
-  const isPresentation = location.pathname === '/hymns/present';
+  const isPresentation = location.pathname === '/hymns/present' || location.pathname === '/conference';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -83,6 +84,7 @@ const AppContent = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
           <Route path="/live" element={<LiveStream />} />
           <Route path="/hymns" element={<Hymns />} />
           <Route path="/hymns/present" element={<HymnPresenter />} />
+          <Route path="/conference" element={<ConferenceScreen />} />
           <Route path="/bible" element={<Bible />} />
           <Route path="/articles" element={<Articles />} />
           <Route path="/prayer" element={<Prayer />} />
