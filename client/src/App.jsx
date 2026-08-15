@@ -122,15 +122,16 @@ const AppContent = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
 };
 
 const App = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => !!localStorage.getItem('token'));
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
-  // Check login state on load
+  // Sync token state on mount or storage events
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsAdmin(true);
-    }
+    const handleStorage = () => {
+      setIsAdmin(!!localStorage.getItem('token'));
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   // Theme Management
