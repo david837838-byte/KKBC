@@ -25,6 +25,22 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Temporary deployment and check scripts
+*.txt
+check_*.py
+deploy*.py
+force_deploy.py
+test_*.py
+fix_*.py
+get_*.py
+run_*.py
+build_*.py
+copy_*.py
+do_*.py
+add_*.py
+upload_*.py
+restart_*.py
+
 # Editor directories
 .vscode/
 .idea/
