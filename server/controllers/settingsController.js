@@ -74,6 +74,13 @@ exports.updateSettings = async (req, res) => {
       updateData.isChatbotEnabled = false;
     }
 
+    // Parse visibleSections if received as JSON string
+    if (typeof updateData.visibleSections === 'string') {
+      try {
+        updateData.visibleSections = JSON.parse(updateData.visibleSections);
+      } catch (e) {}
+    }
+
     // Parse array if received as string (sometimes from form data)
     if (typeof updateData.contactPhones === 'string') {
       try {

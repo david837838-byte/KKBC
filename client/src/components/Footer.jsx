@@ -64,12 +64,16 @@ const Footer = () => {
           <h4>{t('footer.quickLinks')}</h4>
           <ul>
             <li><Link to="/">{t('nav.home')}</Link></li>
-            <li><Link to="/about">{t('nav.about')}</Link></li>
-            <li><Link to="/meetings">{t('nav.meetings')}</Link></li>
-            <li><Link to="/sermons">{t('nav.sermons')}</Link></li>
-            <li><Link to="/hymns">{t('nav.hymns')}</Link></li>
-            <li><Link to="/news">{t('nav.news')}</Link></li>
-            <li><Link to="/gallery">{t('nav.gallery')}</Link></li>
+            {settings?.visibleSections?.about !== false && <li><Link to="/about">{t('nav.about')}</Link></li>}
+            {settings?.visibleSections?.meetings !== false && <li><Link to="/meetings">{t('nav.meetings')}</Link></li>}
+            {settings?.visibleSections?.sermons !== false && <li><Link to="/sermons">{t('nav.sermons')}</Link></li>}
+            {settings?.visibleSections?.hymns !== false && <li><Link to="/hymns">{t('nav.hymns')}</Link></li>}
+            {settings?.visibleSections?.bible !== false && <li><Link to="/bible">{t('nav.bible')}</Link></li>}
+            {settings?.visibleSections?.news !== false && <li><Link to="/news">{t('nav.news')}</Link></li>}
+            {settings?.visibleSections?.articles !== false && <li><Link to="/articles">{t('nav.articles')}</Link></li>}
+            {settings?.visibleSections?.gallery !== false && <li><Link to="/gallery">{t('nav.gallery')}</Link></li>}
+            {settings?.visibleSections?.prayer !== false && <li><Link to="/prayer">{t('nav.prayer')}</Link></li>}
+            {settings?.visibleSections?.contact !== false && <li><Link to="/contact">{t('nav.contact')}</Link></li>}
           </ul>
         </div>
 

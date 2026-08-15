@@ -141,6 +141,21 @@ const settingsSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  // Dynamic Section Visibility Settings (Enable/Disable by Admin)
+  visibleSections: {
+    about: { type: Boolean, default: true },
+    meetings: { type: Boolean, default: true },
+    sermons: { type: Boolean, default: true },
+    hymns: { type: Boolean, default: true },
+    bible: { type: Boolean, default: true },
+    articles: { type: Boolean, default: true },
+    news: { type: Boolean, default: true },
+    gallery: { type: Boolean, default: true },
+    prayer: { type: Boolean, default: true },
+    counseling: { type: Boolean, default: true },
+    contact: { type: Boolean, default: true },
+    downloadApp: { type: Boolean, default: true },
+  },
   updatedAt: {
     type: Date,
     default: Date.now,

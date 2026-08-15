@@ -8,6 +8,7 @@ import { useLanguage } from '../context/LanguageContext';
 const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLive, setIsLive] = useState(false);
+  const [visibleSections, setVisibleSections] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { language, toggleLanguage, t } = useLanguage();
@@ -20,6 +21,18 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
   }, [location.pathname, isAdmin, setIsAdmin]);
 
   useEffect(() => {
+    // Fetch settings for live status and visible sections
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          if (data.data.visibleSections) {
+            setVisibleSections(data.data.visibleSections);
+          }
+        }
+      })
+      .catch(err => console.error('Error fetching settings:', err));
+
     // Fetch current live status
     fetch('/api/livestream')
       .then(res => res.json())
@@ -31,10 +44,16 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
       .catch(err => console.error('Error fetching livestream status:', err));
 
     // Connect to Socket.io for real-time live updates
-    const socket = io('/', { path: '/socket.io' }); // in dev proxied or root
+    const socket = io('/', { path: '/socket.io' });
     
     socket.on('liveStreamUpdate', (data) => {
       setIsLive(data.isLive);
+    });
+
+    socket.on('conferenceUpdate', (updatedSettings) => {
+      if (updatedSettings.visibleSections) {
+        setVisibleSections(updatedSettings.visibleSections);
+      }
     });
 
     return () => {
@@ -50,20 +69,28 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  const navLinks = [
-    { name: t('nav.home'), path: '/' },
-    { name: t('nav.about'), path: '/about' },
-    { name: t('nav.meetings'), path: '/meetings' },
-    { name: t('nav.sermons'), path: '/sermons' },
-    { name: t('nav.hymns'), path: '/hymns' },
-    { name: t('nav.bible'), path: '/bible' },
-    { name: t('nav.articles'), path: '/articles' },
-    { name: t('nav.news'), path: '/news' },
-    { name: t('nav.gallery'), path: '/gallery' },
-    { name: t('nav.prayer'), path: '/prayer' },
-    { name: t('nav.contact'), path: '/contact' },
-    { name: `${t('nav.downloadApp')} 📱`, path: '/download' },
+  // Master navigation list with corresponding settings visibility key
+  const allNavLinks = [
+    { name: t('nav.home'), path: '/', key: 'home' }, // Home is always visible
+    { name: t('nav.about'), path: '/about', key: 'about' },
+    { name: t('nav.meetings'), path: '/meetings', key: 'meetings' },
+    { name: t('nav.sermons'), path: '/sermons', key: 'sermons' },
+    { name: t('nav.hymns'), path: '/hymns', key: 'hymns' },
+    { name: t('nav.bible'), path: '/bible', key: 'bible' },
+    { name: t('nav.articles'), path: '/articles', key: 'articles' },
+    { name: t('nav.news'), path: '/news', key: 'news' },
+    { name: t('nav.gallery'), path: '/gallery', key: 'gallery' },
+    { name: t('nav.prayer'), path: '/prayer', key: 'prayer' },
+    { name: t('nav.contact'), path: '/contact', key: 'contact' },
+    { name: `${t('nav.downloadApp')} 📱`, path: '/download', key: 'downloadApp' },
   ];
+
+  // Filter links based on admin settings (if visibleSections[key] is explicitly false, hide it)
+  const navLinks = allNavLinks.filter(link => {
+    if (link.key === 'home') return true;
+    if (!visibleSections) return true;
+    return visibleSections[link.key] !== false;
+  });
 
   const hasToken = Boolean(localStorage.getItem('token'));
   const showAdminControls = isAdmin && hasToken;
@@ -173,7 +200,7 @@ const Navbar = ({ isAdmin, setIsAdmin, theme, toggleTheme }) => {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
           padding: 0.75rem 1.5rem;
         }

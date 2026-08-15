@@ -2744,6 +2744,29 @@ const SettingsTab = ({ token }) => {
   const [heroFile, setHeroFile] = useState(null);
   const [backupFile, setBackupFile] = useState(null);
 
+  // Section visibility states
+  const [visibleSections, setVisibleSections] = useState({
+    about: true,
+    meetings: true,
+    sermons: true,
+    hymns: true,
+    bible: true,
+    articles: true,
+    news: true,
+    gallery: true,
+    prayer: true,
+    counseling: true,
+    contact: true,
+    downloadApp: true,
+  });
+
+  const toggleSection = (sectionKey) => {
+    setVisibleSections(prev => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey]
+    }));
+  };
+
   const handleDownloadBackup = () => {
     setLoading(true);
     fetch('/api/settings/backup', {
@@ -2855,6 +2878,12 @@ const SettingsTab = ({ token }) => {
           setWhatsappUrl(s.whatsappUrl || '');
           setInstagramUrl(s.instagramUrl || '');
           setTiktokUrl(s.tiktokUrl || '');
+          if (s.visibleSections) {
+            setVisibleSections(prev => ({
+              ...prev,
+              ...s.visibleSections
+            }));
+          }
         }
       });
   }, []);
@@ -2883,7 +2912,8 @@ const SettingsTab = ({ token }) => {
     formData.append('whatsappUrl', whatsappUrl);
     formData.append('instagramUrl', instagramUrl);
     formData.append('tiktokUrl', tiktokUrl);
-  
+    formData.append('visibleSections', JSON.stringify(visibleSections));
+
     // Split phone numbers comma-separated
     const phonesArr = contactPhones.split(',').map(p => p.trim()).filter(Boolean);
     formData.append('contactPhones', JSON.stringify(phonesArr));
@@ -3078,6 +3108,61 @@ const SettingsTab = ({ token }) => {
           <div className="form-group">
             <label>رابط تيك توك (TikTok)</label>
             <input type="text" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} className="form-control" placeholder="https://tiktok.com/@..." />
+          </div>
+        </div>
+
+        {/* Section Visibility Controls */}
+        <div className="glass-card" style={{ marginTop: '2rem', padding: '1.5rem', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.03)', borderRadius: '16px' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-color)' }}>
+            <span>🎛️</span>
+            <span>{isAr ? 'التحكم في ظهور صفحات وأقسام الموقع' : 'Manage Section Visibility (Show / Hide)'}</span>
+          </h3>
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+            {isAr 
+              ? 'يمكنك تفعيل أو إيقاف ظهور أي قسم في شريط القائمة الرئيسي للموقع بنقرة واحدة.' 
+              : 'Toggle any section to show or hide it from the website navigation menu.'}
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+            {[
+              { key: 'about', label: isAr ? 'من نحن (نبذة عن الكنيسة)' : 'About Us' },
+              { key: 'meetings', label: isAr ? 'الاجتماعات الأسبوعية' : 'Weekly Meetings' },
+              { key: 'sermons', label: isAr ? 'العظات والتعليم' : 'Sermons' },
+              { key: 'hymns', label: isAr ? 'الترانيم وعرض البروجكتر' : 'Hymns & Presenter' },
+              { key: 'bible', label: isAr ? 'الكتاب المقدس' : 'Holy Bible' },
+              { key: 'news', label: isAr ? 'الأخبار والإعلانات' : 'News & Announcements' },
+              { key: 'articles', label: isAr ? 'المقالات والدراسات' : 'Articles & Studies' },
+              { key: 'gallery', label: isAr ? 'معرض الصور' : 'Gallery' },
+              { key: 'prayer', label: isAr ? 'طلبات الصلاة' : 'Prayer Requests' },
+              { key: 'counseling', label: isAr ? 'المشورة الروحية' : 'Counseling' },
+              { key: 'contact', label: isAr ? 'تواصل معنا' : 'Contact Us' },
+              { key: 'downloadApp', label: isAr ? 'زر تنزيل التطبيق 📱' : 'Download App Button' },
+            ].map(sec => (
+              <label 
+                key={sec.key} 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.75rem', 
+                  padding: '0.75rem 1rem', 
+                  borderRadius: '10px', 
+                  background: visibleSections[sec.key] !== false ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.08)',
+                  border: `1px solid ${visibleSections[sec.key] !== false ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.2)'}`,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={visibleSections[sec.key] !== false}
+                  onChange={() => toggleSection(sec.key)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                <span style={{ fontWeight: '600', fontSize: '0.9rem', color: visibleSections[sec.key] !== false ? 'var(--text-primary)' : 'var(--text-light)' }}>
+                  {sec.label}
+                </span>
+              </label>
+            ))}
           </div>
         </div>
 
