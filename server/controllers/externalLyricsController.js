@@ -3,6 +3,31 @@ const axios = require('axios');
 // Curated library of famous Arabic Christian Hymns for instant offline/fast lookup
 const commonHymnsLibrary = [
   {
+    id: 'ext_musbee',
+    title: 'أنا مسبي فيك (دايب في حب اللي فداني)',
+    category: 'تسبيح وعبادة',
+    lyrics: `القرار:
+يسوع ليك أنت وحدك العبادة يسوع ليك أنت وحدك القيادة
+ليك يسوع أنت وحدك السيادة والكل منك الكل بيك الكل ليك
+
+1. أنا مسبي فيك دايب في حب اللي فداني
+أنا شوقي ليك أنا قلبي ملك اللي اشتراني
+خبيني فيك ده مكاني فيك هو أماني
+وراحتي فيك يا اللي أنت جيت تموت عشاني
+ترنيمي ليك كل عبادتي والأغاني
+
+2. أنا مش هعيش بعيد تاني عن حضن أبويا
+غيرك ماليش ملجأ وحصن فيه الحماية
+مافرقتنيش وقت احتياجي يا رجايا وفادي حياتي
+كنت وحدك الحماية غسلت قلبي وغفرت لي كل الخطايا
+
+3. أنت الشفاء والحب أنت وفيك خلاصي
+وأنت الحياة مت مكاني وشربت كاسي
+أنت النجاة خدت عقابي وقصاصي
+ليك السجود عليت مقامي ورفعت راسي
+أنا ليك بعود أنت أبويا وأساسي`
+  },
+  {
     id: 'ext_1',
     title: 'يسوع أنت ترنيمتي',
     category: 'تسبيح وعبادة',
@@ -155,68 +180,113 @@ const commonHymnsLibrary = [
 نعلن مجدك بين الأمم ونخبر بخلاصك
 أنت صانع العجائب والرب القدير
 مبارك اسمك إلى أبد الآبدين`
+  },
+  {
+    id: 'ext_9',
+    title: 'ها آتي بطيبي ودهني الحبيب',
+    category: 'سجود وانسكاب',
+    lyrics: `القرار:
+ها آتي بطيبي ودهني الحبيب
+أسكبه عند قدمي الحبيب
+وأمسح رجليك بشعر الرأس
+يا من فديتني من قعر الياس
+
+1. عند الصليب أسجد بقلب كسير
+شاكراً حبك وفدائك القدير
+يا من حملت آثامي وعاري
+ووهبتني برك ونورك المنير
+
+2. أقدم ذاتي ذبيحة حية
+مقدسة مرضية وشهية
+فليس لي في السماء سواك
+ومعك لا أريد شيئاً في البرية`
   }
 ];
 
-// Helper to search Gemini AI if key is available
+// Helper to search Gemini AI with multiple model fallbacks
 const fetchLyricsViaAI = async (query) => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
 
-  try {
-    const prompt = `أنت خبير في الترانيم المسيحية العربية وترانيم الكنائس الإنجيلية والمعمدانية.
-المطلوب: جلب كلمات الترنيمة المسيحية التالية: "${query}".
+  const models = ['gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite'];
 
-يرجى الالتزام الصارم بالتنسيق التالي بدون أي مقدمات أو شرح:
-العنوان: [اسم الترنيمة الدقيق]
+  const prompt = `أنت خبير وموثق أرشيفي لكلمات الترانيم المسيحية العربية وترانيم الكنائس الإنجيلية والمعمدانية في الشرق الأوسط (لبنان، مصر، سوريا، الأردن...).
+المطلوب: جلب الكلمات الحقيقية الكاملة الدقيقة للترنيمة المسيحية التالية: "${query}".
+
+يرجى الالتزام الصارم بالتنسيق التالي بدون علامات Markdown المعقدة مثل ### أو النجوم:
+العنوان: [اسم الترنيمة الدقيق الشائع]
+التصنيف: [تسبيح وعبادة / ترانيم صليب / تسليم ورجاء / فرح ونصرة...]
 الكلمات:
 القرار:
-[كلمات القرار إن وجد]
+[نص القرار إن وجد]
 
 1. [العدد الأول]
 2. [العدد الثاني]
 3. [العدد الثالث]
+4. [العدد الرابع إن وجد]
 
-إذا كانت الترنيمة معروفة، اكتب كلماتها الحقيقية والصحيحة كما تُرنم في الكنائس العربية. إذا لم تكن ترنيمة مسيحية معروفة، أجب بكلمة: "NOT_FOUND".`;
+اكتب الكلمات الحقيقية الأصلية كما تُرنم في الكنائس العربية. إذا لم تكن ترنيمة مسيحية معروفة نهائياً، أجب فقط: "NOT_FOUND".`;
 
-    const payload = {
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
-    };
+  for (const model of models) {
+    try {
+      const payload = {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
+      };
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    if (!response.ok) return null;
+      if (!response.ok) continue;
 
-    const data = await response.json();
-    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const data = await response.json();
+      const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    if (!replyText || replyText.includes('NOT_FOUND')) return null;
+      if (!replyText || replyText.includes('NOT_FOUND')) continue;
 
-    // Parse Title and Lyrics
-    let title = query;
-    let lyrics = replyText;
+      // Clean up any stray markdown formatting (*, #, ---)
+      let cleanedText = replyText
+        .replace(/\*\*/g, '')
+        .replace(/###/g, '')
+        .replace(/---/g, '')
+        .trim();
 
-    const titleMatch = replyText.match(/العنوان:\s*(.+)/);
-    if (titleMatch && titleMatch[1]) {
-      title = titleMatch[1].trim();
-      lyrics = replyText.replace(/العنوان:\s*.+\n*/, '').replace(/الكلمات:\s*\n*/, '').trim();
+      // Parse Title and Category
+      let title = query;
+      let category = 'تسبيح وعبادة';
+      let lyrics = cleanedText;
+
+      const titleMatch = cleanedText.match(/العنوان:\s*(.+)/);
+      if (titleMatch && titleMatch[1]) {
+        title = titleMatch[1].trim();
+      }
+
+      const catMatch = cleanedText.match(/التصنيف:\s*(.+)/);
+      if (catMatch && catMatch[1]) {
+        category = catMatch[1].trim();
+      }
+
+      lyrics = cleanedText
+        .replace(/العنوان:\s*.+\n*/, '')
+        .replace(/التصنيف:\s*.+\n*/, '')
+        .replace(/الكلمات:\s*\n*/, '')
+        .trim();
+
+      return {
+        title,
+        category,
+        lyrics,
+        source: 'المكتبة السحابية الذكية 🌐'
+      };
+    } catch (err) {
+      console.error(`Error with model ${model}:`, err.message);
     }
-
-    return {
-      title,
-      lyrics,
-      category: 'ترانيم عامة',
-      source: 'المكتبة السحابية الذكية'
-    };
-  } catch (err) {
-    console.error('Error fetching lyrics via AI:', err);
-    return null;
   }
+
+  return null;
 };
 
 // @desc    Search external hymns & lyrics
@@ -231,20 +301,26 @@ exports.searchExternalLyrics = async (req, res) => {
 
     const cleanQuery = q.trim().toLowerCase();
     const results = [];
+    const addedTitles = new Set();
 
     // 1. Search local curated library
-    const matchedLocal = commonHymnsLibrary.filter(h => 
-      h.title.toLowerCase().includes(cleanQuery) || 
-      h.lyrics.toLowerCase().includes(cleanQuery)
-    );
+    const matchedLocal = commonHymnsLibrary.filter(h => {
+      const titleLower = h.title.toLowerCase();
+      const lyricsLower = h.lyrics.toLowerCase();
+      return titleLower.includes(cleanQuery) || cleanQuery.split(' ').every(word => word.length > 2 && (titleLower.includes(word) || lyricsLower.includes(word)));
+    });
 
-    results.push(...matchedLocal.map(h => ({ ...h, source: 'المكتبة الشاملة المعتمدة' })));
+    matchedLocal.forEach(h => {
+      results.push({ ...h, source: 'المكتبة الشاملة المعتمدة' });
+      addedTitles.add(h.title);
+    });
 
-    // 2. If no exact match or user searched specifically, query AI/Web fetcher
-    if (results.length === 0 || matchedLocal.length === 0) {
-      const aiResult = await fetchLyricsViaAI(q);
-      if (aiResult) {
-        results.push({
+    // 2. Query Gemini AI for exact live search
+    const aiResult = await fetchLyricsViaAI(q);
+    if (aiResult) {
+      // If AI returned a hymn not already in curated results, add it to top
+      if (!addedTitles.has(aiResult.title)) {
+        results.unshift({
           id: `ai_${Date.now()}`,
           ...aiResult
         });
