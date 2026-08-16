@@ -161,8 +161,12 @@ const fetchLyricsFromPage = async (pageUrl, title) => {
     const decoder = new TextDecoder('windows-1256');
     const html = decoder.decode(res.data);
 
-    // Clean html tags while preserving line breaks and table layout
-    let text = html
+    // Replace <br> and <p> inside <td> with spaces so table cells are single coherent verse lines!
+    let text = html.replace(/<td([^>]*)>([\s\S]*?)<\/td>/gi, (match, p1, inner) => {
+      return '<td' + p1 + '>' + inner.replace(/<br\s*[\/]?>|<\/?p[^>]*>/gi, ' ') + '</td>';
+    });
+
+    text = text
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
       .replace(/<a[\s\S]*?<\/a>/gi, '')
@@ -179,104 +183,147 @@ const fetchLyricsFromPage = async (pageUrl, title) => {
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&');
 
-    const rawLines = text.replace(/===SPLIT===/g, '\n').split('\n');
-    const filteredLines = [];
+    const rawBlocks = text.split('===SPLIT===');
+    const candidates = [];
 
-    for (let line of rawLines) {
-      line = line.trim().replace(/\s+/g, ' ');
-      if (!line || line.length === 0) continue;
+    for (const block of rawBlocks) {
+      const rawLines = block.split('\n');
+      const filteredLines = [];
 
-      // Filter ANY site headers, footer, navigation, or buttons
-      if (line.includes('إخفاء') || 
-          line.includes('إظهار') || 
-          line.includes('الصور والجداول') || 
-          line.includes('نرجو الصلاة') || 
-          line.includes('خدمة الموقع') || 
-          line.includes('الخدام') || 
-          line.includes('بحث') || 
-          line.includes('الكتاب المقدس') || 
-          line.includes('الجاليري') || 
-          line.includes('فهرس الترانيم') || 
-          line.includes('St-Takla') || 
-          line.includes('تاريخ التحديث') || 
-          line.includes('جميع الحقوق') || 
-          line.includes('إرسل لنا') || 
-          line.includes('Toggle navigation') ||
-          line.includes('الانجليزية')) {
-        continue;
-      }
+      for (let line of rawLines) {
+        line = line.trim().replace(/\s+/g, ' ');
+        if (!line || line.length === 0) continue;
 
-      // Cut off footer metadata
-      if (line.match(/^_{3,}/) || 
-          line.startsWith('من مرنمي') || 
-          line.startsWith('كلمات:') || 
-          line.startsWith('* ترنيم:') || 
-          line.startsWith('المصدر:') || 
-          line.startsWith('ألحان:') || 
-          line.startsWith('تقصير الرابط') || 
-          line.toLowerCase() === 'copied' || 
-          line.toLowerCase() === 'copy') {
-        if (filteredLines.length > 2) break;
-        continue;
-      }
-
-      if (line.includes('تنسيق مختلف') || line.includes('تنسيق آخر') || line.startsWith('تنسيق ')) {
-        if (filteredLines.length > 2) break;
-        continue;
-      }
-
-      // Ignore pure punctuation/symbols
-      if (/^[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+$/.test(line)) continue;
-      if (!/[\u0600-\u06FF]/.test(line)) continue;
-      if (/[a-zA-Z]{3,}/.test(line) && !line.includes('(')) continue;
-
-      filteredLines.push(line);
-    }
-
-    // Intelligent Single Rendition Extractor
-    const finalLines = [];
-    const seenNormalizedLines = new Set();
-    const seenVerses = new Set();
-    let firstLineNormalized = '';
-
-    for (let i = 0; i < filteredLines.length; i++) {
-      const line = filteredLines[i];
-      const norm = line.replace(/[^\u0600-\u06FF]/g, '');
-
-      if (!norm || norm.length < 3) {
-        finalLines.push(line);
-        continue;
-      }
-
-      // Check if opening stanza repeats -> STOP!
-      if (firstLineNormalized && norm.startsWith(firstLineNormalized) && finalLines.length >= 2) {
-        break;
-      }
-
-      // Check if line already appeared identically
-      if (finalLines.length >= 2 && seenNormalizedLines.has(norm)) {
-        break;
-      }
-
-      // Check verse number restart (e.g. 1- appears again after 2-)
-      const vMatch = line.match(/^(\d+|[١٢٣٤٥٦٧٨٩٠]+)[\s\-\.\)]|^\((\d+|[١٢٣٤٥٦٧٨٩٠]+)\)/);
-      if (vMatch) {
-        const vNum = vMatch[1] || vMatch[2];
-        if (seenVerses.has(vNum) && seenVerses.size >= 2) {
-          break;
+        if (line.includes('إخفاء') || 
+            line.includes('إظهار') || 
+            line.includes('الصور والجداول') || 
+            line.includes('نرجو الصلاة') || 
+            line.includes('خدمة الموقع') || 
+            line.includes('الخدام') || 
+            line.includes('بحث') || 
+            line.includes('الكتاب المقدس') || 
+            line.includes('الجاليري') || 
+            line.includes('فهرس الترانيم') || 
+            line.includes('St-Takla') || 
+            line.includes('تاريخ التحديث') || 
+            line.includes('جميع الحقوق') || 
+            line.includes('إرسل لنا') || 
+            line.includes('Toggle navigation') ||
+            line.includes('الانجليزية')) {
+          continue;
         }
-        seenVerses.add(vNum);
+
+        if (line.match(/^_{3,}/) || 
+            line.startsWith('من مرنمي') || 
+            line.startsWith('كلمات:') || 
+            line.startsWith('* ترنيم:') || 
+            line.startsWith('المصدر:') || 
+            line.startsWith('ألحان:') || 
+            line.startsWith('تقصير الرابط') || 
+            line.toLowerCase() === 'copied' || 
+            line.toLowerCase() === 'copy') {
+          if (filteredLines.length > 2) break;
+          continue;
+        }
+
+        if (line.includes('تنسيق مختلف') || line.includes('تنسيق آخر') || line.startsWith('تنسيق ')) {
+          if (filteredLines.length > 2) break;
+          continue;
+        }
+
+        if (/^[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+$/.test(line)) continue;
+        if (!/[\u0600-\u06FF]/.test(line)) continue;
+        if (/[a-zA-Z]{3,}/.test(line) && !line.includes('(')) continue;
+
+        filteredLines.push(line);
       }
 
-      if (!firstLineNormalized && norm.length >= 6) {
-        firstLineNormalized = norm.substring(0, 12);
+      if (filteredLines.length < 2) continue;
+
+      // Intelligent single rendition trimmer
+      const blockLines = [];
+      const seenNorm = new Set();
+      const seenVerses = new Set();
+      let firstLineNorm = '';
+
+      for (let i = 0; i < filteredLines.length; i++) {
+        const line = filteredLines[i];
+        const norm = line.replace(/[^\u0600-\u06FF]/g, '');
+        if (!norm || norm.length < 3) {
+          blockLines.push(line);
+          continue;
+        }
+
+        if (firstLineNorm && norm.startsWith(firstLineNorm) && blockLines.length >= 2) break;
+        if (blockLines.length >= 2 && seenNorm.has(norm)) break;
+
+        const vMatch = line.match(/^(\d+|[١٢٣٤٥٦٧٨٩٠]+)[\s\-\.\)]|^\((\d+|[١٢٣٤٥٦٧٨٩٠]+)\)/);
+        if (vMatch) {
+          const vNum = vMatch[1] || vMatch[2];
+          if (seenVerses.has(vNum) && seenVerses.size >= 2) break;
+          seenVerses.add(vNum);
+        }
+
+        if (!firstLineNorm && norm.length >= 6) {
+          firstLineNorm = norm.substring(0, 12);
+        }
+
+        seenNorm.add(norm);
+        blockLines.push(line);
       }
 
-      seenNormalizedLines.add(norm);
-      finalLines.push(line);
+      // Merge short broken hemistichs / half-lines
+      const mergedLines = [];
+      let idx = 0;
+      while (idx < blockLines.length) {
+        let l = blockLines[idx].trim().replace(/\s+/g, ' ');
+        if (!l) { idx++; continue; }
+
+        if (l.length < 25 && idx + 1 < blockLines.length) {
+          const nxt = blockLines[idx + 1].trim().replace(/\s+/g, ' ');
+          const nxtIsMarker = nxt.match(/^(\d+|[١٢٣٤٥٦٧٨٩٠]+)[\s\-\.\)]|^\((\d+|[١٢٣٤٥٦٧٨٩٠]+)\)/) || nxt.includes('القرار') || nxt.includes('قرار');
+          if (!nxtIsMarker) {
+            l = l + ' ' + nxt;
+            idx++;
+          }
+        }
+        mergedLines.push(l);
+        idx++;
+      }
+
+      if (mergedLines.length >= 2) {
+        const formatted = mergedLines.join('\n').trim();
+        const avgLen = formatted.length / mergedLines.length;
+        let score = 0;
+
+        if (seenVerses.size >= 2) score += 60;
+        if (formatted.includes('القرار') || formatted.includes('قرار')) score += 40;
+
+        if (avgLen >= 30 && avgLen <= 95) score += 100;
+        else if (avgLen >= 20) score += 60;
+        else if (avgLen >= 15) score += 20;
+        else score -= 80;
+
+        if (mergedLines.length >= 4 && mergedLines.length <= 25) score += 30;
+
+        candidates.push({
+          text: formatted,
+          linesCount: mergedLines.length,
+          avgLen,
+          score
+        });
+      }
     }
 
-    let formattedLyrics = finalLines.join('\n').trim();
+    candidates.sort((a, b) => b.score - a.score);
+
+    let formattedLyrics = candidates.length > 0 ? candidates[0].text : '';
+
+    if (!formattedLyrics) {
+      const lines = text.replace(/===SPLIT===/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0 && /[\u0600-\u06FF]/.test(l) && !l.includes('St-Takla') && !l.includes('بحث'));
+      formattedLyrics = lines.slice(0, 20).join('\n').trim();
+    }
+
     formattedLyrics = formattedLyrics
       .replace(/^[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+/gm, '')
       .replace(/[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+$/gm, '')
