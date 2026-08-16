@@ -167,42 +167,79 @@ const fetchLyricsFromPage = async (pageUrl, title) => {
       .replace(/<\/p>/gi, '\n\n')
       .replace(/<\/tr>/gi, '\n')
       .replace(/<[^>]+>/g, ' ')
-      .replace(/&nbsp;/g, ' ');
+      .replace(/@/g, '') // Remove @ symbols
+      .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width chars
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&');
 
-    const lines = text.split('\n')
-      .map(l => l.trim())
-      .filter(l => {
-        if (!l || l.length === 0) return false;
-        if (l.includes('St-Takla.org') || l.includes('تاريخ التحديث') || l.includes('جميع الحقوق') || l.includes('إرسل لنا')) return false;
-        if (l.includes('موقع الأنبا تكلا') || l.includes('إخفاء/إظهار') || l.includes('بحث الموقع') || l.includes('بحث الصور')) return false;
-        if (l.includes('نرجو الصلاة') || l.includes('Toggle navigation') || l.includes('Copy') || l.includes('تقصير الرابط')) return false;
-        return true;
-      });
-
-    // Find the lyrics block (usually starts around verse 1 or قرار)
-    let lyricsLines = [];
+    const rawLines = text.split('\n');
+    const cleanLines = [];
     let started = false;
 
-    for (const line of lines) {
-      if (!started) {
-        if (line.match(/^(\d+[\s\-\.]|\(ق\)|\(قرار\)|\(1\)|\(القرار\)|القرار|قرار|1\-)/) || line.includes('القرار') || line.includes('قرار')) {
-          started = true;
-          lyricsLines.push(line);
-        }
-      } else {
-        if (line.startsWith('كلمات:') || line.startsWith('* ترنيم:') || line.startsWith('المصدر:') || line.startsWith('______')) {
+    for (let line of rawLines) {
+      line = line.trim();
+
+      if (!line || line.length === 0) continue;
+
+      // Ignore navigation / footer leftovers
+      if (line.includes('St-Takla.org') || 
+          line.includes('تاريخ التحديث') || 
+          line.includes('جميع الحقوق') || 
+          line.includes('إرسل لنا') || 
+          line.includes('موقع الأنبا تكلا') || 
+          line.includes('إخفاء/إظهار') || 
+          line.includes('بحث الموقع') || 
+          line.includes('بحث الصور') ||
+          line.includes('بحث في الجاليري') ||
+          line.includes('نرجو الصلاة') || 
+          line.includes('Toggle navigation') ||
+          line.includes('خدمة الموقع')) {
+        continue;
+      }
+
+      // Cut off metadata / footer lines
+      if (line.match(/^_{3,}/) || 
+          line.startsWith('من مرنمي') || 
+          line.startsWith('كلمات:') || 
+          line.startsWith('* ترنيم:') || 
+          line.startsWith('المصدر:') || 
+          line.startsWith('ألحان:') ||
+          line.startsWith('تقصير الرابط') ||
+          line.toLowerCase() === 'copied' ||
+          line.toLowerCase() === 'copy') {
+        if (started || cleanLines.length > 0) {
           break;
         }
-        lyricsLines.push(line);
+        continue;
+      }
+
+      // Ignore lines that only contain punctuation / symbols / pipes
+      if (/^[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+$/.test(line)) {
+        continue;
+      }
+
+      // Detect start of lyrics
+      if (!started) {
+        if (line.match(/^(\d+[\s\-\.]|\(ق\)|\(قرار\)|\(1\)|\(القرار\)|القرار|قرار|1\-)/) || 
+            line.includes('القرار') || 
+            line.includes('قرار') ||
+            line.length > 15) {
+          started = true;
+          cleanLines.push(line);
+        }
+      } else {
+        cleanLines.push(line);
       }
     }
 
-    if (lyricsLines.length === 0) {
-      lyricsLines = lines.slice(10, 60);
-    }
-
     // Format lyrics nicely
-    let formattedLyrics = lyricsLines.join('\n').trim();
+    let formattedLyrics = cleanLines.join('\n').trim();
+
+    // Clean any leading/trailing symbol artifacts
+    formattedLyrics = formattedLyrics
+      .replace(/^[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+/gm, '')
+      .replace(/[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+$/gm, '')
+      .trim();
 
     return {
       title: title || 'ترنيمة روحية',
