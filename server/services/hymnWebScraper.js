@@ -9,31 +9,32 @@ let lastIndexedTime = 0;
 
 const CACHE_FILE = path.join(__dirname, '..', 'database', 'sttakla_hymns_index.json');
 
-// Letter index pages on St-Takla
+// Exact letter index pages on St-Takla covering all 28 Arabic letters
 const letterIndexPages = [
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__01-Alef.html',
   'alef-1.html', 'alef-2.html', 'alef-3.html', 'alef-4.html', 'alef-5.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__02-Beh.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__03-Teh.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__04-Theh.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__04-The.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__05-Geem.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__06-Hah.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__07-Khah.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__08-Dal.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__09-Thal.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__10-Reh.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__11-Zain.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__12-Seen.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__13-Sheen.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__14-Sad.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__15-Dad.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__11-Zein.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__12-Sein.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__13-Shein.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__14-Saad.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__15-Daad.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__16-Tah.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__17-Zah.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__18-Ain.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__19-Ghain.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__18-Ein.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__19-Ghein.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__20-Feh.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__21-Qaf.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__22-Kaf.html',
-  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__23-Lam.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__21-Kaf.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__22-Kaaf.html',
+  'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__23-Laam.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__24-Meem.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__25-Noun.html',
   'Spiritual_Coptic_Orthodox_Songs_Lyrics-&-Text__26-Heh.html',
@@ -70,8 +71,8 @@ const initHymnsIndex = async () => {
     console.error('[HymnWebScraper] Error reading index cache:', err.message);
   }
 
-  // If no cache, build index in background
-  buildIndex();
+  // If no cache, build index
+  await buildIndex();
   return hymnsIndex;
 };
 
@@ -82,7 +83,7 @@ const buildIndex = async () => {
   console.log('[HymnWebScraper] Building real hymn catalog from Christian archives...');
 
   const items = [];
-  const seenUrls = new Set();
+  const seenCombinations = new Set();
 
   for (const page of letterIndexPages) {
     const url = `https://st-takla.org/Lyrics-Spiritual-Songs/${page}`;
@@ -99,7 +100,7 @@ const buildIndex = async () => {
       const matches = [...html.matchAll(/<a\s+[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)];
       for (const m of matches) {
         let href = m[1];
-        let title = m[2].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+        let title = m[2].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 
         if (title.length < 3 || href.startsWith('#') || href.includes('Spiritual_') || href.includes('alef-') || href.includes('index.html') || href.includes('Contact-us') || href.includes('FAQ-') || href.includes('books/')) {
           continue;
@@ -117,11 +118,13 @@ const buildIndex = async () => {
           }
         }
 
-        if (!seenUrls.has(fullUrl)) {
-          seenUrls.add(fullUrl);
+        const cleanT = normalizeArabic(title);
+        const comboKey = `${cleanT}_${fullUrl}`;
+        if (!seenCombinations.has(comboKey)) {
+          seenCombinations.add(comboKey);
           items.push({
             title,
-            cleanTitle: normalizeArabic(title),
+            cleanTitle: cleanT,
             url: fullUrl
           });
         }
@@ -144,7 +147,7 @@ const buildIndex = async () => {
   isIndexing = false;
 };
 
-// Fetch real hymn page and parse lyrics
+// Fetch real hymn page and parse a SINGLE clean format
 const fetchLyricsFromPage = async (pageUrl, title) => {
   try {
     const res = await axios.get(pageUrl, {
@@ -158,11 +161,15 @@ const fetchLyricsFromPage = async (pageUrl, title) => {
     const decoder = new TextDecoder('windows-1256');
     const html = decoder.decode(res.data);
 
-    // Clean html tags while preserving line breaks
+    // Clean html tags while preserving line breaks and table layout
     let text = html
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
       .replace(/<a[\s\S]*?<\/a>/gi, '')
+      .replace(/<\/td>\s*<td[^>]*>/gi, '   ') // space between table columns
+      .replace(/<hr[\/]?>/gi, '\n===SPLIT===\n')
+      .replace(/<table[^>]*>/gi, '\n===SPLIT===\n')
+      .replace(/<\/table>/gi, '\n===SPLIT===\n')
       .replace(/<br\s*[\/]?>/gi, '\n')
       .replace(/<\/p>/gi, '\n\n')
       .replace(/<\/tr>/gi, '\n')
@@ -172,89 +179,104 @@ const fetchLyricsFromPage = async (pageUrl, title) => {
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&');
 
-    const rawLines = text.split('\n');
-    const cleanLines = [];
-    let started = false;
+    const blocks = text.split('===SPLIT===');
+    const candidates = [];
 
-    for (let line of rawLines) {
-      line = line.trim();
+    for (const block of blocks) {
+      const rawLines = block.split('\n');
+      const cleanLines = [];
+      let hasNumberedVerses = false;
+      let hasChorus = false;
+      const seenVersesInBlock = new Set();
 
-      if (!line || line.length === 0) continue;
+      for (let line of rawLines) {
+        line = line.trim().replace(/\s+/g, ' ');
+        if (!line || line.length === 0) continue;
 
-      // Ignore English text / navigation / footer leftovers
-      if (/[a-zA-Z]{3,}/.test(line) && !line.includes('(') && !line.includes(')')) {
-        continue;
-      }
+        if (line.includes('St-Takla.org') || 
+            line.includes('تاريخ التحديث') || 
+            line.includes('جميع الحقوق') || 
+            line.includes('إرسل لنا') || 
+            line.includes('موقع الأنبا تكلا') || 
+            line.includes('إخفاء') || 
+            line.includes('إظهار') || 
+            line.includes('بحث') || 
+            line.includes('نرجو الصلاة') || 
+            line.includes('خدمة الموقع') || 
+            line.includes('الكتاب المقدس') || 
+            line.includes('الجاليري') || 
+            line.includes('فهرس الترانيم') || 
+            line.includes('الانجليزية') || 
+            line.includes('Toggle navigation')) {
+          continue;
+        }
 
-      if (line.includes('St-Takla.org') || 
-          line.includes('تاريخ التحديث') || 
-          line.includes('جميع الحقوق') || 
-          line.includes('إرسل لنا') || 
-          line.includes('موقع الأنبا تكلا') || 
-          line.includes('إخفاء') || 
-          line.includes('إظهار') || 
-          line.includes('بحث ') || 
-          line.startsWith('بحث') ||
-          line.includes('نرجو الصلاة') || 
-          line.includes('خدمة الموقع') ||
-          line.includes('الكتاب المقدس') ||
-          line.includes('الجاليري') ||
-          line.includes('فهرس الترانيم')) {
-        continue;
-      }
-
-      // Cut off metadata / footer lines
-      if (line.match(/^_{3,}/) || 
-          line.startsWith('من مرنمي') || 
-          line.startsWith('كلمات:') || 
-          line.startsWith('* ترنيم:') || 
-          line.startsWith('المصدر:') || 
-          line.startsWith('ألحان:') ||
-          line.startsWith('تقصير الرابط') ||
-          line.toLowerCase() === 'copied' ||
-          line.toLowerCase() === 'copy') {
-        if (started || cleanLines.length > 0) {
+        if (line.match(/^_{3,}/) || 
+            line.startsWith('من مرنمي') || 
+            line.startsWith('كلمات:') || 
+            line.startsWith('* ترنيم:') || 
+            line.startsWith('المصدر:') || 
+            line.startsWith('ألحان:') || 
+            line.startsWith('تقصير الرابط') || 
+            line.toLowerCase() === 'copied' || 
+            line.toLowerCase() === 'copy') {
           break;
         }
-        continue;
-      }
 
-      // Ignore lines that only contain punctuation / symbols / pipes
-      if (/^[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+$/.test(line)) {
-        continue;
-      }
-
-      // Must have Arabic characters
-      if (!/[\u0600-\u06FF]/.test(line)) {
-        continue;
-      }
-
-      // Detect start of lyrics
-      if (!started) {
-        if (line.match(/^(\d+[\s\-\.]|\(ق\)|\(قرار\)|\(1\)|\(القرار\)|القرار|قرار|1\-)/) || 
-            line.includes('القرار') || 
-            line.includes('قرار') ||
-            line.length > 10) {
-          started = true;
-          cleanLines.push(line);
+        if (line.includes('تنسيق مختلف') || line.includes('تنسيق آخر') || line.startsWith('تنسيق ')) {
+          if (cleanLines.length > 2) break;
+          continue;
         }
-      } else {
+
+        if (/^[\s\|\:\،\_\-\.\*\/\\#\<\>\(\)\;\,\'\"\!\?]+$/.test(line)) continue;
+        if (!/[\u0600-\u06FF]/.test(line)) continue;
+
+        const vMatch = line.match(/^(\d+|[١٢٣٤٥٦٧٨٩٠]+)[\s\-\.\)]|^\((\d+|[١٢٣٤٥٦٧٨٩٠]+)\)/);
+        if (vMatch) {
+          const vNum = vMatch[1] || vMatch[2];
+          if (seenVersesInBlock.has(vNum) && seenVersesInBlock.size >= 2) {
+            break; // Stop at first repetition of verse numbers!
+          }
+          seenVersesInBlock.add(vNum);
+          hasNumberedVerses = true;
+        }
+
+        if (line.includes('القرار') || line.includes('قرار') || line.startsWith('(ق)') || line.startsWith('ق -') || line.startsWith('ق:')) {
+          hasChorus = true;
+        }
+
         cleanLines.push(line);
       }
-    }
 
-    // Deduplicate repeated versions on St-Takla if identical text repeats
-    const halfLen = Math.floor(cleanLines.length / 2);
-    if (halfLen > 3) {
-      const firstHalf = cleanLines.slice(0, halfLen).join('\n');
-      const secondHalf = cleanLines.slice(halfLen).join('\n');
-      if (firstHalf.includes(secondHalf.substring(0, 50)) || secondHalf.includes(firstHalf.substring(0, 50))) {
-        cleanLines.splice(halfLen);
+      if (cleanLines.length >= 3 && cleanLines.length <= 40) {
+        const formatted = cleanLines.join('\n').trim();
+        let score = 0;
+        if (hasNumberedVerses) score += 60;
+        if (hasChorus) score += 40;
+
+        const avgLen = formatted.length / cleanLines.length;
+        if (avgLen >= 25 && avgLen <= 90) score += 50;
+        else if (avgLen >= 15) score += 25;
+        else score -= 30; // penalize broken single-word lines
+
+        candidates.push({
+          text: formatted,
+          linesCount: cleanLines.length,
+          avgLen,
+          score
+        });
       }
     }
 
-    // Format lyrics nicely
-    let formattedLyrics = cleanLines.join('\n').trim();
+    candidates.sort((a, b) => b.score - a.score);
+
+    let formattedLyrics = candidates.length > 0 ? candidates[0].text : '';
+
+    if (!formattedLyrics) {
+      // Fallback
+      const lines = text.replace(/===SPLIT===/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0 && /[\u0600-\u06FF]/.test(l) && !l.includes('St-Takla') && !l.includes('بحث'));
+      formattedLyrics = lines.slice(0, 30).join('\n').trim();
+    }
 
     // Clean any leading/trailing symbol artifacts
     formattedLyrics = formattedLyrics
@@ -289,12 +311,12 @@ const searchRealHymns = async (query) => {
   for (const item of hymnsIndex) {
     let score = 0;
     if (item.cleanTitle === cleanQ) score += 100;
-    else if (item.cleanTitle.startsWith(cleanQ)) score += 50;
-    else if (item.cleanTitle.includes(cleanQ)) score += 30;
+    else if (item.cleanTitle.startsWith(cleanQ)) score += 60;
+    else if (item.cleanTitle.includes(cleanQ)) score += 40;
     else {
       const matchedWords = words.filter(w => item.cleanTitle.includes(w));
-      if (matchedWords.length === words.length) score += 20;
-      else if (matchedWords.length > 0) score += matchedWords.length * 5;
+      if (matchedWords.length === words.length) score += 30;
+      else if (matchedWords.length > 0) score += matchedWords.length * 10;
     }
 
     if (score > 0) {
