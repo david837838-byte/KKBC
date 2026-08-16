@@ -34,11 +34,11 @@ const AnalyticsTracker = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // 1. Record general page view
+    // 1. Record general page view with path
     fetch('/api/analytics/record', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'page' })
+      body: JSON.stringify({ type: 'page', path: location.pathname })
     }).catch(err => console.error('Error logging visit:', err));
 
     // 2. Record livestream view if viewing /live
@@ -46,7 +46,7 @@ const AnalyticsTracker = () => {
       fetch('/api/analytics/record', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'live' })
+        body: JSON.stringify({ type: 'live', path: '/live' })
       }).catch(err => console.error('Error logging live visit:', err));
     }
   }, [location.pathname]);

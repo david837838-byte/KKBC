@@ -4022,10 +4022,11 @@ const UsersTab = ({ token }) => {
 };
 
 // Analytics & Statistics Dashboard Tab
+// Analytics & Statistics Dashboard Tab with Advanced Geo Analytics
 const AnalyticsTab = ({ token }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { language, translateText } = useLanguage();
+  const { language } = useLanguage();
   const isAr = language === 'ar';
 
   useEffect(() => {
@@ -4050,8 +4051,19 @@ const AnalyticsTab = ({ token }) => {
     'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول'
   ];
 
-  const getMonthName = (mNum) => {
-    return arabicMonths[mNum - 1] || mNum;
+  const getMonthName = (mNum) => arabicMonths[mNum - 1] || mNum;
+
+  const formatTimeAgo = (dateStr) => {
+    if (!dateStr) return isAr ? 'الآن' : 'Just now';
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return isAr ? 'منذ لحظات' : 'Just now';
+    if (diffMins < 60) return isAr ? `منذ ${diffMins} دقيقة` : `${diffMins}m ago`;
+    if (diffHours < 24) return isAr ? `منذ ${diffHours} ساعة` : `${diffHours}h ago`;
+    return isAr ? `منذ ${diffDays} يوم` : `${diffDays}d ago`;
   };
 
   if (loading) {
@@ -4066,8 +4078,23 @@ const AnalyticsTab = ({ token }) => {
   const totalLiveViews = stats?.totalLiveViews || 0;
   const liveRate = totalPageViews > 0 ? ((totalLiveViews / totalPageViews) * 100).toFixed(1) : 0;
 
+  // Countries calculation
+  const countriesList = (stats?.countries || []).sort((a, b) => (b.count || 0) - (a.count || 0));
+  const totalCountryVisits = countriesList.reduce((acc, curr) => acc + (curr.count || 0), 0) || totalPageViews || 1;
+
+  // Devices calculation
+  const devices = stats?.devices || { mobile: 0, desktop: 0, tablet: 0 };
+  const totalDevices = (devices.mobile + devices.desktop + devices.tablet) || 1;
+  const mobilePct = Math.round((devices.mobile / totalDevices) * 100);
+  const desktopPct = Math.round((devices.desktop / totalDevices) * 100);
+  const tabletPct = Math.round((devices.tablet / totalDevices) * 100);
+
+  // Pages calculation
+  const pagesList = (stats?.pages || []).sort((a, b) => (b.count || 0) - (a.count || 0));
+  const maxPageViewsCount = Math.max(...pagesList.map(p => p.count || 0), 1);
+
+  // Monthly data
   const monthlyData = {};
-  
   if (stats?.monthlyViews) {
     stats.monthlyViews.forEach(v => {
       const key = `${v.year}-${v.month}`;
@@ -4075,7 +4102,6 @@ const AnalyticsTab = ({ token }) => {
       monthlyData[key].pageViews = v.count || 0;
     });
   }
-
   if (stats?.monthlyLiveViews) {
     stats.monthlyLiveViews.forEach(v => {
       const key = `${v.year}-${v.month}`;
@@ -4083,68 +4109,269 @@ const AnalyticsTab = ({ token }) => {
       monthlyData[key].liveViews = v.count || 0;
     });
   }
-
   const monthlyList = Object.values(monthlyData).sort((a, b) => {
     if (a.year !== b.year) return b.year - a.year;
     return b.month - a.month;
   });
-
-  const maxPageViews = Math.max(...monthlyList.map(m => m.pageViews), 1);
+  const maxMonthlyViews = Math.max(...monthlyList.map(m => m.pageViews), 1);
 
   return (
-    <div className="admin-tab-content">
-      <div className="admin-tab-header">
-        <h2>{isAr ? 'لوحة إحصائيات وتحليلات الزوار' : 'Visitor Analytics & Statistics'}</h2>
-        <p>{isAr ? 'تقارير دورية حول حركة زيارات الموقع، ومعدلات الدخول لمشاهدة البث المباشر.' : 'Periodic reports on site visit traffic and live stream view rates.'}</p>
-      </div>
-
-      <div className="grid-3 dashboard-stats-row">
-        <div className="stat-card glass-card">
-          <div className="stat-card-icon page-icon" style={{ backgroundColor: 'rgba(26, 54, 93, 0.05)', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem' }}>👁️</div>
-          <div className="stat-card-info" style={{ marginRight: '1rem' }}>
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>إجمالي زيارات الموقع</h3>
-            <div className="stat-value" style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--primary-color)' }}>{totalPageViews}</div>
-            <p className="stat-desc" style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>تصفحات الصفحات</p>
-          </div>
-        </div>
-
-        <div className="stat-card glass-card">
-          <div className="stat-card-icon live-icon" style={{ backgroundColor: 'rgba(197, 168, 128, 0.08)', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem' }}>📺</div>
-          <div className="stat-card-info" style={{ marginRight: '1rem' }}>
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>مشاهدات البث المباشر</h3>
-            <div className="stat-value" style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--accent-color)' }}>{totalLiveViews}</div>
-            <p className="stat-desc" style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>الزوار الذين دخلوا البث</p>
-          </div>
-        </div>
-
-        <div className="stat-card glass-card">
-          <div className="stat-card-icon rate-icon" style={{ backgroundColor: 'rgba(76, 175, 80, 0.08)', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem' }}>📈</div>
-          <div className="stat-card-info" style={{ marginRight: '1rem' }}>
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>نسبة المتابعة للبث</h3>
-            <div className="stat-value" style={{ fontSize: '1.75rem', fontWeight: '800', color: '#4caf50' }}>{liveRate}%</div>
-            <p className="stat-desc" style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>معدل اهتمام الجمهور بالبث</p>
+    <div className="admin-tab-content" style={{ animation: 'fadeIn 0.4s ease-in-out' }}>
+      <div className="admin-tab-header" style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontSize: '1.8rem' }}>🌍</span>
+          <div>
+            <h2 style={{ margin: 0 }}>{isAr ? 'لوحة تحليلات وزوار الكنيسة الجغرافية' : 'Church Global Visitor Analytics'}</h2>
+            <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-secondary)' }}>
+              {isAr ? 'رصد مباشر لحركة الزيارات، البلدان والمدن، والأجهزة وأكثر الصفحات متابعة.' : 'Real-time monitoring of traffic, visitor countries, devices, and top pages.'}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="analytics-chart-section glass-card" style={{ marginTop: '2rem', padding: '1.75rem' }}>
-        <h3>المخطط البياني للزيارات الشهرية</h3>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>مقارنة مرئية لحجم التصفح العام شهراً بشهر.</p>
+      {/* 1. Overview Top Stat Cards */}
+      <div className="grid-4 dashboard-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+        <div className="stat-card glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', borderTop: '3px solid var(--primary-color)' }}>
+          <div style={{ backgroundColor: 'rgba(26, 54, 93, 0.08)', borderRadius: '12px', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>👁️</div>
+          <div>
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.2rem 0' }}>{isAr ? 'إجمالي الزيارات' : 'Total Visits'}</h3>
+            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--primary-color)' }}>{totalPageViews}</div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-light)', margin: 0 }}>{isAr ? 'تصفحات الموقع' : 'Page Views'}</p>
+          </div>
+        </div>
+
+        <div className="stat-card glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', borderTop: '3px solid #3b82f6' }}>
+          <div style={{ backgroundColor: 'rgba(59, 130, 246, 0.08)', borderRadius: '12px', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>🌍</div>
+          <div>
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.2rem 0' }}>{isAr ? 'الدول المتفاعلة' : 'Active Countries'}</h3>
+            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#2563eb' }}>{countriesList.length}</div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-light)', margin: 0 }}>{isAr ? 'حول العالم' : 'Worldwide'}</p>
+          </div>
+        </div>
+
+        <div className="stat-card glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', borderTop: '3px solid var(--accent-color)' }}>
+          <div style={{ backgroundColor: 'rgba(197, 168, 128, 0.1)', borderRadius: '12px', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>📺</div>
+          <div>
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.2rem 0' }}>{isAr ? 'مشاهدات البث' : 'Live Views'}</h3>
+            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--accent-color)' }}>{totalLiveViews}</div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-light)', margin: 0 }}>{isAr ? 'متابعي البث' : 'Live Stream'}</p>
+          </div>
+        </div>
+
+        <div className="stat-card glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', borderTop: '3px solid #10b981' }}>
+          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)', borderRadius: '12px', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>📱</div>
+          <div>
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.2rem 0' }}>{isAr ? 'تصفح الهواتف' : 'Mobile Users'}</h3>
+            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#10b981' }}>{mobilePct}%</div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-light)', margin: 0 }}>{isAr ? 'من الهواتف الذكية' : 'Smartphones'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Middle Section: Countries Geo Breakdown & Devices */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem', marginTop: '1.75rem' }}>
+        
+        {/* Country Breakdown Card */}
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '0.75rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🌍</span>
+              <span>{isAr ? 'توزيع الزوار حسب البلدان' : 'Visitor Distribution by Country'}</span>
+            </h3>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
+              {countriesList.length} {isAr ? 'دولة' : 'Countries'}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', maxHeight: '380px', overflowY: 'auto', paddingRight: '4px' }}>
+            {countriesList.map((country, idx) => {
+              const pct = Math.round(((country.count || 0) / totalCountryVisits) * 100);
+              return (
+                <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.92rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <span style={{ fontSize: '1.4rem' }}>{country.flag}</span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{country.name}</strong>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: '700', color: 'var(--primary-color)' }}>{country.count}</span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', backgroundColor: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{pct}%</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${pct}%`,
+                      height: '100%',
+                      backgroundColor: idx === 0 ? 'var(--primary-color)' : idx === 1 ? 'var(--accent-color)' : '#3b82f6',
+                      borderRadius: '4px',
+                      transition: 'width 0.8s ease'
+                    }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Devices & Browsers Card */}
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span>📱</span>
+                <span>{isAr ? 'منصات وأجهزة التصفح' : 'Devices & Browsers'}</span>
+              </h3>
+            </div>
+
+            {/* Device breakdown bars */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.3rem' }}>
+                  <span>📱 {isAr ? 'الهواتف الذكية (Mobile)' : 'Smartphones'}</span>
+                  <strong>{devices.mobile} ({mobilePct}%)</strong>
+                </div>
+                <div style={{ height: '8px', backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${mobilePct}%`, height: '100%', backgroundColor: '#10b981', borderRadius: '4px' }} />
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.3rem' }}>
+                  <span>💻 {isAr ? 'أجهزة الكمبيوتر (Desktop)' : 'Desktop / PC'}</span>
+                  <strong>{devices.desktop} ({desktopPct}%)</strong>
+                </div>
+                <div style={{ height: '8px', backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${desktopPct}%`, height: '100%', backgroundColor: '#3b82f6', borderRadius: '4px' }} />
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.3rem' }}>
+                  <span>📟 {isAr ? 'الأجهزة اللوحية (Tablet)' : 'Tablets / iPads'}</span>
+                  <strong>{devices.tablet} ({tabletPct}%)</strong>
+                </div>
+                <div style={{ height: '8px', backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${tabletPct}%`, height: '100%', backgroundColor: '#f59e0b', borderRadius: '4px' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Browser tags */}
+            <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '1rem' }}>
+              <h4 style={{ fontSize: '0.9rem', margin: '0 0 0.75rem 0', color: 'var(--text-secondary)' }}>
+                🌐 {isAr ? 'المتصفحات الأكثر استخداماً' : 'Popular Browsers'}
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.82rem', background: 'rgba(59,130,246,0.1)', color: '#2563eb', fontWeight: '700' }}>
+                  Chrome: {stats?.browsers?.chrome || 0}
+                </span>
+                <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.82rem', background: 'rgba(16,185,129,0.1)', color: '#059669', fontWeight: '700' }}>
+                  Safari: {stats?.browsers?.safari || 0}
+                </span>
+                <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.82rem', background: 'rgba(245,158,11,0.1)', color: '#d97706', fontWeight: '700' }}>
+                  Edge: {stats?.browsers?.edge || 0}
+                </span>
+                <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.82rem', background: 'rgba(239,68,68,0.1)', color: '#dc2626', fontWeight: '700' }}>
+                  Firefox: {stats?.browsers?.firefox || 0}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Top Visited Pages & Live Real-time Activity Stream */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem', marginTop: '1.75rem' }}>
+        
+        {/* Top Visited Pages */}
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '0.75rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>📑</span>
+              <span>{isAr ? 'أكثر أقسام وصفحات الموقع زيارة' : 'Top Visited Church Sections'}</span>
+            </h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            {pagesList.slice(0, 7).map((pg, idx) => {
+              const pct = Math.round(((pg.count || 0) / maxPageViewsCount) * 100);
+              return (
+                <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
+                    <span style={{ fontWeight: '700' }}>{idx + 1}. {pg.name}</span>
+                    <span style={{ color: 'var(--primary-color)', fontWeight: '800' }}>{pg.count} {isAr ? 'زيارة' : 'views'}</span>
+                  </div>
+                  <div style={{ height: '6px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', backgroundColor: 'var(--accent-color)', borderRadius: '3px' }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Live Real-time Activity Stream */}
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '0.75rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>⚡</span>
+              <span>{isAr ? 'سجل الحركة والزيارات الحية' : 'Live Real-time Activity Log'}</span>
+            </h3>
+            <span style={{ fontSize: '0.75rem', backgroundColor: '#22c55e', color: '#ffffff', padding: '2px 8px', borderRadius: '50px', fontWeight: '700' }}>
+              ● {isAr ? 'مباشر' : 'Live'}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
+            {(stats?.recentVisits || []).slice(0, 10).map((v, idx) => (
+              <div key={idx} style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.6rem 0.8rem',
+                backgroundColor: 'rgba(0,0,0,0.02)',
+                borderRadius: '8px',
+                border: '1px solid rgba(0,0,0,0.04)',
+                fontSize: '0.85rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <span style={{ fontSize: '1.2rem' }}>{v.flag || '🌐'}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <strong style={{ fontSize: '0.86rem' }}>{v.country} {v.city && v.city !== 'دولي' ? `(${v.city})` : ''}</strong>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{v.pageName || v.page} • {v.device} ({v.browser})</span>
+                  </div>
+                </div>
+                <span style={{ fontSize: '0.74rem', color: 'var(--text-light)', fontWeight: '600' }}>
+                  {formatTimeAgo(v.timestamp)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* 4. Monthly Chart Section */}
+      <div className="analytics-chart-section glass-card" style={{ marginTop: '1.75rem', padding: '1.5rem' }}>
+        <h3 style={{ margin: '0 0 0.5rem 0' }}>{isAr ? 'المخطط البياني للزيارات الشهرية' : 'Monthly Visits Chart'}</h3>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+          {isAr ? 'مقارنة مرئية لحجم التصفح العام شهراً بشهر.' : 'Visual monthly traffic comparison.'}
+        </p>
         
         {monthlyList.length === 0 ? (
-          <p className="no-data">لا توجد بيانات كافية لعرض المخطط بعد.</p>
+          <p className="no-data">{isAr ? 'لا توجد بيانات كافية لعرض المخطط بعد.' : 'No data recorded yet.'}</p>
         ) : (
-          <div className="bar-chart-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="bar-chart-container" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {monthlyList.map((item, idx) => {
-              const percentage = ((item.pageViews / maxPageViews) * 100).toFixed(0);
+              const percentage = ((item.pageViews / maxMonthlyViews) * 100).toFixed(0);
               return (
-                <div key={idx} className="bar-chart-row" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                  <div className="bar-label" style={{ width: '130px', fontWeight: '700', fontSize: '0.95rem' }}>
+                <div key={idx} className="bar-chart-row" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                  <div className="bar-label" style={{ width: '130px', fontWeight: '700', fontSize: '0.92rem' }}>
                     {getMonthName(item.month)} {item.year}
                   </div>
-                  <div className="bar-track" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.05)', height: '24px', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div className="bar-track" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.05)', height: '22px', borderRadius: '4px', overflow: 'hidden' }}>
                     <div className="bar-fill" style={{ width: `${percentage}%`, backgroundColor: 'var(--accent-color)', height: '100%', transition: 'width 0.8s ease', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 8px', boxSizing: 'border-box' }}>
-                      {item.pageViews > 0 && <span style={{ color: 'var(--primary-dark)', fontSize: '0.8rem', fontWeight: 'bold' }}>{item.pageViews}</span>}
+                      {item.pageViews > 0 && <span style={{ color: 'var(--primary-dark)', fontSize: '0.78rem', fontWeight: 'bold' }}>{item.pageViews}</span>}
                     </div>
                   </div>
                 </div>
@@ -4154,9 +4381,10 @@ const AnalyticsTab = ({ token }) => {
         )}
       </div>
 
-      <div className="analytics-table-section glass-card" style={{ marginTop: '2rem', padding: '1.75rem' }}>
-        <h3>{isAr ? 'جدول البيانات التفصيلي' : 'Detailed Data Table'}</h3>
-        <div className="table-container" style={{ marginTop: '1rem' }}>
+      {/* 5. Detailed Monthly Data Table */}
+      <div className="analytics-table-section glass-card" style={{ marginTop: '1.75rem', padding: '1.5rem' }}>
+        <h3 style={{ margin: '0 0 1rem 0' }}>{isAr ? 'جدول البيانات التفصيلي' : 'Detailed Data Table'}</h3>
+        <div className="table-container">
           <table className="custom-table">
             <thead>
               <tr>
