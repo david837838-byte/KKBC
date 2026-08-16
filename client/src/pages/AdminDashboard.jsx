@@ -4115,6 +4115,19 @@ const AnalyticsTab = ({ token }) => {
   });
   const maxMonthlyViews = Math.max(...monthlyList.map(m => m.pageViews), 1);
 
+  const countryFlagMap = {
+    LB: '🇱🇧', US: '🇺🇸', CA: '🇨🇦', SE: '🇸🇪', AU: '🇦🇺', FR: '🇫🇷', DE: '🇩🇪',
+    EG: '🇪🇬', SY: '🇸🇾', JO: '🇯🇴', AE: '🇦🇪', SA: '🇸🇦', BR: '🇧🇷', GB: '🇬🇧',
+    IQ: '🇮🇶', KW: '🇰🇼', QA: '🇶🇦', IT: '🇮🇹', ES: '🇪🇸', CH: '🇨🇭'
+  };
+
+  const getCountryFlag = (code, fallbackFlag) => {
+    if (fallbackFlag && fallbackFlag.length <= 4 && !/^[a-zA-Z]+$/.test(fallbackFlag) && fallbackFlag !== '🌐') {
+      return fallbackFlag;
+    }
+    return countryFlagMap[code?.toUpperCase()] || '🌐';
+  };
+
   return (
     <div className="admin-tab-content" style={{ animation: 'fadeIn 0.4s ease-in-out' }}>
       <div className="admin-tab-header" style={{ marginBottom: '1.5rem' }}>
@@ -4130,7 +4143,7 @@ const AnalyticsTab = ({ token }) => {
       </div>
 
       {/* 1. Overview Top Stat Cards */}
-      <div className="grid-4 dashboard-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+      <div className="dashboard-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
         <div className="stat-card glass-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', borderTop: '3px solid var(--primary-color)' }}>
           <div style={{ backgroundColor: 'rgba(26, 54, 93, 0.08)', borderRadius: '12px', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>👁️</div>
           <div>
@@ -4186,11 +4199,12 @@ const AnalyticsTab = ({ token }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', maxHeight: '380px', overflowY: 'auto', paddingRight: '4px' }}>
             {countriesList.map((country, idx) => {
               const pct = Math.round(((country.count || 0) / totalCountryVisits) * 100);
+              const flag = getCountryFlag(country.code, country.flag);
               return (
                 <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.92rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                      <span style={{ fontSize: '1.4rem' }}>{country.flag}</span>
+                      <span style={{ fontSize: '1.4rem' }}>{flag}</span>
                       <strong style={{ color: 'var(--text-primary)' }}>{country.name}</strong>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -4335,7 +4349,7 @@ const AnalyticsTab = ({ token }) => {
                 fontSize: '0.85rem'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <span style={{ fontSize: '1.2rem' }}>{v.flag || '🌐'}</span>
+                  <span style={{ fontSize: '1.2rem' }}>{getCountryFlag(v.countryCode, v.flag)}</span>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <strong style={{ fontSize: '0.86rem' }}>{v.country} {v.city && v.city !== 'دولي' ? `(${v.city})` : ''}</strong>
                     <span style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{v.pageName || v.page} • {v.device} ({v.browser})</span>
