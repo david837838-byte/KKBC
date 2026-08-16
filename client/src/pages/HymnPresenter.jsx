@@ -43,8 +43,63 @@ const HymnPresenter = () => {
       fontFamily: 'system-ui, -apple-system, sans-serif',
       boxSizing: 'border-box',
       textAlign: 'center',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      position: 'relative'
     }}>
+      {/* Top Corner Church Brand Logo */}
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        right: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        background: 'rgba(15, 23, 42, 0.75)',
+        backdropFilter: 'blur(12px)',
+        padding: '6px 16px 6px 8px',
+        borderRadius: '50px',
+        border: '1px solid rgba(197, 168, 128, 0.4)',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
+        zIndex: 1000,
+        direction: 'rtl',
+        pointerEvents: 'none',
+        userSelect: 'none',
+        animation: 'fadeIn 0.8s ease-in-out'
+      }}>
+        <img 
+          src="/logo.png" 
+          alt="كنيسة خربة قنافار الإنجيلية" 
+          style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '50%',
+            objectFit: 'contain',
+            border: '2px solid var(--accent-color, #c5a880)',
+            background: '#ffffff',
+            padding: '2px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}
+          onError={(e) => { e.target.src = '/church_logo.png'; }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right', lineHeight: '1.25' }}>
+          <span style={{ 
+            fontSize: '0.98rem', 
+            fontWeight: '800', 
+            color: '#f8fafc',
+            letterSpacing: '0.2px'
+          }}>
+            الكنيسة المعمدانية الإنجيلية
+          </span>
+          <span style={{ 
+            fontSize: '0.8rem', 
+            fontWeight: '600', 
+            color: 'var(--accent-color, #c5a880)' 
+          }}>
+            خربة قنافار — البقاع الغربي
+          </span>
+        </div>
+      </div>
+
       {activeHymn ? (
         <div style={{
           width: '100%',
