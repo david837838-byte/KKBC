@@ -289,6 +289,11 @@ const fetchLyricsViaAI = async (query) => {
   return null;
 };
 
+const { searchRealHymns, initHymnsIndex } = require('../services/hymnWebScraper');
+
+// Initialize real hymn index in background on startup
+initHymnsIndex().catch(err => console.error('Failed to init hymns index:', err));
+
 // @desc    Search external hymns & lyrics
 // @route   GET /api/external-lyrics/search
 // @access  Public
@@ -303,7 +308,7 @@ exports.searchExternalLyrics = async (req, res) => {
     const results = [];
     const addedTitles = new Set();
 
-    // 1. Search local curated library
+    // 1. Search local curated library (instant)
     const matchedLocal = commonHymnsLibrary.filter(h => {
       const titleLower = h.title.toLowerCase();
       const lyricsLower = h.lyrics.toLowerCase();
@@ -315,12 +320,27 @@ exports.searchExternalLyrics = async (req, res) => {
       addedTitles.add(h.title);
     });
 
-    // 2. Query Gemini AI for exact live search
-    const aiResult = await fetchLyricsViaAI(q);
-    if (aiResult) {
-      // If AI returned a hymn not already in curated results, add it to top
-      if (!addedTitles.has(aiResult.title)) {
-        results.unshift({
+    // 2. Search Real Christian Archives Web Scraper (9,600+ Authentic Hymns)
+    try {
+      const realHymns = await searchRealHymns(q);
+      for (const rh of realHymns) {
+        if (!addedTitles.has(rh.title)) {
+          results.push({
+            id: `real_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+            ...rh
+          });
+          addedTitles.add(rh.title);
+        }
+      }
+    } catch (scrapeErr) {
+      console.error('Error in real hymn search:', scrapeErr.message);
+    }
+
+    // 3. Optional fallback to AI if still empty
+    if (results.length === 0) {
+      const aiResult = await fetchLyricsViaAI(q);
+      if (aiResult && !addedTitles.has(aiResult.title)) {
+        results.push({
           id: `ai_${Date.now()}`,
           ...aiResult
         });
