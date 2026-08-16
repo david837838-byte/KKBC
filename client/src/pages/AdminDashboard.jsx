@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { 
   Radio, Calendar, BookOpen, Music, Image, HeartHandshake, Settings, Users, 
@@ -2067,8 +2068,7 @@ const HymnsTab = ({ token }) => {
         </>
       )}
 
-      {/* Bulk Import Modal */}
-      {showBulkModal && (
+      {showBulkModal && createPortal(
         <div 
           className="modal-overlay" 
           onClick={(e) => { if (e.target === e.currentTarget) setShowBulkModal(false); }}
@@ -2105,7 +2105,6 @@ const HymnsTab = ({ token }) => {
               <button className="btn btn-outline" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setShowBulkModal(false)}>✕</button>
             </div>
 
-            {/* Mode Switching Tabs */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
               <button
                 type="button"
@@ -2121,87 +2120,98 @@ const HymnsTab = ({ token }) => {
                 onClick={() => setImportMode('text')}
                 style={{ flex: 1, fontSize: '0.9rem', padding: '0.5rem', fontWeight: 'bold' }}
               >
-                📝 {isAr ? 'ملف نصي / PDF رقمي' : 'Digital Text / PDF'}
+                📝 {isAr ? 'ترانيم نصية مكتوبة (ملف TXT / لصق مباشر)' : 'Text Hymns (TXT / Raw Text)'}
               </button>
             </div>
 
-            {bulkSuccessMsg && <div className="alert alert-success" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '8px' }}>{bulkSuccessMsg}</div>}
-            {bulkErrorMsg && <div className="alert alert-danger" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '8px' }}>{bulkErrorMsg}</div>}
+            {bulkSuccessMsg && (
+              <div style={{ padding: '0.75rem', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                {bulkSuccessMsg}
+              </div>
+            )}
+            {bulkErrorMsg && (
+              <div style={{ padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                {bulkErrorMsg}
+              </div>
+            )}
 
-            {/* TAB 1: Scanned Hymns (Images + Index Titles) */}
             {importMode === 'scanned' && (
-              <form onSubmit={handleImportScannedHymns} style={{ marginBottom: '1rem' }}>
+              <div>
+                <div style={{ backgroundColor: 'rgba(139, 92, 246, 0.08)', border: '1px solid rgba(139, 92, 246, 0.2)', padding: '1rem', borderRadius: '10px', marginBottom: '1.25rem', fontSize: '0.88rem' }}>
+                  <p style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold', color: '#8b5cf6' }}>
+                    💡 {isAr ? 'طريقة الاستيراد المصور الذكي:' : 'How Smart Image Import works:'}
+                  </p>
+                  <ul style={{ margin: 0, paddingRight: '1.2rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                    <li>{isAr ? '1. ارفع ملف كتاب الترانيم المصور (ملف PDF واحد أو صور الصفحات JPG/PNG).' : '1. Upload scanned PDF book or images.'}</li>
+                    <li>{isAr ? '2. الصق فهرس الترانيم في المربع أدناه (كل سطر: رقم الصفحة ثم اسم الترنيمة أو العكس).' : '2. Paste table of contents below.'}</li>
+                    <li>{isAr ? '3. سيقوم النظام تلقائياً بربط كل ترنيمة بصفحتها المصورة بدقة تامة وبنقرة زر واحدة!' : '3. Automatically maps each hymn to its page!'}</li>
+                  </ul>
+                </div>
+
                 <div style={{ marginBottom: '1.25rem' }}>
-                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.35rem' }}>
-                    {isAr ? '1. اختر ملف PDF المصور أو صور صفحات الترانيم (حتى 600 صورة):' : '1. Upload Scanned PDF or Hymn Page Images:'}
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    {isAr ? '1. اختر ملف كتاب الترانيم (PDF أو صور الصفحات):' : '1. Choose Hymnal File (PDF or Images):'}
                   </label>
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
                     multiple
-                    accept="image/*,.pdf"
                     onChange={(e) => setScannedImages(Array.from(e.target.files))}
                     className="form-control"
-                    style={{ padding: '0.6rem' }}
+                    style={{ padding: '0.5rem' }}
                   />
                   {scannedImages.length > 0 && (
-                    <div style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold', marginTop: '0.25rem' }}>
-                      ✓ {isAr ? `تم اختيار ${scannedImages.length} صورة/صفحة` : `Selected ${scannedImages.length} images`}
-                    </div>
+                    <p style={{ fontSize: '0.85rem', color: '#8b5cf6', marginTop: '0.35rem', fontWeight: 'bold' }}>
+                      {isAr ? `تم اختيار: ${scannedImages.length} ملف جاهز للرفع` : `Selected: ${scannedImages.length} files`}
+                    </p>
                   )}
                 </div>
 
                 <div style={{ marginBottom: '1.25rem' }}>
-                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.35rem' }}>
-                    {isAr ? '2. الصق فهرس الترانيم الـ 500 (اسم كل ترنيمة في سطر):' : '2. Paste Table of Contents Index (One title per line):'}
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    {isAr ? '2. الصق نص فهرس الترانيم هنا:' : '2. Paste Table of Contents Index here:'}
                   </label>
                   <textarea
                     rows={6}
                     value={scannedIndexText}
                     onChange={(e) => setScannedIndexText(e.target.value)}
-                    placeholder={isAr ? "مثال:\n1. يسوع أنت كل حبي\n2. ما أحلى السجود أمامك\n3. عظيمة هي أعمالك\n...\n500. ترنيمة النصرة" : "Example:\n1. Title of Hymn 1\n2. Title of Hymn 2\n..."}
+                    placeholder={isAr ? "مثال:\n1 ترنيمة هللي نفسي\n2 يا سيدي الحبيب\n3 في وقت ضعفي\n...\n400 ترنيمة الختام" : "Example:\n1 Hymn Title\n2 Another Title..."}
                     className="form-control"
                     style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.9rem', padding: '0.75rem' }}
                   />
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                    💡 {isAr ? 'سيقوم النظام فورياً بربط الصفحة رقم 1 بالعنوان رقم 1 في الفهرس تلقائياً!' : 'System will automatically match Page #1 with Title #1 from index!'}
-                  </div>
                 </div>
 
-                <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input 
-                    type="checkbox" 
-                    id="overwriteScanned"
-                    checked={overwriteExisting} 
-                    onChange={(e) => setOverwriteExisting(e.target.checked)} 
-                  />
-                  <label htmlFor="overwriteScanned" style={{ color: 'var(--error-color)', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    {isAr ? 'مسح الترانيم القديمة قبل استيراد الكتيب الجديد (Overwrite)' : 'Overwrite existing hymns'}
-                  </label>
-                </div>
-
-                {scannedImages.length === 1 && scannedImages[0].type === 'application/pdf' && (
-                  <div style={{ marginBottom: '1.25rem', backgroundColor: 'rgba(139, 92, 246, 0.1)', padding: '1rem', borderRadius: '8px' }}>
-                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: '#8b5cf6' }}>
-                      {isAr ? '3. الترنيمة رقم 1 تبدأ في أي صفحة من الـ PDF؟' : '3. First hymn starts on which PDF page?'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: '200px' }}>
+                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.35rem', fontSize: '0.85rem' }}>
+                      {isAr ? 'إزاحة الصفحات (Page Offset):' : 'Page Offset:'}
                     </label>
-                    <input 
-                      type="number" 
-                      min="1"
-                      className="form-control"
+                    <input
+                      type="number"
                       value={pdfPageOffset}
-                      onChange={(e) => setPdfPageOffset(parseInt(e.target.value) || 1)}
-                      style={{ width: '100px' }}
+                      onChange={(e) => setPdfPageOffset(parseInt(e.target.value) || 0)}
+                      className="form-control"
+                      style={{ padding: '0.4rem 0.6rem' }}
                     />
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
-                      {isAr ? 'إذا كانت الترنيمة رقم 1 تبدأ في الصفحة 5 من الـ PDF (بعد الفهرس أو الغلاف)، اكتب 5 هنا لكي تتطابق الصفحات.' : 'If hymn 1 starts on page 5, enter 5 to offset correctly.'}
-                    </div>
                   </div>
-                )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.2rem' }}>
+                    <input
+                      type="checkbox"
+                      id="overwriteScanned"
+                      checked={overwriteExisting}
+                      onChange={(e) => setOverwriteExisting(e.target.checked)}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="overwriteScanned" style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', color: overwriteExisting ? '#ef4444' : 'inherit' }}>
+                      {isAr ? '⚠️ استبدال ومسح الترانيم الحالية قبل الاستيراد' : '⚠️ Overwrite existing hymns'}
+                    </label>
+                  </div>
+                </div>
 
                 {uploadProgress > 0 && uploadProgress < 100 && (
                   <div style={{ marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontWeight: 'bold' }}>
-                      <span>{isAr ? 'جاري التحميل... ⏳' : 'Uploading... ⏳'}</span>
+                      <span>{isAr ? 'جاري رفع الملفات ومعالجتها... ⏳' : 'Uploading & Processing... ⏳'}</span>
                       <span>{uploadProgress}%</span>
                     </div>
                     <div style={{ width: '100%', backgroundColor: 'var(--border-color)', borderRadius: '6px', height: '10px', overflow: 'hidden' }}>
@@ -2209,35 +2219,36 @@ const HymnsTab = ({ token }) => {
                     </div>
                   </div>
                 )}
-                <button 
-                  type="submit" 
-                  disabled={isImporting} 
-                  className="btn btn-primary" 
+
+                <button
+                  type="button"
+                  onClick={handleImportScannedHymns}
+                  disabled={isImporting || scannedImages.length === 0}
+                  className="btn btn-primary"
                   style={{ width: '100%', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', padding: '0.75rem', fontSize: '1rem', fontWeight: 'bold' }}
                 >
                   {isImporting 
-                    ? (isAr ? 'جاري رفع وربط الـ 500 ترنيمة مصورة... ⏳' : 'Uploading and matching scanned hymns... ⏳') 
-                    : (isAr ? '🚀 ربط واستيراد كتاب الترانيم المصور بالكامل' : '🚀 Import All Scanned Hymns & Match Index')}
+                    ? (isAr ? 'جاري استيراد وربط كتاب الترانيم المصور... ⏳' : 'Importing & Linking Hymnal... ⏳') 
+                    : (isAr ? '🚀 بدء ربط واستيراد كتاب الترانيم المصور فوراً' : '🚀 Start Linking & Importing Hymnal')}
                 </button>
-              </form>
+              </div>
             )}
 
-            {/* TAB 2: Digital PDF / Text Input Form */}
             {importMode === 'text' && (
-              <form onSubmit={handleParseFile} style={{ marginBottom: '1.5rem' }}>
+              <div>
                 <div style={{ marginBottom: '1.25rem' }}>
                   <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    {isAr ? '1. اختر ملف PDF رقمي أو TXT:' : '1. Upload Digital PDF or TXT file:'}
+                    {isAr ? '1. اختر ملف نصي (PDF أو TXT):' : '1. Choose Text File (PDF or TXT):'}
                   </label>
-                  <input 
-                    type="file" 
-                    accept=".pdf,.txt,.json,.csv"
+                  <input
+                    type="file"
+                    accept=".pdf,.txt"
                     onChange={(e) => {
-                      setBulkFile(e.target.files[0] || null);
+                      setBulkFile(e.target.files[0]);
                       setBulkRawText('');
                     }}
                     className="form-control"
-                    style={{ padding: '0.6rem' }}
+                    style={{ padding: '0.5rem' }}
                   />
                 </div>
 
@@ -2274,7 +2285,8 @@ const HymnsTab = ({ token }) => {
                   </div>
                 )}
                 <button 
-                  type="submit" 
+                  type="button" 
+                  onClick={handleParseFile}
                   disabled={isParsing} 
                   className="btn btn-primary" 
                   style={{ width: '100%', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', padding: '0.75rem', fontSize: '1rem', fontWeight: 'bold' }}
@@ -2283,56 +2295,31 @@ const HymnsTab = ({ token }) => {
                     ? (isAr ? 'جاري قراءة واستخراج الترانيم من الملف... ⏳' : 'Parsing file... ⏳') 
                     : (isAr ? '🔍 استخراج وفحص الترانيم من الملف' : '🔍 Parse Hymns from File')}
                 </button>
-              </form>
+              </div>
             )}
 
-            {/* Step 2: Parsed Hymns Preview */}
             {parsedHymns.length > 0 && (
-              <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <h4 style={{ margin: 0, color: '#10b981', fontWeight: 'bold' }}>
-                    {isAr ? `🎉 تم اكتشاف واستخراج ${parsedHymns.length} ترنيمة بنجاح!` : `🎉 Parsed ${parsedHymns.length} hymns!`}
-                  </h4>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={overwriteExisting} 
-                      onChange={(e) => setOverwriteExisting(e.target.checked)} 
-                    />
-                    <span style={{ color: 'var(--error-color)', fontWeight: 'bold' }}>
-                      {isAr ? 'مسح الترانيم القديمة قبل الحفظ (Overwrite)' : 'Overwrite existing hymns'}
-                    </span>
-                  </label>
-                </div>
-
-                <div style={{ maxHeight: '240px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.5rem', marginBottom: '1.25rem', backgroundColor: 'rgba(0,0,0,0.02)' }}>
-                  <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                        <th style={{ padding: '6px', textAlign: 'right' }}>#</th>
-                        <th style={{ padding: '6px', textAlign: 'right' }}>{isAr ? 'اسم الترنيمة' : 'Title'}</th>
-                        <th style={{ padding: '6px', textAlign: 'right' }}>{isAr ? 'معاينة الكلمات' : 'Lyrics Preview'}</th>
-                      </tr>
-                    </thead>
+              <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '1.25rem', marginTop: '1.25rem' }}>
+                <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--accent-color)' }}>
+                  {isAr ? `معاينة الترانيم المستخرجة (${parsedHymns.length} ترنيمة):` : `Parsed Hymns Preview (${parsedHymns.length} hymns):`}
+                </h4>
+                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.5rem', marginBottom: '1rem', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                  <table style={{ width: '100%', fontSize: '0.85rem' }}>
                     <tbody>
-                      {parsedHymns.slice(0, 50).map((h, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                          <td style={{ padding: '6px', fontWeight: 'bold' }}>{idx + 1}</td>
+                      {parsedHymns.slice(0, 50).map((h, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '6px', fontWeight: 'bold', width: '30px' }}>{i + 1}</td>
                           <td style={{ padding: '6px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{h.title}</td>
                           <td style={{ padding: '6px', color: 'var(--text-secondary)' }}>{h.lyrics ? h.lyrics.substring(0, 60) + '...' : 'بدون كلمات'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {parsedHymns.length > 50 && (
-                    <div style={{ textAlign: 'center', padding: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                      {isAr ? `... و ${parsedHymns.length - 50} ترنيمة أخرى جاهزة للحفظ` : `... and ${parsedHymns.length - 50} more hymns ready`}
-                    </div>
-                  )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <button
+                    type="button"
                     onClick={handleConfirmBulkImport}
                     disabled={isImporting}
                     className="btn btn-primary"
@@ -2343,6 +2330,7 @@ const HymnsTab = ({ token }) => {
                       : (isAr ? `🚀 حفظ واستيراد الـ ${parsedHymns.length} ترنيمة إلى الموقع` : `🚀 Save all ${parsedHymns.length} hymns to database`)}
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       setParsedHymns([]);
                       setBulkFile(null);
@@ -2356,11 +2344,11 @@ const HymnsTab = ({ token }) => {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* External Hymns Search & Direct Projector Modal */}
-      {showExternalModal && (
+      {showExternalModal && createPortal(
         <div 
           onClick={(e) => { if (e.target === e.currentTarget) setShowExternalModal(false); }}
           style={{
@@ -2392,49 +2380,71 @@ const HymnsTab = ({ token }) => {
             flexDirection: 'column',
             gap: '1.25rem'
           }}>
-            {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
               <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', color: 'var(--accent-color)' }}>
                 <Globe size={22} />
                 <span>{isAr ? 'البحث في المكتبة الشاملة وبث مباشر للبروجكتر 📺' : 'External Hymns & Direct Presenter'}</span>
               </h3>
-              <button className="btn btn-outline" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setShowExternalModal(false)}>✕</button>
+              <button type="button" className="btn btn-outline" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setShowExternalModal(false)}>✕</button>
             </div>
 
-            {/* Search Input Form */}
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (!extSearch.trim()) return;
-              setExtLoading(true);
-              fetch(`/api/external-lyrics/search?q=${encodeURIComponent(extSearch.trim())}`)
-                .then(res => res.json())
-                .then(data => {
-                  setExtLoading(false);
-                  if (data.success && data.data) {
-                    setExtResults(data.data);
-                    if (data.data.length > 0) setSelectedExtHymn(data.data[0]);
-                  }
-                })
-                .catch(err => {
-                  setExtLoading(false);
-                  setError('حدث خطأ أثناء البحث.');
-                });
-            }} style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input
                 type="text"
                 placeholder={isAr ? "ابحث عن أي ترنيمة عربية بالاسم أو مطلع الكلمات..." : "Search external hymns by title..."}
                 value={extSearch}
                 onChange={(e) => setExtSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!extSearch.trim()) return;
+                    setExtLoading(true);
+                    fetch(`/api/external-lyrics/search?q=${encodeURIComponent(extSearch.trim())}`)
+                      .then(res => res.json())
+                      .then(data => {
+                        setExtLoading(false);
+                        if (data.success && data.data) {
+                          setExtResults(data.data);
+                          if (data.data.length > 0) setSelectedExtHymn(data.data[0]);
+                        }
+                      })
+                      .catch(err => {
+                        setExtLoading(false);
+                        setError('حدث خطأ أثناء البحث.');
+                      });
+                  }
+                }}
                 className="form-control"
                 style={{ flex: 1, padding: '0.65rem 1rem', fontSize: '0.95rem' }}
               />
-              <button type="submit" className="btn btn-primary" disabled={extLoading} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap' }}>
+              <button 
+                type="button" 
+                onClick={() => {
+                  if (!extSearch.trim()) return;
+                  setExtLoading(true);
+                  fetch(`/api/external-lyrics/search?q=${encodeURIComponent(extSearch.trim())}`)
+                    .then(res => res.json())
+                    .then(data => {
+                      setExtLoading(false);
+                      if (data.success && data.data) {
+                        setExtResults(data.data);
+                        if (data.data.length > 0) setSelectedExtHymn(data.data[0]);
+                      }
+                    })
+                    .catch(err => {
+                      setExtLoading(false);
+                      setError('حدث خطأ أثناء البحث.');
+                    });
+                }}
+                className="btn btn-primary" 
+                disabled={extLoading} 
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap' }}
+              >
                 <Sparkles size={16} />
                 <span>{extLoading ? (isAr ? 'جاري البحث...' : 'Searching...') : (isAr ? 'بحث فوري' : 'Search')}</span>
               </button>
-            </form>
+            </div>
 
-            {/* Modal Body: Results list + Preview Column */}
             {extLoading ? (
               <div style={{ padding: '3rem 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
                 <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
@@ -2446,7 +2456,6 @@ const HymnsTab = ({ token }) => {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.25rem', minHeight: '350px' }}>
-                {/* Results Column */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '420px', overflowY: 'auto', paddingRight: '0.25rem' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                     {isAr ? `نتائج البحث (${extResults.length}):` : `Results (${extResults.length}):`}
@@ -2479,7 +2488,6 @@ const HymnsTab = ({ token }) => {
                   })}
                 </div>
 
-                {/* Preview & Action Column */}
                 {selectedExtHymn ? (
                   <div style={{
                     display: 'flex',
@@ -2507,7 +2515,6 @@ const HymnsTab = ({ token }) => {
                       </pre>
                     </div>
 
-                    {/* Action Buttons */}
                     <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
                       <button
                         type="button"
@@ -2566,7 +2573,8 @@ const HymnsTab = ({ token }) => {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
