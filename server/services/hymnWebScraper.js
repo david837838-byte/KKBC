@@ -181,19 +181,25 @@ const fetchLyricsFromPage = async (pageUrl, title) => {
 
       if (!line || line.length === 0) continue;
 
-      // Ignore navigation / footer leftovers
+      // Ignore English text / navigation / footer leftovers
+      if (/[a-zA-Z]{3,}/.test(line) && !line.includes('(') && !line.includes(')')) {
+        continue;
+      }
+
       if (line.includes('St-Takla.org') || 
           line.includes('تاريخ التحديث') || 
           line.includes('جميع الحقوق') || 
           line.includes('إرسل لنا') || 
           line.includes('موقع الأنبا تكلا') || 
-          line.includes('إخفاء/إظهار') || 
-          line.includes('بحث الموقع') || 
-          line.includes('بحث الصور') ||
-          line.includes('بحث في الجاليري') ||
+          line.includes('إخفاء') || 
+          line.includes('إظهار') || 
+          line.includes('بحث ') || 
+          line.startsWith('بحث') ||
           line.includes('نرجو الصلاة') || 
-          line.includes('Toggle navigation') ||
-          line.includes('خدمة الموقع')) {
+          line.includes('خدمة الموقع') ||
+          line.includes('الكتاب المقدس') ||
+          line.includes('الجاليري') ||
+          line.includes('فهرس الترانيم')) {
         continue;
       }
 
@@ -218,17 +224,32 @@ const fetchLyricsFromPage = async (pageUrl, title) => {
         continue;
       }
 
+      // Must have Arabic characters
+      if (!/[\u0600-\u06FF]/.test(line)) {
+        continue;
+      }
+
       // Detect start of lyrics
       if (!started) {
         if (line.match(/^(\d+[\s\-\.]|\(ق\)|\(قرار\)|\(1\)|\(القرار\)|القرار|قرار|1\-)/) || 
             line.includes('القرار') || 
             line.includes('قرار') ||
-            line.length > 15) {
+            line.length > 10) {
           started = true;
           cleanLines.push(line);
         }
       } else {
         cleanLines.push(line);
+      }
+    }
+
+    // Deduplicate repeated versions on St-Takla if identical text repeats
+    const halfLen = Math.floor(cleanLines.length / 2);
+    if (halfLen > 3) {
+      const firstHalf = cleanLines.slice(0, halfLen).join('\n');
+      const secondHalf = cleanLines.slice(halfLen).join('\n');
+      if (firstHalf.includes(secondHalf.substring(0, 50)) || secondHalf.includes(firstHalf.substring(0, 50))) {
+        cleanLines.splice(halfLen);
       }
     }
 
