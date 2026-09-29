@@ -20,6 +20,7 @@ if (!process.env.JWT_SECRET) {
 connectDB();
 
 const app = express();
+app.set('trust proxy', 1); // Enable trusting proxy headers from Nginx reverse proxy
 app.disable('x-powered-by'); // SECURITY: Conceal server framework identification
 const server = http.createServer(app);
 
