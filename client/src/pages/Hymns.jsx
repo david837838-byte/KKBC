@@ -410,7 +410,20 @@ const Hymns = () => {
                                       {language === 'ar' ? 'عرض النوتة / ملف الترنيمة (PDF)' : 'View Hymn Sheet (PDF)'}
                                     </a>
                                   ) : (
-                                    <img src={hymn.imageUrl} alt={hymn.title} style={{ maxWidth: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }} />
+                                    <a 
+                                      href={hymn.imageUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      title={language === 'ar' ? 'انقر لفتح نوتة الترنيمة بحجم كامل' : 'Click to view sheet full size'}
+                                      style={{ display: 'block', cursor: 'zoom-in', textAlign: 'center' }}
+                                    >
+                                      <img 
+                                        src={hymn.imageUrl} 
+                                        alt={hymn.title} 
+                                        loading="lazy"
+                                        style={{ maxWidth: '100%', maxHeight: '650px', objectFit: 'contain', margin: '0 auto', display: 'block', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} 
+                                      />
+                                    </a>
                                   )}
                                 </div>
                               )}
