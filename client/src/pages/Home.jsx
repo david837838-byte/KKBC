@@ -142,7 +142,7 @@ const Home = () => {
       </section>
 
       {/* Daily Verse Section */}
-      <section className="verse-section container">
+      <section id="daily-verse-section" className="verse-section container">
         <div className="verse-card" style={{ position: 'relative' }}>
           <div style={{
             display: 'inline-flex',

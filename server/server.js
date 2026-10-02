@@ -255,6 +255,9 @@ io.on('connection', (socket) => {
 const { initYouTubeSyncCron } = require('./jobs/youtubeSync');
 initYouTubeSyncCron();
 
+const { initDailyVerseNotificationCron } = require('./services/dailyVerseNotificationService');
+initDailyVerseNotificationCron(io);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

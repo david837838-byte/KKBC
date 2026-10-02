@@ -5626,16 +5626,68 @@ const DailyVersesTab = ({ token }) => {
     }
   };
 
+  const [broadcasting, setBroadcasting] = useState(false);
+
+  const handleBroadcastToday = () => {
+    if (!window.confirm(isAr ? 'هل تريد إرسال إشعار آية اليوم الآن لكافة الهواتف والأجهزة المشتركة؟' : 'Broadcast today\'s verse push notification to all devices now?')) {
+      return;
+    }
+    setBroadcasting(true);
+    fetch('/api/notifications/broadcast-daily-verse', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ force: true })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setBroadcasting(false);
+        if (data.success) {
+          setSuccess(isAr ? 'تم إرسال إشعار آية اليوم لكافة الأجهزة بنجاح! 🔔' : 'Daily verse push notification sent successfully! 🔔');
+          setTimeout(() => setSuccess(''), 5000);
+        } else {
+          setError(data.message || 'حدث خطأ أثناء الإرسال');
+          setTimeout(() => setError(''), 5000);
+        }
+      })
+      .catch(err => {
+        setBroadcasting(false);
+        setError(err.message || 'حدث خطأ أثناء الإرسال');
+        setTimeout(() => setError(''), 5000);
+      });
+  };
+
   return (
     <div>
-      <div className="tab-header">
-        <h2>{isAr ? 'إدارة آيات اليوم 📖' : 'Daily Verses Management 📖'}</h2>
-        {!showForm && (
-          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-            <Plus size={16} />
-            <span>{isAr ? 'إضافة آية جديدة' : 'Add New Daily Verse'}</span>
+      <div className="tab-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div>
+          <h2 style={{ margin: 0 }}>{isAr ? 'إدارة آيات اليوم 📖' : 'Daily Verses Management 📖'}</h2>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            {isAr 
+              ? 'تتغير آية اليوم تلقائياً كل 24 ساعة، ويصل إشعار فوري لجميع الهواتف عند تغيرها.' 
+              : 'Verses rotate automatically every 24 hours and push notifications are sent to all devices.'}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button 
+            type="button"
+            className="btn btn-secondary" 
+            onClick={handleBroadcastToday}
+            disabled={broadcasting}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', color: '#fff' }}
+          >
+            <Bell size={16} />
+            <span>{broadcasting ? (isAr ? 'جارِ الإرسال...' : 'Broadcasting...') : (isAr ? 'إرسال إشعار الآية الآن 🔔' : 'Broadcast Verse Now 🔔')}</span>
           </button>
-        )}
+          {!showForm && (
+            <button className="btn btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Plus size={16} />
+              <span>{isAr ? 'إضافة آية جديدة' : 'Add New Daily Verse'}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {success && (

@@ -19,4 +19,5 @@ const notificationSubscriptionSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('NotificationSubscription', notificationSubscriptionSchema);
+const NotificationSubscriptionModel = mongoose.model('NotificationSubscription', notificationSubscriptionSchema);
+module.exports = require('../config/dbWrapper')('NotificationSubscription', NotificationSubscriptionModel);

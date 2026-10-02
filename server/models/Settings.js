@@ -156,6 +156,11 @@ const settingsSchema = new mongoose.Schema({
     contact: { type: Boolean, default: true },
     downloadApp: { type: Boolean, default: true },
   },
+  // Daily verse automatic push notification tracking
+  lastDailyVerseNotifiedDate: {
+    type: String,
+    default: '',
+  },
   updatedAt: {
     type: Date,
     default: Date.now,
