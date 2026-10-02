@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Radio, Calendar, BookOpen, ChevronLeft, Volume2, Video, FileText, HeartHandshake, Sparkles } from 'lucide-react';
+import { Radio, Calendar, BookOpen, ChevronLeft, Volume2, Video, FileText, HeartHandshake, Sparkles, Share2 } from 'lucide-react';
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
 import SocialVerseCardModal from '../components/SocialVerseCardModal';
@@ -175,8 +175,8 @@ const Home = () => {
                 boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
               }}
             >
-              <Sparkles size={16} />
-              <span>{language === 'ar' ? 'مشاركة كصورة (واتساب / ستوري)' : 'Share as Image Card'}</span>
+              <Share2 size={16} />
+              <span>{language === 'ar' ? 'مشاركة' : 'Share'}</span>
             </button>
 
             <button 
