@@ -12,9 +12,8 @@ const connectDB = require('./config/db');
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '.env') });
-if (!process.env.JWT_SECRET) {
-  dotenv.config({ path: path.join(__dirname, '../.env') });
-}
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 // Connect to MongoDB
 connectDB();
