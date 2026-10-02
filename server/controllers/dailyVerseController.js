@@ -12,33 +12,74 @@ exports.getDailyVerses = async (req, res) => {
   }
 };
 
-// @desc    Get today's verse (Deterministic based on day of year)
+const ENCOURAGING_VERSES = require('../data/encouragingVerses');
+
+// Auto-seed encouraging verses to DB if empty or few
+let hasCheckedSeed = false;
+const ensureEncouragingVerses = async () => {
+  if (hasCheckedSeed) return;
+  try {
+    const count = await DailyVerse.countDocuments({});
+    if (count < ENCOURAGING_VERSES.length) {
+      for (const item of ENCOURAGING_VERSES) {
+        const exists = await DailyVerse.findOne({ reference: item.reference });
+        if (!exists) {
+          await DailyVerse.create({
+            text: item.text,
+            reference: item.reference,
+            textEn: item.textEn,
+            referenceEn: item.referenceEn
+          });
+        }
+      }
+    }
+    hasCheckedSeed = true;
+  } catch (err) {
+    console.error('Error auto-seeding encouraging verses:', err.message);
+  }
+};
+
+// Initial check
+setTimeout(ensureEncouragingVerses, 1500);
+
+// @desc    Get today's verse (Automatic deterministic rotation every day)
 // @route   GET /api/daily-verses/today
 // @access  Public
 exports.getTodayVerse = async (req, res) => {
   try {
-    const verses = await DailyVerse.find({});
-    if (verses.length === 0) {
-      // Fallback verse if DB is empty
-      return res.status(200).json({ 
-        success: true, 
-        data: {
-          text: '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»',
-          reference: 'يشوع 24: 15'
-        }
-      });
+    await ensureEncouragingVerses();
+    let verses = await DailyVerse.find({});
+    if (!verses || verses.length === 0) {
+      verses = ENCOURAGING_VERSES;
     }
 
-    // Determine day of the year to pick a stable daily verse
-    const start = new Date(new Date().getFullYear(), 0, 0);
-    const diff = new Date() - start;
+    // Determine day of the year (automatically changes at midnight local time)
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
     const oneDay = 1000 * 60 * 60 * 24;
     const dayOfYear = Math.floor(diff / oneDay);
 
-    const index = dayOfYear % verses.length;
+    const index = Math.abs(dayOfYear) % verses.length;
     res.status(200).json({ success: true, data: verses[index] });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    const dayIndex = Math.abs(new Date().getDate()) % ENCOURAGING_VERSES.length;
+    res.status(200).json({ success: true, data: ENCOURAGING_VERSES[dayIndex] });
+  }
+};
+
+// @desc    Get a random encouraging verse on demand
+// @route   GET /api/daily-verses/random
+// @access  Public
+exports.getRandomVerse = async (req, res) => {
+  try {
+    let verses = await DailyVerse.find({});
+    const pool = verses && verses.length > 0 ? verses : ENCOURAGING_VERSES;
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    res.status(200).json({ success: true, data: pool[randomIndex] });
+  } catch (error) {
+    const randomIndex = Math.floor(Math.random() * ENCOURAGING_VERSES.length);
+    res.status(200).json({ success: true, data: ENCOURAGING_VERSES[randomIndex] });
   }
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Radio, Calendar, BookOpen, ChevronLeft, Volume2, Video, FileText, HeartHandshake, Sparkles, Share2 } from 'lucide-react';
+import { Radio, Calendar, BookOpen, ChevronLeft, Volume2, Video, FileText, HeartHandshake, Sparkles, Share2, RefreshCw } from 'lucide-react';
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
 import SocialVerseCardModal from '../components/SocialVerseCardModal';
@@ -13,8 +13,25 @@ const Home = () => {
   const [meetings, setMeetings] = useState([]);
   const [countdownText, setCountdownText] = useState('');
   const [dailyVerse, setDailyVerse] = useState(null);
+  const [loadingVerse, setLoadingVerse] = useState(false);
   const [isVerseModalOpen, setIsVerseModalOpen] = useState(false);
   const { t, language, translateText } = useLanguage();
+
+  const fetchRandomVerse = () => {
+    setLoadingVerse(true);
+    fetch('/api/daily-verses/random')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setDailyVerse(data.data);
+        }
+        setLoadingVerse(false);
+      })
+      .catch(err => {
+        console.error('Error fetching random verse:', err);
+        setLoadingVerse(false);
+      });
+  };
 
   useEffect(() => {
     // 1. Fetch website settings
@@ -144,13 +161,31 @@ const Home = () => {
       {/* Daily Verse Section */}
       <section className="verse-section container">
         <div className="verse-card" style={{ position: 'relative' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            background: 'rgba(245, 158, 11, 0.12)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            color: '#f59e0b',
+            padding: '0.2rem 0.75rem',
+            borderRadius: '20px',
+            fontSize: '0.75rem',
+            fontWeight: '800',
+            marginBottom: '0.65rem',
+            letterSpacing: '0.5px'
+          }}>
+            <Sparkles size={13} />
+            <span>{language === 'ar' ? 'آية اليوم المشجعة — تتجدد تلقائياً كل يوم' : 'Today’s Encouraging Word'}</span>
+          </div>
+
           <BookOpen className="verse-icon" size={32} />
-          <blockquote className="verse-text">
+          <blockquote className="verse-text" style={{ transition: 'opacity 0.25s ease', opacity: loadingVerse ? 0.4 : 1 }}>
             {language === 'ar' 
               ? (dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»')) 
               : (dailyVerse ? translateText(dailyVerse.text, dailyVerse.textEn) : '«The LORD is my shepherd; I shall not want.»')}
           </blockquote>
-          <cite className="verse-ref">
+          <cite className="verse-ref" style={{ transition: 'opacity 0.25s ease', opacity: loadingVerse ? 0.4 : 1 }}>
             {language === 'ar' 
               ? (dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15')) 
               : (dailyVerse ? translateText(dailyVerse.reference, dailyVerse.referenceEn) : 'Psalm 23:1')}
@@ -202,6 +237,29 @@ const Home = () => {
               }}
             >
               {t('common.copyVerse')}
+            </button>
+
+            <button 
+              type="button"
+              onClick={fetchRandomVerse}
+              disabled={loadingVerse}
+              className="btn btn-outline"
+              title={language === 'ar' ? 'عرض آية تشجيعية أخرى' : 'Get another encouraging verse'}
+              style={{ 
+                padding: '0.45rem 0.9rem', 
+                fontSize: '0.82rem', 
+                borderColor: 'rgba(255, 255, 255, 0.25)', 
+                color: 'var(--text-primary)',
+                fontWeight: 'bold',
+                borderRadius: 'var(--radius-sm)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                cursor: loadingVerse ? 'wait' : 'pointer'
+              }}
+            >
+              <RefreshCw size={14} className={loadingVerse ? 'spin' : ''} />
+              <span>{language === 'ar' ? 'آية أخرى' : 'Another Verse'}</span>
             </button>
           </div>
 
