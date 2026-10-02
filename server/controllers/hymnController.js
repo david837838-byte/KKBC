@@ -23,10 +23,17 @@ exports.getHymns = async (req, res) => {
     let query = {};
 
     if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { lyrics: { $regex: search, $options: 'i' } },
+      const trimmedSearch = search.trim();
+      const parsedNum = parseInt(trimmedSearch, 10);
+      const orConditions = [
+        { title: { $regex: trimmedSearch, $options: 'i' } },
+        { lyrics: { $regex: trimmedSearch, $options: 'i' } },
       ];
+      if (!isNaN(parsedNum)) {
+        orConditions.push({ hymnNumber: parsedNum });
+        orConditions.push({ imageUrl: { $regex: `page_${parsedNum}\\.jpg`, $options: 'i' } });
+      }
+      query.$or = orConditions;
     }
 
     const hymns = await Hymn.find(query).sort({ title: 1 });
@@ -57,6 +64,9 @@ exports.getHymn = async (req, res) => {
 exports.createHymn = async (req, res) => {
   try {
     const hymnData = { ...req.body };
+    if (hymnData.hymnNumber) {
+      hymnData.hymnNumber = parseInt(hymnData.hymnNumber, 10) || null;
+    }
 
     if (req.file) {
       hymnData.imageUrl = `/uploads/hymns/${req.file.filename}`;
@@ -82,6 +92,9 @@ exports.updateHymn = async (req, res) => {
     }
 
     const updateData = { ...req.body };
+    if (updateData.hymnNumber !== undefined) {
+      updateData.hymnNumber = updateData.hymnNumber ? parseInt(updateData.hymnNumber, 10) : null;
+    }
 
     if (req.file) {
       // Delete old file if existed

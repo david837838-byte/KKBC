@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Radio, Calendar, BookOpen, ChevronLeft, Volume2, Video, FileText, HeartHandshake } from 'lucide-react';
+import { Radio, Calendar, BookOpen, ChevronLeft, Volume2, Video, FileText, HeartHandshake, Sparkles } from 'lucide-react';
 import io from 'socket.io-client';
 import { useLanguage } from '../context/LanguageContext';
+import SocialVerseCardModal from '../components/SocialVerseCardModal';
 
 const Home = () => {
   const [settings, setSettings] = useState(null);
@@ -12,6 +13,7 @@ const Home = () => {
   const [meetings, setMeetings] = useState([]);
   const [countdownText, setCountdownText] = useState('');
   const [dailyVerse, setDailyVerse] = useState(null);
+  const [isVerseModalOpen, setIsVerseModalOpen] = useState(false);
   const { t, language, translateText } = useLanguage();
 
   useEffect(() => {
@@ -154,30 +156,68 @@ const Home = () => {
               : (dailyVerse ? translateText(dailyVerse.reference, dailyVerse.referenceEn) : 'Psalm 23:1')}
           </cite>
           
-          <button 
-            onClick={() => {
-              const currentVerse = language === 'ar' 
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
+            <button 
+              type="button"
+              onClick={() => setIsVerseModalOpen(true)}
+              className="btn btn-primary"
+              style={{ 
+                padding: '0.45rem 1.1rem', 
+                fontSize: '0.85rem', 
+                fontWeight: 'bold',
+                borderRadius: 'var(--radius-sm)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: '#f59e0b',
+                borderColor: '#f59e0b',
+                color: '#000000',
+                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
+              }}
+            >
+              <Sparkles size={16} />
+              <span>{language === 'ar' ? 'مشاركة كصورة (واتساب / ستوري)' : 'Share as Image Card'}</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => {
+                const currentVerse = language === 'ar' 
+                  ? (dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»')) 
+                  : (dailyVerse ? translateText(dailyVerse.text, dailyVerse.textEn) : '«The LORD is my shepherd; I shall not want.»');
+                const currentRef = language === 'ar' 
+                  ? (dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15')) 
+                  : (dailyVerse ? translateText(dailyVerse.reference, dailyVerse.referenceEn) : 'Psalm 23:1');
+                navigator.clipboard.writeText(`"${currentVerse}" - ${currentRef}`);
+                alert(t('common.verseCopied'));
+              }}
+              className="btn btn-outline" 
+              style={{ 
+                padding: '0.45rem 0.9rem', 
+                fontSize: '0.82rem', 
+                borderColor: 'var(--accent-color)', 
+                color: 'var(--accent-color)',
+                fontWeight: 'bold',
+                borderRadius: 'var(--radius-sm)'
+              }}
+            >
+              {t('common.copyVerse')}
+            </button>
+          </div>
+
+          {/* Social Verse Card Modal */}
+          <SocialVerseCardModal 
+            isOpen={isVerseModalOpen}
+            onClose={() => setIsVerseModalOpen(false)}
+            verse={{
+              text: language === 'ar' 
                 ? (dailyVerse ? dailyVerse.text : (settings?.verseText || '«أَمَّا أَنَا وَبَيْتِي فَنَعْبُدُ الرَّبَّ»')) 
-                : (dailyVerse ? translateText(dailyVerse.text, dailyVerse.textEn) : '«The LORD is my shepherd; I shall not want.»');
-              const currentRef = language === 'ar' 
+                : (dailyVerse ? translateText(dailyVerse.text, dailyVerse.textEn) : '«The LORD is my shepherd; I shall not want.»'),
+              reference: language === 'ar' 
                 ? (dailyVerse ? dailyVerse.reference : (settings?.verseReference || 'يشوع 24: 15')) 
-                : (dailyVerse ? translateText(dailyVerse.reference, dailyVerse.referenceEn) : 'Psalm 23:1');
-              navigator.clipboard.writeText(`"${currentVerse}" - ${currentRef}`);
-              alert(t('common.verseCopied'));
+                : (dailyVerse ? translateText(dailyVerse.reference, dailyVerse.referenceEn) : 'Psalm 23:1')
             }}
-            className="btn btn-outline" 
-            style={{ 
-              marginTop: '1rem', 
-              padding: '0.4rem 0.85rem', 
-              fontSize: '0.8rem', 
-              borderColor: 'var(--accent-color)', 
-              color: 'var(--accent-color)',
-              fontWeight: 'bold',
-              borderRadius: 'var(--radius-sm)'
-            }}
-          >
-            {t('common.copyVerse')}
-          </button>
+          />
         </div>
       </section>
 

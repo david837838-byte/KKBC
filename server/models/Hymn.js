@@ -6,6 +6,10 @@ const hymnSchema = new mongoose.Schema({
     required: [true, 'Please add a hymn title'],
     trim: true,
   },
+  hymnNumber: {
+    type: Number,
+    index: true,
+  },
   lyrics: {
     type: String,
   },

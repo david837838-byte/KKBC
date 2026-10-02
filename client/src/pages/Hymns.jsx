@@ -126,7 +126,16 @@ const Hymns = () => {
       .trim();
   };
 
-  // Filter items based on active tab AND selected letter
+  const getHymnNumber = (hymn) => {
+    if (hymn.hymnNumber) return hymn.hymnNumber;
+    if (hymn.imageUrl) {
+      const m = hymn.imageUrl.match(/page_(\d+)\.jpg/i);
+      if (m) return parseInt(m[1], 10);
+    }
+    return null;
+  };
+
+  // Filter items based on active tab AND selected letter AND search (number/title/lyrics)
   const filteredHymns = hymns.filter(hymn => {
     // Tab filter
     if (activeTab === 'video') {
@@ -137,6 +146,20 @@ const Hymns = () => {
       const firstChar = normalizeArabic(hymn.title?.charAt(0));
       const targetChar = normalizeArabic(selectedLetter);
       if (firstChar !== targetChar) return false;
+    }
+    // Instant search filter (by number or title or lyrics)
+    if (search && search.trim() !== '') {
+      const q = search.trim();
+      const qNum = parseInt(q, 10);
+      const hNum = getHymnNumber(hymn);
+      
+      const matchNum = !isNaN(qNum) && hNum === qNum;
+      const matchTitle = normalizeArabic(hymn.title || '').toLowerCase().includes(normalizeArabic(q).toLowerCase());
+      const matchLyrics = normalizeArabic(hymn.lyrics || '').toLowerCase().includes(normalizeArabic(q).toLowerCase());
+
+      if (!matchNum && !matchTitle && !matchLyrics) {
+        return false;
+      }
     }
     return true;
   });
@@ -195,7 +218,7 @@ const Hymns = () => {
                 <div className="search-input-group">
                   <input 
                     type="text" 
-                    placeholder={t('common.searchPlaceholder')} 
+                    placeholder={isAr ? 'ابحث باسم الترنيمة أو برقمها (مثال: 162)...' : 'Search by hymn title or number (e.g. 162)...'} 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="form-control"
@@ -373,9 +396,28 @@ const Hymns = () => {
                 return (
                   <div className={`hymn-accordion-card glass-card ${isOpen ? 'open' : ''}`} key={hymn._id}>
                     <div className="accordion-header" onClick={() => toggleHymn(hymn._id)}>
-                      <div className="header-title-wrapper">
+                      <div className="header-title-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                         <Music className="music-icon" size={20} />
-                        <h3>{translateText(hymn.title, hymn.titleEn)}</h3>
+                        {getHymnNumber(hymn) && (
+                          <span 
+                            style={{
+                              backgroundColor: 'rgba(217, 119, 6, 0.15)',
+                              color: '#f59e0b',
+                              border: '1px solid rgba(245, 158, 11, 0.4)',
+                              padding: '0.15rem 0.55rem',
+                              borderRadius: '20px',
+                              fontSize: '0.8rem',
+                              fontWeight: '800',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              boxShadow: '0 2px 4px rgba(245, 158, 11, 0.15)'
+                            }}
+                            title={isAr ? `ترنيمة رقم ${getHymnNumber(hymn)}` : `Hymn #${getHymnNumber(hymn)}`}
+                          >
+                            #{getHymnNumber(hymn)}
+                          </span>
+                        )}
+                        <h3 style={{ margin: 0 }}>{translateText(hymn.title, hymn.titleEn)}</h3>
                         {hymn.category && <span className="hymn-cat-badge">{translateText(hymn.category, hymn.categoryEn)}</span>}
                       </div>
                       <div className="header-toggle-icon">
